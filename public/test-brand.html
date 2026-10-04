@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Demo Dental — Warm Theme</title>
+    <style>
+        :root {
+            --ink: #39261b;
+            --orange: #e86d28;
+            --cream: #fff8ef;
+            --muted: #775d4d
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            color: var(--ink);
+            background: var(--cream)
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px max(24px, calc((100% - 1080px)/2));
+            background: #fffdf9e8;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #f1dfce
+        }
+
+        .brand {
+            font-weight: 850;
+            font-size: 20px
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 17px;
+            border-radius: 11px;
+            background: var(--orange);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 750
+        }
+
+        .hero {
+            max-width: 1080px;
+            margin: auto;
+            padding: 94px 24px 72px;
+            display: grid;
+            grid-template-columns: 1fr .8fr;
+            gap: 45px;
+            align-items: center
+        }
+
+        .eyebrow {
+            color: var(--orange);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase
+        }
+
+        h1 {
+            margin: 10px 0 20px;
+            font-size: clamp(43px, 6vw, 68px);
+            line-height: 1;
+            letter-spacing: -.06em
+        }
+
+        .lead {
+            max-width: 520px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.55
+        }
+
+        .smile {
+            min-height: 320px;
+            border-radius: 30px;
+            background: radial-gradient(circle at 67% 29%, #ffd0aa 0 14%, transparent 14%), linear-gradient(140deg, #fbc397, #e86d28);
+            box-shadow: 0 25px 55px #c55b263b
+        }
+
+        .bar {
+            max-width: 1080px;
+            margin: auto;
+            padding: 35px 24px 90px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px
+        }
+
+        .card {
+            padding: 25px;
+            border-radius: 18px;
+            background: #fffdf9;
+            border: 1px solid #f1dfce
+        }
+
+        .card b {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 18px
+        }
+
+        .card span {
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        @media(max-width:640px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 60px
+            }
+
+            .smile {
+                min-height: 190px
+            }
+
+            .bar {
+                grid-template-columns: 1fr
+            }
+
+            .nav {
+                padding: 16px 20px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="brand">✦ Demo Dental</div><a class="button" href="#visit">Plan a visit</a>
+    </nav>
+    <main>
+        <section class="hero">
+            <div>
+                <p class="eyebrow">A warmer way to smile</p>
+                <h1>Care that feels like a fresh start.</h1>
+                <p class="lead">A colour-variant demo page showing how the embedded assistant adapts cleanly to a
+                    brand’s visual direction.</p><a class="button" href="#visit">Meet the team</a>
+            </div>
+            <div class="smile"></div>
+        </section>
+        <section id="visit" class="bar">
+            <div class="card"><b>Friendly first visits</b><span>Clarity, comfort, and no rush.</span></div>
+            <div class="card"><b>Everyday prevention</b><span>Practical care that fits your life.</span></div>
+            <div class="card"><b>Questions welcome</b><span>Ask our assistant anything, anytime.</span></div>
+        </section>
+    </main>
+    <script src="/widget.js" data-bot-id="demo-warm" data-primary-color="#e86d28"
+        data-greeting="Welcome to Demo Dental. How can we make your visit easier?"
+        data-bot-name="Demo Dental Care"></script>
+</body>
+
+</html>

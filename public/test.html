@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Demo Dental | Modern care</title>
+    <style>
+        :root {
+            --ink: #17334e;
+            --muted: #5e7184;
+            --brand: #0a7cff;
+            --mist: #edf7ff;
+            --line: #dce8f0
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            line-height: 1.5
+        }
+
+        .wrap {
+            width: min(1120px, calc(100% - 40px));
+            margin: auto
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border-bottom: 1px solid #edf2f5;
+            background: #fffffff0;
+            backdrop-filter: blur(14px)
+        }
+
+        .nav .wrap {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .brand {
+            font-weight: 850;
+            font-size: 19px;
+            letter-spacing: -.04em
+        }
+
+        .brand i {
+            display: inline-grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            margin-right: 9px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #42a4ff, #0a7cff);
+            color: #fff;
+            font-style: normal
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 26px;
+            align-items: center
+        }
+
+        .nav a {
+            color: var(--muted);
+            font-size: 14px;
+            text-decoration: none
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: var(--brand);
+            color: #fff !important;
+            font-weight: 750;
+            box-shadow: 0 9px 19px #0a7cff33
+        }
+
+        .hero {
+            padding: 92px 0 72px;
+            overflow: hidden;
+            background: radial-gradient(circle at 87% 20%, #c7eaff 0, transparent 25%), linear-gradient(180deg, #f8fcff, #fff)
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.08fr .92fr;
+            align-items: center;
+            gap: 64px
+        }
+
+        .eyebrow {
+            margin: 0 0 13px;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase
+        }
+
+        h1,
+        h2,
+        h3 {
+            letter-spacing: -.05em;
+            line-height: 1.06
+        }
+
+        h1 {
+            max-width: 620px;
+            margin: 0;
+            font-size: clamp(43px, 5vw, 68px)
+        }
+
+        .lead {
+            max-width: 540px;
+            margin: 22px 0 29px;
+            color: var(--muted);
+            font-size: 18px
+        }
+
+        .trust {
+            margin-top: 25px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .hero-card {
+            position: relative;
+            min-height: 380px;
+            padding: 25px;
+            border: 1px solid #d9eaf5;
+            border-radius: 27px;
+            background: linear-gradient(145deg, #dff4ff, #f7fcff);
+            box-shadow: 0 27px 60px #75b8dc2e
+        }
+
+        .hero-card:before {
+            content: "";
+            position: absolute;
+            inset: 58px 38px 32px;
+            border-radius: 130px 130px 22px 22px;
+            background: linear-gradient(140deg, #61baff, #0872dc);
+            transform: rotate(8deg)
+        }
+
+        .card-note {
+            position: relative;
+            z-index: 1;
+            width: 190px;
+            margin: 22px 0 0 auto;
+            padding: 15px;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 0 14px 24px #15568721
+        }
+
+        .card-note b {
+            display: block;
+            font-size: 26px
+        }
+
+        .card-note span {
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .tooth {
+            position: absolute;
+            z-index: 1;
+            bottom: 45px;
+            left: 50%;
+            width: 136px;
+            height: 164px;
+            border-radius: 48% 48% 42% 42%;
+            background: linear-gradient(145deg, #fff, #c8edff);
+            box-shadow: inset -11px -10px 25px #93cde340, 0 20px 30px #0a57922e;
+            transform: translateX(-50%)
+        }
+
+        section {
+            padding: 88px 0
+        }
+
+        .services {
+            background: #fbfdfe
+        }
+
+        .section-head {
+            max-width: 580px;
+            margin-bottom: 38px
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(31px, 3.7vw, 47px)
+        }
+
+        .section-head p {
+            color: var(--muted)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px
+        }
+
+        .service {
+            min-height: 190px;
+            padding: 24px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: #fff
+        }
+
+        .service-icon {
+            display: grid;
+            place-items: center;
+            width: 43px;
+            height: 43px;
+            border-radius: 13px;
+            background: var(--mist);
+            color: var(--brand);
+            font-size: 20px
+        }
+
+        .service h3 {
+            margin: 21px 0 8px;
+            font-size: 19px
+        }
+
+        .service p,
+        .why p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 70px
+        }
+
+        .check {
+            display: flex;
+            gap: 12px;
+            margin: 18px 0
+        }
+
+        .check i {
+            display: grid;
+            place-items: center;
+            flex: none;
+            width: 23px;
+            height: 23px;
+            border-radius: 50%;
+            background: #d9f7e9;
+            color: #12914d;
+            font-style: normal;
+            font-size: 13px
+        }
+
+        .check b {
+            display: block;
+            font-size: 15px
+        }
+
+        .check span {
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .hours {
+            padding: 29px;
+            border-radius: 20px;
+            background: var(--ink);
+            color: #fff
+        }
+
+        .hours h3 {
+            margin: 0 0 19px;
+            font-size: 25px
+        }
+
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ffffff22;
+            font-size: 14px
+        }
+
+        .hours-row span {
+            color: #c3d3df
+        }
+
+        .quotes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 17px
+        }
+
+        .quote {
+            padding: 24px;
+            border-radius: 18px;
+            background: var(--mist)
+        }
+
+        .quote p {
+            margin: 0 0 19px;
+            font-size: 15px
+        }
+
+        .quote span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .contact {
+            padding: 0 0 88px
+        }
+
+        .contact-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            padding: 43px 48px;
+            border-radius: 25px;
+            color: #fff;
+            background: linear-gradient(135deg, #16456a, #0a7cff)
+        }
+
+        .contact-box h2 {
+            max-width: 540px;
+            margin: 0;
+            font-size: 36px
+        }
+
+        .contact-box .button {
+            background: #fff;
+            color: var(--brand) !important;
+            box-shadow: none
+        }
+
+        .footer {
+            padding: 27px 0;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        @media(max-width:760px) {
+            .nav-links a:not(.button) {
+                display: none
+            }
+
+            .hero {
+                padding-top: 58px
+            }
+
+            .hero-grid,
+            .split {
+                grid-template-columns: 1fr;
+                gap: 36px
+            }
+
+            .hero-card {
+                min-height: 295px
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .quotes {
+                grid-template-columns: 1fr
+            }
+
+            .contact-box {
+                display: block;
+                padding: 34px
+            }
+
+            .contact-box .button {
+                margin-top: 23px
+            }
+        }
+
+        @media(max-width:460px) {
+            .wrap {
+                width: min(100% - 30px, 1120px)
+            }
+
+            .nav .wrap {
+                height: 62px
+            }
+
+            .hero {
+                padding-top: 46px
+            }
+
+            section {
+                padding: 62px 0
+            }
+
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .contact-box h2 {
+                font-size: 30px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="wrap">
+            <div class="brand"><i>✦</i>Demo Dental</div>
+            <div class="nav-links"><a href="#services">Services</a><a href="#about">Why us</a><a href="#contact"
+                    class="button">Book a visit</a></div>
+        </div>
+    </nav>
+    <main>
+        <section class="hero">
+            <div class="wrap hero-grid">
+                <div>
+                    <p class="eyebrow">Comfort-first dentistry</p>
+                    <h1>A brighter smile starts with a calmer visit.</h1>
+                    <p class="lead">Thoughtful, modern dental care for every stage of your smile — right here in your
+                        neighbourhood.</p><a class="button" href="#contact">Schedule your first visit</a>
+                    <p class="trust">Loved by 2,000+ happy patients</p>
+                </div>
+                <div class="hero-card">
+                    <div class="card-note"><b>4.9 / 5</b><span>Patient satisfaction rating</span></div>
+                    <div class="tooth"></div>
+                </div>
+            </div>
+        </section>
+        <section id="services" class="services">
+            <div class="wrap">
+                <div class="section-head">
+                    <p class="eyebrow">Made for real life</p>
+                    <h2>Everything your smile needs, under one roof.</h2>
+                    <p>Simple appointments, clear guidance, and a team that keeps the experience easy.</p>
+                </div>
+                <div class="grid">
+                    <article class="service">
+                        <div class="service-icon">✦</div>
+                        <h3>Cleaning</h3>
+                        <p>Gentle preventive visits designed to keep you feeling fresh.</p>
+                    </article>
+                    <article class="service">
+                        <div class="service-icon">☼</div>
+                        <h3>Whitening</h3>
+                        <p>Confident, natural-looking brightness on your timeline.</p>
+                    </article>
+                    <article class="service">
+                        <div class="service-icon">◇</div>
+                        <h3>Implants</h3>
+                        <p>Personalised options for a complete, comfortable smile.</p>
+                    </article>
+                    <article class="service">
+                        <div class="service-icon">⌁</div>
+                        <h3>Braces</h3>
+                        <p>Modern orthodontic care for teens and adults alike.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <section id="about">
+            <div class="wrap split">
+                <div class="why">
+                    <p class="eyebrow">Why choose us</p>
+                    <h2>Care that feels refreshingly human.</h2>
+                    <div class="check"><i>✓</i>
+                        <div><b>Appointments that run on time</b><span>Because your day matters as much as your
+                                smile.</span></div>
+                    </div>
+                    <div class="check"><i>✓</i>
+                        <div><b>Clear, judgement-free advice</b><span>We explain every option in everyday
+                                language.</span></div>
+                    </div>
+                    <div class="check"><i>✓</i>
+                        <div><b>A relaxed, welcoming space</b><span>From the first hello to the final check-in.</span>
+                        </div>
+                    </div>
+                </div>
+                <aside class="hours">
+                    <h3>Opening hours</h3>
+                    <div class="hours-row"><span>Monday – Friday</span><b>8:00am – 6:00pm</b></div>
+                    <div class="hours-row"><span>Saturday</span><b>9:00am – 2:00pm</b></div>
+                    <div class="hours-row"><span>Sunday</span><b>Closed</b></div>
+                </aside>
+            </div>
+        </section>
+        <section class="services">
+            <div class="wrap">
+                <div class="section-head">
+                    <p class="eyebrow">Fictional patient notes</p>
+                    <h2>Small moments that make a difference.</h2>
+                </div>
+                <div class="quotes">
+                    <article class="quote">
+                        <p>“The whole visit felt calm, clear, and surprisingly easy.”</p><b>— Maya R.</b><span>Fictional
+                            patient testimonial</span>
+                    </article>
+                    <article class="quote">
+                        <p>“They made a nervous appointment feel like a normal Tuesday.”</p><b>— Daniel
+                            K.</b><span>Fictional patient testimonial</span>
+                    </article>
+                    <article class="quote">
+                        <p>“Friendly people, practical advice, and a smile I love.”</p><b>— Priya S.</b><span>Fictional
+                            patient testimonial</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+        <section id="contact" class="contact">
+            <div class="wrap">
+                <div class="contact-box">
+                    <h2>Questions before your visit? We’re happy to help.</h2><a class="button"
+                        href="mailto:hello@demodental.example">Contact Demo Dental</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="wrap">© 2026 Demo Dental. Fictional clinic demo.</div>
+    </footer>
+    <script src="/widget.js" data-bot-id="demo"></script>
+</body>
+
+</html>

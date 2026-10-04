@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "build:widget": "esbuild widget/src/index.js --bundle --minify --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js",
+    "dev:widget": "esbuild widget/src/index.js --bundle --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js --watch",
+    "mock:reset": "node -e \"require('fs').rmSync('.mock-data',{recursive:true,force:true})\""
   },
   "dependencies": {
     "next": "16.3.8",
@@ -15,6 +18,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
+    "esbuild": "^0.28.2",
     "tailwindcss": "^4"
   }
 }
