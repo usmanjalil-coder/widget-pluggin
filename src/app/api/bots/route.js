@@ -1,4 +1,5 @@
 import { readDb, writeDb } from "@/lib/store";
+import { validateBotText } from "@/lib/limits";
 
 export async function GET() {
   return Response.json(readDb().bots);
@@ -7,6 +8,8 @@ export async function GET() {
 export async function POST(request) {
   const db = readDb();
   const body = await request.json();
+  const error = validateBotText(body);
+  if (error) return Response.json({ error }, { status: 400 });
   const seedName = (body.name || "new-bot")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-");

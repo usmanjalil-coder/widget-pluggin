@@ -37,24 +37,29 @@ async function init(options = {}) {
   }
   let config = sanitizeConfig(deepMerge(raw, scriptOverrides(script)));
   let mounted;
-  const rebuild = (partial) => {
-    config = sanitizeConfig(deepMerge(config, partial));
-    if (mounted) mounted.destroy();
-    mounted = mountWidget({
+  const update = (partial) => {
+    config = sanitizeConfig(deepMerge(deepMerge(config, partial), scriptOverrides(script)));
+    mounted?.update(config);
+  };
+  const instance = {
+    update,
+    open: () => mounted?.open(),
+    close: () => mounted?.close(),
+    resetChat: () => mounted?.resetChat(),
+    destroy() {
+      mounted?.destroy();
+      instances.delete(key);
+    },
+  };
+  mounted = mountWidget({
       container: options.container,
       botId,
       apiBase,
       config,
       failed,
-      onUpdate: rebuild,
+      defaultOpen: options.open ?? options.defaultOpen ?? false,
+      onOpenChange: options.onOpenChange,
     });
-    instance.destroy = () => {
-      mounted.destroy();
-      instances.delete(key);
-    };
-  };
-  const instance = { update: rebuild, destroy() {} };
-  rebuild({});
   instances.set(key, instance);
   return instance;
 }

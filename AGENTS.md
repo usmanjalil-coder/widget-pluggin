@@ -137,3 +137,19 @@ single-tenant demo first vs multi-tenant from day one.
 - Dashboard client requests go through `src/lib/api.js`; set `NEXT_PUBLIC_API_BASE` when replacing mock handlers with FastAPI.
 - Temporary handler data lives in ignored `.mock-data/db.json`; `npm run mock:reset` recreates seed data on next request.
 - Appearance preview loads the standalone `public/widget.js` and mounts it with `ChatbotWidget.init({ config, container })`.
+
+## Design system
+- Tailwind v4 + shadcn/ui, JavaScript only (`components.json`: `tsx: false`); compose primitives from `src/components/ui`. Existing barrel exports adapt legacy props. Do not hand-build buttons, fields or modal dialogs.
+- Self-hosted Inter via next/font/local. Semantic CSS tokens in `src/app/globals.css`: background #FAFAFA, card #FFFFFF, foreground #18181B, muted #71717A, border #E4E4E7, primary #4F46E5/white, ring primary at 40%, success #059669, warning #D97706, destructive #DC2626. Use tokens, except validated user-selected widget colors.
+- Titles 24px semibold, sections 16px, body 14px, helpers 13px muted; marketing hero 56–64px with tight tracking/1.05 line height, sections 36–40px.
+- 4/8px spacing; card padding and gaps 24px; max width 1152px; marketing vertical sections 96px. Controls radius 10px, cards 12px, panels 16px. Cards border/shadow-sm; only overlays/widget use larger shadows.
+- Soft semantic badges, tinted stat icons, muted uppercase 12px table headers, hover rows, useful empty states and skeletons. Use Sonner notifications. Transitions 150ms ease and visible focus rings; respect reduced motion.
+- Widget stays standalone in Shadow DOM; safe text rendering, strict hex/HTTPS/avatar/font validation, auto-contrast and full-screen mobile below 480px.
+- Gallery: `/design-system`. Demos: `/test.html`, `/test-brand.html`. Build bundle with `npm run build:widget`; regenerate demos with `npm run build:demos`.
+- Verification: `npm run lint`, `npm run build`, then serve port 3100 and `npm run verify:ui -- final`. The verification scripts generate ignored screenshots on demand.
+
+## UI conventions
+- Keep dashboard content within `max-w-6xl`; use the shared shell, grouped sidebar navigation, mobile Sheet, and section cards for forms.
+- Compose controls from `src/components/ui` and its shadcn primitives. Use semantic tokens for color, focus, status, and surfaces; reserve direct color values for validated user-selected widget previews.
+- Give lists and forms clear loading, empty, error, disabled, and saving states where the current API supports them. Keep marketing route content server-rendered and isolate interactive controls as client components.
+- Review at desktop and mobile widths after visual changes. Keep temporary captures in ignored `docs/screenshots/` and remove them after review.

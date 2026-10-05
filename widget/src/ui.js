@@ -90,8 +90,10 @@ function markdown(target, value) {
       }
     });
 }
-function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
+function mountWidget({ container, botId, apiBase, config: initialConfig, failed, defaultOpen, onOpenChange }) {
+  let config = initialConfig;
   const host = make("div", "cb-host");
+  if (container) host.classList.add("cb-embedded-host");
   const shadow = host.attachShadow({ mode: "open" });
   const style = make("style");
   let destroyed = false;
@@ -100,7 +102,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
   applyTheme(host, config);
   const root = make(
     "div",
-    `cb-root ${container ? "" : `cb-fixed cb-${config.theme.position}`}`,
+    `cb-root ${container ? "cb-embedded" : "cb-fixed"} cb-${config.theme.position}`,
   );
   const launchArea = make("div", "cb-launch-area");
   const launcher = make("button", "cb-launcher");
@@ -128,7 +130,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
   win.setAttribute("aria-label", `${config.texts.botName} chat`);
   win.setAttribute("aria-modal", "true");
   const header = make("header", "cb-header");
-  const avatar = config.texts.avatarUrl
+  let avatar = config.texts.avatarUrl
     ? make("img", "cb-avatar")
     : make(
         "div",
@@ -140,13 +142,15 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     avatar.alt = "";
   }
   const copy = make("div", "cb-head-copy");
-  copy.append(make("div", "cb-title", config.texts.botName));
+  const title = make("div", "cb-title", config.texts.botName);
+  copy.append(title);
   const presence = make("div", "cb-presence");
   presence.append(
     make("span", "cb-online"),
-    document.createTextNode("Online \xB7 Typically replies instantly"),
+    document.createTextNode("Online"),
   );
   copy.append(presence);
+  copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
   const close = make("button", "cb-close");
   close.type = "button";
   close.setAttribute("aria-label", "Close chat");
@@ -183,8 +187,9 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
   send.append(sendIcon());
   compose.append(input, send);
   win.append(header, messages, chips, typing, compose);
-  if (config.branding.showBadge)
-    win.append(make("footer", "cb-footer", "Powered by Chatbot"));
+  const footer = make("footer", "cb-footer", "Powered by Chatbot");
+  footer.hidden = !config.branding.showBadge;
+  win.append(footer);
   root.append(launchArea, win);
   shadow.append(root);
   const mountTarget = container || document.body;
@@ -192,6 +197,8 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     mountTarget.replaceChildren();
   mountTarget.append(host);
   let open = false;
+  let generation = 0;
+  let messageCount = 0;
   let sending = false;
   let lastMessage = "";
   let lastSender = "";
@@ -214,6 +221,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     return node;
   };
   const addMessage = (kind, content) => {
+    messageCount += 1;
     const stamp = time();
     const grouped = kind === lastSender && stamp === lastMinute;
     const row = make(
@@ -236,6 +244,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     return { row, bubble };
   };
   const setOpen = (value) => {
+    if (destroyed || open === value) return;
     open = value;
     win.classList.toggle("cb-open", value);
     launcher.classList.toggle("cb-active", value);
@@ -243,8 +252,19 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     if (value) {
       teaser.classList.remove("cb-visible");
       localStorage.setItem(teaserKey, "seen");
-      setTimeout(() => input.focus(), 210);
+      setTimeout(() => { if (!destroyed && open) input.focus(); }, 210);
     } else launcher.focus();
+    onOpenChange?.(value);
+  };
+  const renderChips = () => {
+    chips.replaceChildren();
+    config.texts.starterQuestions.forEach((question) => {
+      const chip = make("button", "cb-chip", question);
+      chip.type = "button";
+      chip.addEventListener("click", () => sendMessage(question));
+      chips.append(chip);
+    });
+    chips.hidden = chipsUsed || !config.texts.starterQuestions.length;
   };
   const hideChips = () => {
     if (!chipsUsed) {
@@ -312,6 +332,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
   };
   const sendMessage = async (message) => {
     if (!message.trim() || sending) return;
+    const requestGeneration = generation;
     lastMessage = message.trim();
     hideChips();
     addMessage("user", lastMessage);
@@ -331,14 +352,18 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
         conversationId: localStorage.getItem(`cb-conversation-${botId}`),
         message: lastMessage,
         onToken: (token) => {
+          if (destroyed || requestGeneration !== generation) return;
+          typing.hidden = true;
           answer += token;
           markdown(reply.bubble, answer);
           if (nearBottom()) scroll();
         },
-        onLeadForm: renderLeadForm,
+        onLeadForm: (payload) => { if (!destroyed && requestGeneration === generation) renderLeadForm(payload); },
       });
+      if (destroyed || requestGeneration !== generation) return;
       if (!answer) reply.row.remove();
     } catch (err) {
+      if (destroyed || requestGeneration !== generation) return;
       reply.bubble.classList.add("cb-error");
       reply.bubble.replaceChildren(
         document.createTextNode(err.message || "Unable to send message."),
@@ -351,6 +376,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
       });
       reply.bubble.append(retry);
     } finally {
+      if (destroyed || requestGeneration !== generation) return;
       sending = false;
       input.disabled = false;
       input.focus();
@@ -358,19 +384,14 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
       typing.hidden = true;
     }
   };
-  addMessage(
+  let greeting = addMessage(
     "bot",
     failed && config.texts.offlineMessage
       ? config.texts.offlineMessage
       : config.texts.greetingMessage,
   );
-  config.texts.starterQuestions.forEach((question) => {
-    const chip = make("button", "cb-chip", question);
-    chip.type = "button";
-    chip.addEventListener("click", () => sendMessage(question));
-    chips.append(chip);
-  });
-  if (!config.texts.starterQuestions.length) chips.remove();
+  renderChips();
+  if (defaultOpen) setOpen(true);
   if (!localStorage.getItem(teaserKey))
     setTimeout(() => {
       if (!open) teaser.classList.add("cb-visible");
@@ -399,7 +420,7 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     scrollButton.hidden = nearBottom();
   });
   scrollButton.addEventListener("click", scroll);
-  messages.append(scrollButton);
+  win.append(scrollButton);
   const escape = (event) => {
     if (event.key === "Escape" && open) setOpen(false);
   };
@@ -408,12 +429,55 @@ function mountWidget({ container, botId, apiBase, config, failed, onUpdate }) {
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      generation += 1;
       document.removeEventListener("keydown", escape);
       host.remove();
     },
-    update(partial) {
+    open() { setOpen(true); },
+    close() { setOpen(false); },
+    resetChat() {
+      generation += 1;
+      sending = false;
+      chipsUsed = false;
+      lastSender = "";
+      lastMinute = "";
+      lastMessage = "";
+      messageCount = 0;
+      localStorage.removeItem(`cb-conversation-${botId}`);
+      messages.replaceChildren();
+      greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
+      renderChips();
+      input.disabled = false;
+      input.value = "";
+      send.disabled = true;
+      typing.hidden = true;
+      autoGrow();
+    },
+    update(nextConfig) {
       if (destroyed) return;
-      onUpdate(partial);
+      const oldGreeting = config.texts.greetingMessage;
+      const scrollTop = messages.scrollTop;
+      config = nextConfig;
+      applyTheme(host, config);
+      root.classList.toggle("cb-left", config.theme.position === "left");
+      root.classList.toggle("cb-right", config.theme.position === "right");
+      launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
+      win.setAttribute("aria-label", `${config.texts.botName} chat`);
+      title.textContent = config.texts.botName;
+      const nextAvatar = config.texts.avatarUrl ? make("img", "cb-avatar") : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
+      if (config.texts.avatarUrl) { nextAvatar.src = config.texts.avatarUrl; nextAvatar.alt = ""; }
+      avatar.replaceWith(nextAvatar);
+      avatar = nextAvatar;
+      typing.querySelector(".cb-message-avatar").textContent = initials(config.texts.botName);
+      launchArea.querySelector(".cb-launch-label")?.remove();
+      if (config.texts.launcherLabel) launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
+      teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
+      input.placeholder = config.texts.inputPlaceholder;
+      input.setAttribute("aria-label", config.texts.inputPlaceholder);
+      footer.hidden = !config.branding.showBadge;
+      if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage) markdown(greeting.bubble, failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
+      if (!chipsUsed) renderChips();
+      messages.scrollTop = scrollTop;
     },
   };
 }

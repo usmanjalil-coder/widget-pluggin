@@ -1,5 +1,11 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect -- Preserve existing client-only query/storage synchronization in this visual-only change. */
+
+import { Button, Input, Textarea, Label } from "@/components/ui";
+import CharLimitInput from "@/components/shared/CharLimitInput";
+import { TEXT_LIMITS } from "@/lib/limits";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AppearancePreview from "@/components/appearance/AppearancePreview";
@@ -235,85 +241,65 @@ export default function OnboardingFlow() {
 
   const handleSkip = async () => {
     await patchOnboarding({ skipped: true, step: "skipped" });
-    window.location.href = "/dashboard";
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- Existing onboarding uses a full navigation after session creation.
+      window.location.href = "/dashboard";
   };
 
   const renderStep = () => {
     if (currentStep === 0) {
       return (
         <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-          <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="space-y-5 rounded-3xl border border-border bg-card p-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Business name
-              </label>
-              <input
+              </Label>
+              <Input
                 value={state.businessName}
                 onChange={(event) =>
                   updateState({ businessName: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-foreground"
                 placeholder="Example: BrightSmile Dental"
               />
               {errors.businessName && (
-                <p className="mt-2 text-sm text-rose-600">
+                <p className="mt-2 text-sm text-destructive">
                   {errors.businessName}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Website URL (optional)
-              </label>
-              <input
+              </Label>
+              <Input
                 value={state.websiteUrl}
                 onChange={(event) =>
                   updateState({ websiteUrl: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-foreground"
                 placeholder="https://yourwebsite.com"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Industry
-              </label>
-              <select
-                value={state.industry}
-                onChange={(event) => {
-                  const nextIndustry = event.target.value;
-                  updateState({
-                    industry: nextIndustry,
-                    greeting: industryDefaults[nextIndustry]?.greeting || "",
-                    botName:
-                      industryDefaults[nextIndustry]?.botName ||
-                      state.botName ||
-                      "Assistant",
-                  });
-                }}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
-              >
-                <option value="dental">Dental</option>
-                <option value="salon">Salon</option>
-                <option value="real-estate">Real estate</option>
-                <option value="restaurant">Restaurant</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="other">Other</option>
-              </select>
+              </Label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{[["dental","Dental"],["salon","Salon"],["real-estate","Real estate"],["restaurant","Restaurant"],["ecommerce","E-commerce"],["other","Other"]].map(([value,label]) => <Button key={value} type="button" variant="outline" aria-pressed={state.industry === value} onClick={() => updateState({ industry: value, greeting: industryDefaults[value]?.greeting || "", botName: industryDefaults[value]?.botName || state.botName || "Assistant" })} className={`justify-start ${state.industry === value ? "border-primary bg-accent text-primary" : ""}`}>{label}</Button>)}</div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-500">
+          <div className="rounded-3xl border border-border bg-background p-6">
+            <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
               Preview
             </p>
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-lg font-semibold text-slate-900">
+            <div className="mt-5 rounded-2xl border border-border bg-card p-4">
+              <p className="text-lg font-semibold text-foreground">
                 {state.businessName || "Your business"}
               </p>
-              <p className="mt-3 rounded-2xl bg-slate-100 p-3 text-sm text-slate-700">
+              <p className="mt-3 rounded-2xl bg-muted p-3 text-sm text-foreground">
                 {state.greeting || industryDefaults[state.industry]?.greeting}
               </p>
             </div>
@@ -342,26 +328,26 @@ export default function OnboardingFlow() {
               description: "Add a written FAQ quickly.",
             },
           ].map((option) => (
-            <button
+            <Button variant="ghost"
               key={option.id}
               type="button"
               onClick={() => updateState({ knowledgeMethod: option.id })}
-              className={`rounded-3xl border p-5 text-left transition ${state.knowledgeMethod === option.id ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white"}`}
+              className={`block h-auto whitespace-normal rounded-xl border p-6 text-left transition ${state.knowledgeMethod === option.id ? "border-primary/30 bg-accent" : "border-border bg-card"}`}
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-lg font-semibold text-slate-900">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-lg font-semibold text-foreground">
                 {option.id === "website"
                   ? "↗"
                   : option.id === "files"
                     ? "▣"
                     : "✎"}
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-foreground">
                 {option.title}
               </h3>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-muted-foreground">
                 {option.description}
               </p>
-            </button>
+            </Button>
           ))}
         </div>
       );
@@ -370,25 +356,21 @@ export default function OnboardingFlow() {
     if (currentStep === 2) {
       return (
         <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-          <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="space-y-5 rounded-3xl border border-border bg-card p-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Assistant name
-              </label>
-              <input
+              <CharLimitInput id="onboarding-bot-name" label="Assistant name" maxLength={TEXT_LIMITS.botName}
                 value={state.botName}
                 onChange={(event) =>
                   updateState({ botName: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Greeting
-              </label>
-              <textarea
+              </Label>
+              <Textarea
                 value={
                   state.greeting ||
                   industryDefaults[state.industry]?.greeting ||
@@ -398,55 +380,55 @@ export default function OnboardingFlow() {
                   updateState({ greeting: event.target.value })
                 }
                 rows={4}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
+                className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-foreground"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Position
-              </label>
+              </Label>
               <div className="flex gap-2">
                 {["left", "right"].map((position) => (
-                  <button
+                  <Button variant="ghost"
                     key={position}
                     type="button"
                     onClick={() => updateState({ position })}
-                    className={`rounded-xl px-4 py-2 text-sm font-medium ${state.position === position ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700"}`}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium ${state.position === position ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground"}`}
                   >
                     {position}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <Label className="mb-2 block text-sm font-medium text-foreground">
                 Primary color
-              </label>
+              </Label>
               <div className="flex items-center gap-3">
-                <input
+                <Input
                   type="color"
                   value={state.primaryColor}
                   onChange={(event) =>
                     updateState({ primaryColor: event.target.value })
                   }
-                  className="h-12 w-16 rounded-xl border border-slate-200 bg-white p-1"
+                  className="h-12 w-16 rounded-xl border border-border bg-card p-1"
                 />
-                <input
+                <Input
                   type="text"
                   value={state.primaryColor}
                   onChange={(event) =>
                     updateState({ primaryColor: event.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900"
+                  className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-foreground"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-500">
+          <div className="rounded-3xl border border-border bg-background p-5">
+            <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
               Preview
             </p>
             <div className="mt-4">
@@ -463,37 +445,37 @@ export default function OnboardingFlow() {
 
     if (currentStep === 3) {
       return (
-        <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6">
-          <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-700">
-            <p className="font-medium text-slate-900">Install code</p>
-            <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-3 text-xs text-slate-100">{`<script src="https://app.example.com/widget.js" data-bot-id="${state.botId || "demo"}"></script>`}</pre>
+        <div className="space-y-5 rounded-3xl border border-border bg-card p-6">
+          <div className="rounded-2xl bg-muted p-4 text-sm text-foreground">
+            <p className="font-medium text-foreground">Install code</p>
+            <pre className="mt-3 overflow-x-auto rounded-xl bg-foreground p-3 text-xs text-background">{`<script src="https://app.example.com/widget.js" data-bot-id="${state.botId || "demo"}"></script>`}</pre>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button
+            <Button variant="ghost"
               type="button"
               onClick={() =>
                 navigator.clipboard.writeText(
                   `<script src="https://app.example.com/widget.js" data-bot-id="${state.botId || "demo"}"></script>`,
                 )
               }
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
             >
               Copy snippet
-            </button>
-            <button
+            </Button>
+            <Button variant="outline"
               type="button"
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+              disabled
             >
               Send me instructions by email
-            </button>
+            </Button>
             <Link
               href="/test.html"
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+              className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground"
             >
               Test it on a sample page
             </Link>
           </div>
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
             WordPress and custom site setups are the same: install the script,
             set the bot ID, and publish the page.
           </div>
@@ -502,29 +484,29 @@ export default function OnboardingFlow() {
     }
 
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center">
-        <p className="text-sm uppercase tracking-[0.18em] text-emerald-600">
+      <div className="rounded-3xl border border-border bg-card p-8 text-center">
+        <p className="text-sm uppercase tracking-[0.18em] text-success">
           Setup complete
         </p>
-        <h3 className="mt-3 text-3xl font-semibold text-slate-900">
+        <h3 className="mt-3 text-3xl font-semibold text-foreground">
           Your assistant is ready
         </h3>
-        <p className="mt-3 text-slate-600">
+        <p className="mt-3 text-muted-foreground">
           Your bot is created, branded, and ready for its first test on your
           website.
         </p>
         <div className="mt-6 grid gap-3 text-left md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-2xl border border-border bg-background p-4 text-sm text-foreground">
             ✓ Bot created and configured
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-2xl border border-border bg-background p-4 text-sm text-foreground">
             ✓ Knowledge source ready
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-2xl border border-border bg-background p-4 text-sm text-foreground">
             ✓ Branding customized
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-            ✓ Script installed
+          <div className="rounded-2xl border border-border bg-background p-4 text-sm text-foreground">
+            ✓ Install snippet ready
           </div>
         </div>
       </div>
@@ -532,39 +514,44 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-8">
-      <div className="mx-auto max-w-5xl rounded-[32px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+    <main className="min-h-screen bg-muted px-4 py-8">
+      <div className="mx-auto max-w-5xl rounded-[32px] border border-border bg-card p-4 shadow-sm sm:p-6">
         <div className="flex items-center justify-between gap-3 pb-6">
           <div>
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
               Onboarding
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+            <h1 className="mt-2 text-3xl font-semibold text-foreground">
               Set up {brand.name}
             </h1>
           </div>
-          <button
+          <Button variant="ghost"
             type="button"
             onClick={handleSkip}
-            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"
+            className="rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-foreground"
           >
             Skip for now
-          </button>
+          </Button>
         </div>
 
         <div className="mb-8 grid grid-cols-5 gap-2">
           {steps.map((stepLabel, index) => (
             <div
               key={stepLabel}
-              className={`rounded-full px-2 py-2 text-center text-xs font-medium ${index <= currentStep ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"}`}
+              className={`rounded-full px-2 py-2 text-center text-xs font-medium ${index <= currentStep ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
             >
-              {stepLabel}
+              <span className="sm:hidden">{index + 1}</span>
+              <span className="hidden sm:inline">{stepLabel}</span>
             </div>
           ))}
+          <p className="col-span-5 mt-1 text-center text-[13px] text-muted-foreground sm:hidden">
+            Step {currentStep + 1} of {steps.length} · {steps[currentStep]}
+          </p>
+          <div className="col-span-5 h-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} /></div>
         </div>
 
         {errors.general && (
-          <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-5 rounded-2xl border border-destructive/20 bg-destructive-bg px-3 py-2 text-sm text-rose-700">
             {errors.general}
           </div>
         )}
@@ -572,35 +559,35 @@ export default function OnboardingFlow() {
         {renderStep()}
 
         {currentStep === 1 && (
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-muted-foreground">
             The bot will answer poorly without content, so adding a source is
             the fastest way to improve accuracy.
           </p>
         )}
 
         <div className="mt-8 flex items-center justify-between gap-3">
-          <button
+          <Button variant="ghost"
             type="button"
             onClick={handleBack}
             disabled={currentStep === 0}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
             Back
-          </button>
+          </Button>
           <div className="flex items-center gap-3">
             {currentStep < steps.length - 1 ? (
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={handleNext}
                 disabled={isSaving}
-                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSaving ? "Saving…" : "Next"}
-              </button>
+              </Button>
             ) : (
               <Link
                 href="/dashboard"
-                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
+                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
               >
                 Go to dashboard
               </Link>

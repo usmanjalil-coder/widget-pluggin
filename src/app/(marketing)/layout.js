@@ -29,22 +29,22 @@ export default async function MarketingLayout({ children }) {
   const loggedIn = Boolean((await cookies()).get("mock_session"));
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-card text-foreground">
       <MarketingNav loggedIn={loggedIn} />
       {children}
-      <footer className="border-t border-slate-200 bg-slate-50">
+      <footer className="border-t border-border bg-background">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
           <div>
             <BrandWordmark />
-            <p className="mt-4 max-w-sm text-sm text-slate-600">
+            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
               {brand.tagline}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Product
             </h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/#features">Features</Link>
               </li>
@@ -60,10 +60,10 @@ export default async function MarketingLayout({ children }) {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Company
             </h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/privacy">Privacy</Link>
               </li>
@@ -76,10 +76,10 @@ export default async function MarketingLayout({ children }) {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Contact
             </h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href={`mailto:${brand.supportEmail}`}>
                   {brand.supportEmail}
@@ -91,8 +91,8 @@ export default async function MarketingLayout({ children }) {
             </ul>
           </div>
         </div>
-        <div className="border-t border-slate-200">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between">
+        <div className="border-t border-border">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-sm text-muted-foreground sm:px-6 md:flex-row md:items-center md:justify-between">
             <p>
               © {new Date().getFullYear()} {brand.name}. All rights reserved.
             </p>

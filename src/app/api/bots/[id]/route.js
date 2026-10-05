@@ -1,4 +1,5 @@
 import { readDb, writeDb } from "@/lib/store";
+import { validateBotText } from "@/lib/limits";
 
 export async function GET(_request, { params }) {
   const { id } = await params;
@@ -18,6 +19,8 @@ export async function PUT(request, { params }) {
   }
 
   const patch = await request.json();
+  const error = validateBotText(patch);
+  if (error) return Response.json({ error }, { status: 400 });
   db.bots[index] = {
     ...db.bots[index],
     ...patch,

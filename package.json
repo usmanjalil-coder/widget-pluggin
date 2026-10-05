@@ -8,17 +8,33 @@
     "start": "next start",
     "build:widget": "esbuild widget/src/index.js --bundle --minify --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js",
     "dev:widget": "esbuild widget/src/index.js --bundle --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js --watch",
-    "mock:reset": "node -e \"require('fs').rmSync('.mock-data',{recursive:true,force:true})\""
+    "mock:reset": "node -e \"require('fs').rmSync('.mock-data',{recursive:true,force:true})\"",
+    "lint": "eslint src widget scripts --max-warnings=0",
+    "verify:ui": "node scripts/verify-ui.cjs",
+    "build:demos": "node scripts/build-demos.cjs"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cn": "^0.4.0",
+    "lucide-react": "^1.52.0",
     "next": "16.3.8",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.6.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
     "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4"
   }
 }

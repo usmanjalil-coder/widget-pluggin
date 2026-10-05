@@ -1,5 +1,9 @@
 import "./globals.css";
 import { brand } from "@/lib/brand";
+import localFont from "next/font/local";
+import DesignProviders from "@/components/DesignProviders";
+
+const inter = localFont({ src: "../assets/inter-latin.woff2", variable: "--font-inter", display: "swap", weight: "100 900" });
 
 export const metadata = {
   metadataBase: new URL("https://yourbrand.example"),
@@ -24,8 +28,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="min-h-full bg-slate-50 text-slate-900">{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-full bg-background text-foreground"><DesignProviders>{children}</DesignProviders></body>
     </html>
   );
 }

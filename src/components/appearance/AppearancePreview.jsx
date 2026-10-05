@@ -60,9 +60,9 @@ export default function AppearancePreview({ botId, config, className = "" }) {
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-slate-200 bg-white ${className}`}
+      className={`overflow-hidden rounded-2xl border border-border bg-card ${className}`}
     >
-      <div ref={containerRef} className="h-[420px] w-full" />
+      <div ref={containerRef} className="relative h-[600px] w-full" />
     </div>
   );
 }
