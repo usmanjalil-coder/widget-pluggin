@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import {
   MarketingNav,
   BrandWordmark,
@@ -25,15 +24,13 @@ export const metadata = {
   },
 };
 
-export default async function MarketingLayout({ children }) {
-  const loggedIn = Boolean((await cookies()).get("mock_session"));
-
+export default function MarketingLayout({ children }) {
   return (
     <div className="min-h-screen bg-card text-foreground">
-      <MarketingNav loggedIn={loggedIn} />
+      <MarketingNav />
       {children}
       <footer className="border-t border-border bg-background">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
           <div>
             <BrandWordmark />
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
@@ -55,7 +52,7 @@ export default async function MarketingLayout({ children }) {
                 <Link href="/pricing">Pricing</Link>
               </li>
               <li>
-                <Link href="/contact">Contact</Link>
+                <Link href="/#faq">FAQ</Link>
               </li>
             </ul>
           </div>
@@ -65,10 +62,10 @@ export default async function MarketingLayout({ children }) {
             </h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/privacy">Privacy</Link>
+                <Link href="/contact">Contact</Link>
               </li>
               <li>
-                <Link href="/terms">Terms</Link>
+                <a href={`mailto:${brand.supportEmail}`}>Support</a>
               </li>
               <li>
                 <Link href="/contact">Support</Link>
@@ -76,17 +73,13 @@ export default async function MarketingLayout({ children }) {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Contact
-            </h3>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Legal</h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href={`mailto:${brand.supportEmail}`}>
-                  {brand.supportEmail}
-                </a>
+                <Link href="/privacy">Privacy</Link>
               </li>
               <li>
-                <a href={`https://${brand.domain}`}>{brand.domain}</a>
+                <Link href="/terms">Terms</Link>
               </li>
             </ul>
           </div>
@@ -96,10 +89,6 @@ export default async function MarketingLayout({ children }) {
             <p>
               © {new Date().getFullYear()} {brand.name}. All rights reserved.
             </p>
-            <div className="flex gap-4">
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-            </div>
           </div>
         </div>
       </footer>

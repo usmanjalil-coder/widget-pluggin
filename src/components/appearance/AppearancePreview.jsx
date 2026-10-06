@@ -22,6 +22,7 @@ export default function AppearancePreview({ botId, config, className = "" }) {
         botId,
         config,
         container: containerRef.current,
+        preview: true,
       });
 
       instanceRef.current = instance;
@@ -60,9 +61,9 @@ export default function AppearancePreview({ botId, config, className = "" }) {
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-border bg-card ${className}`}
+      className={`rounded-2xl border border-border bg-card ${className}`}
     >
-      <div ref={containerRef} className="relative h-[600px] w-full" />
+      <div ref={containerRef} className="relative min-h-[680px] w-full" />
     </div>
   );
 }

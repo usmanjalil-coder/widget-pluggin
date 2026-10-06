@@ -46,6 +46,7 @@ async function init(options = {}) {
     open: () => mounted?.open(),
     close: () => mounted?.close(),
     resetChat: () => mounted?.resetChat(),
+    playDemo: (payload) => mounted?.playDemo(payload),
     destroy() {
       mounted?.destroy();
       instances.delete(key);
@@ -59,6 +60,8 @@ async function init(options = {}) {
       failed,
       defaultOpen: options.open ?? options.defaultOpen ?? false,
       onOpenChange: options.onOpenChange,
+      preview: options.preview,
+      previewMessages: options.previewMessages,
     });
   instances.set(key, instance);
   return instance;

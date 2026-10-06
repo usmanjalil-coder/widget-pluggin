@@ -27,7 +27,10 @@ button {
 :host(.cb-embedded-host) { position: absolute; inset: 0; display: block; container-type: size; }
 .cb-embedded { position: absolute; bottom: 16px; right: 16px; }
 .cb-embedded.cb-left { left: 16px; right: auto; }
-.cb-embedded .cb-window { width: min(380px, calc(100cqw - 32px)); height: min(600px, calc(100cqh - 108px)); max-width: none; max-height: none; }
+.cb-preview { position: absolute; inset: 0; }
+.cb-preview .cb-launch-area { position: absolute; right: 16px; bottom: 16px; }
+.cb-preview.cb-left .cb-launch-area { right: auto; left: 16px; }
+.cb-preview .cb-window { width: min(380px, calc(100% - 32px)); height: min(560px, calc(100% - 92px)); max-width: none; max-height: none; }
 .cb-fixed {
   position: fixed;
   bottom: 24px;
@@ -170,10 +173,10 @@ button {
   visibility: hidden;
   position: absolute;
   bottom: 76px;
-  width: 380px;
-  max-width: calc(100vw - 32px);
-  height: 600px;
-  max-height: 80vh;
+  width: min(380px, calc(100vw - 32px));
+  height: min(600px, calc(100dvh - 120px));
+  min-height: min(420px, calc(100dvh - 32px));
+  max-height: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -201,6 +204,7 @@ button {
   pointer-events: auto;
 }
 .cb-header {
+  flex: none;
   min-height: 96px;
   padding: 20px;
   display: flex;
@@ -272,7 +276,7 @@ button {
 }
 .cb-messages {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding: 24px 20px 12px;
@@ -374,6 +378,7 @@ button {
   padding-left: 18px;
 }
 .cb-typing-row {
+  flex: none;
   display: flex;
   align-items: flex-end;
   gap: 7px;
@@ -410,10 +415,10 @@ button {
 .cb-chip {
   border: 1px solid color-mix(in srgb, var(--cb-text) 18%, var(--cb-bg));
   border-radius: var(--cb-radius);
-  padding: 7px 10px;
+  padding: 5px 9px;
   color: var(--cb-text);
   background: var(--cb-bg);
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   transition:
     background .15s,
@@ -426,6 +431,7 @@ button {
   transform: translateY(-1px);
 }
 .cb-compose {
+  flex: none;
   display: flex;
   align-items: flex-end;
   gap: 8px;
@@ -486,6 +492,7 @@ button {
   stroke-linejoin: round;
 }
 .cb-footer {
+  flex: none;
   padding: 0 8px 10px;
   color: var(--cb-muted);
   background: var(--cb-bg);
@@ -616,6 +623,9 @@ button {
     border-radius: 0;
     transform: translateY(18px);
   }
+  .cb-preview .cb-launch-area { right: 12px; bottom: 12px; }
+  .cb-preview.cb-left .cb-launch-area { right: auto; left: 12px; }
+  .cb-preview .cb-window { width: calc(100% - 24px); height: calc(100% - 84px); min-height: 0; }
   .cb-form,
   .cb-form-success {
     margin-left: 0;

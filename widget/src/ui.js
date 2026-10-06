@@ -1,6 +1,7 @@
 import { styles } from "./styles.js";
 import { streamChat } from "./chat.js";
 import { applyTheme } from "./theme.js";
+import { brand } from "../../src/lib/brand.js";
 const make = (tag, className, value) => {
   const el = document.createElement(tag);
   if (className) el.className = className;
@@ -90,7 +91,7 @@ function markdown(target, value) {
       }
     });
 }
-function mountWidget({ container, botId, apiBase, config: initialConfig, failed, defaultOpen, onOpenChange }) {
+function mountWidget({ container, botId, apiBase, config: initialConfig, failed, defaultOpen, onOpenChange, preview = false, previewMessages = [] }) {
   let config = initialConfig;
   const host = make("div", "cb-host");
   if (container) host.classList.add("cb-embedded-host");
@@ -102,7 +103,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   applyTheme(host, config);
   const root = make(
     "div",
-    `cb-root ${container ? "cb-embedded" : "cb-fixed"} cb-${config.theme.position}`,
+    `cb-root ${container ? "cb-embedded" : "cb-fixed"}${preview ? " cb-preview" : ""} cb-${config.theme.position}`,
   );
   const launchArea = make("div", "cb-launch-area");
   const launcher = make("button", "cb-launcher");
@@ -150,7 +151,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     document.createTextNode("Online"),
   );
   copy.append(presence);
-  copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
+  // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
   const close = make("button", "cb-close");
   close.type = "button";
   close.setAttribute("aria-label", "Close chat");
@@ -163,6 +164,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   scrollButton.hidden = true;
   scrollButton.setAttribute("aria-label", "Scroll to latest message");
   const chips = make("div", "cb-chips");
+  messages.append(chips);
   const typing = make("div", "cb-typing-row");
   typing.hidden = true;
   const typeDots = make("div", "cb-typing-bubble");
@@ -186,8 +188,8 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   send.setAttribute("aria-label", "Send message");
   send.append(sendIcon());
   compose.append(input, send);
-  win.append(header, messages, chips, typing, compose);
-  const footer = make("footer", "cb-footer", "Powered by Chatbot");
+  win.append(header, messages, typing, compose);
+  const footer = make("footer", "cb-footer", `Powered by ${brand.name}`);
   footer.hidden = !config.branding.showBadge;
   win.append(footer);
   root.append(launchArea, win);
@@ -237,7 +239,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     } else bubble.textContent = content;
     wrap.append(bubble, make("time", "cb-timestamp", stamp));
     row.append(wrap);
-    messages.append(row);
+    messages.insertBefore(row, chips);
     lastSender = kind;
     lastMinute = stamp;
     scroll();
@@ -252,7 +254,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     if (value) {
       teaser.classList.remove("cb-visible");
       localStorage.setItem(teaserKey, "seen");
-      setTimeout(() => { if (!destroyed && open) input.focus(); }, 210);
+      if (!preview) setTimeout(() => { if (!destroyed && open) input.focus(); }, 210);
     } else launcher.focus();
     onOpenChange?.(value);
   };
@@ -390,6 +392,9 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       ? config.texts.offlineMessage
       : config.texts.greetingMessage,
   );
+  previewMessages.forEach(({ role, text }) => {
+    if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
+  });
   renderChips();
   if (defaultOpen) setOpen(true);
   if (!localStorage.getItem(teaserKey))
@@ -444,7 +449,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       lastMessage = "";
       messageCount = 0;
       localStorage.removeItem(`cb-conversation-${botId}`);
-      messages.replaceChildren();
+      messages.replaceChildren(chips);
       greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
       renderChips();
       input.disabled = false;
@@ -452,6 +457,23 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       send.disabled = true;
       typing.hidden = true;
       autoGrow();
+    },
+    playDemo({ user, reply }) {
+      this.resetChat();
+      if (!user || !reply) return;
+      window.setTimeout(() => {
+        if (destroyed) return;
+        hideChips();
+        addMessage("user", user);
+        typing.hidden = false;
+        scroll();
+        window.setTimeout(() => {
+          if (destroyed) return;
+          typing.hidden = true;
+          addMessage("bot", reply);
+          scroll();
+        }, 650);
+      }, 180);
     },
     update(nextConfig) {
       if (destroyed) return;

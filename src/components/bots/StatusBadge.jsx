@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui";
 
 export default function StatusBadge({ status }) {
-  const active = status === "active";
+  const active = status === "active" || status === "ready";
   return (
     <Badge tone={active ? "success" : "default"} className="gap-1.5 capitalize">
       <span

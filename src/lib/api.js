@@ -34,6 +34,11 @@ export const deleteBot = (id) =>
   request(`/api/bots/${id}`, { method: "DELETE" });
 export const listLeads = (botId) =>
   request(`/api/leads?botId=${encodeURIComponent(botId)}`);
+export const updateLeadStatus = (leadId, status) =>
+  request(`/api/leads/${encodeURIComponent(leadId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
 export const submitLead = (botId, payload) =>
   request(`/api/leads/${botId}`, {
     method: "POST",
@@ -54,3 +59,18 @@ export const addDocument = (botId, payload) =>
     method: "POST",
     body: JSON.stringify(payload),
   });
+export const updateDocument = (botId, documentId, action) =>
+  request("/api/bots/" + botId + "/documents", {
+    method: "PATCH",
+    body: JSON.stringify({ documentId, action }),
+  });
+export const deleteDocument = (botId, documentId) =>
+  request("/api/bots/" + botId + "/documents?documentId=" + encodeURIComponent(documentId), {
+    method: "DELETE",
+  });
+export const getAccount = () => request("/api/account");
+export const updateAccount = (payload) =>
+  request("/api/account", { method: "PATCH", body: JSON.stringify(payload) });
+export const updatePassword = (payload) =>
+  request("/api/account/password", { method: "POST", body: JSON.stringify(payload) });
+export const deleteAccount = () => request("/api/account", { method: "DELETE" });

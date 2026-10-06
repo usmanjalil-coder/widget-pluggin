@@ -85,6 +85,11 @@ import {
 import CharLimitInput from "@/components/shared/CharLimitInput";
 import PageHeader from "@/components/shared/PageHeader";
 import AppearancePreview from "@/components/dashboard/AppearancePreview";
+import KnowledgeBasePanel from "@/components/dashboard/KnowledgeBasePanel";
+import BillingPanel from "@/components/dashboard/BillingPanel";
+import AccountSettingsPanel from "@/components/dashboard/AccountSettingsPanel";
+import ConversationsPanel from "@/components/dashboard/ConversationsPanel";
+import LeadsPanel from "@/components/dashboard/LeadsPanel";
 import BotCard from "@/components/bots/BotCard";
 import BotSwitcher from "@/components/bots/BotSwitcher";
 import { HEX_COLOR, TEXT_LIMITS } from "@/lib/limits";
@@ -92,7 +97,10 @@ import { DEFAULT_CONFIG } from "../../../widget/src/config.js";
 import { brand } from "@/lib/brand";
 import {
   createBot,
+  addDocument,
+  deleteDocument,
   deleteBot,
+  getAccount,
   getBots,
   getBot,
   getOnboarding,
@@ -100,6 +108,11 @@ import {
   listConversations,
   listDocuments,
   listLeads,
+  updateAccount,
+  updateDocument,
+  updateLeadStatus,
+  updatePassword,
+  deleteAccount,
   updateBot,
 } from "@/lib/api";
 
@@ -115,7 +128,7 @@ const navItems = [
   { label: "Leads", href: "/dashboard/leads", icon: Users, group: "Workspace" },
   {
     label: "Knowledge Base",
-    href: "/dashboard/bots/demo?tab=knowledge",
+    href: "/dashboard/knowledge",
     icon: BookOpen,
     group: "Workspace",
   },
@@ -183,13 +196,14 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
   const [documents, setDocuments] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [detailError, setDetailError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [onboarding, setOnboarding] = useState(null);
+  const [account, setAccount] = useState(null);
+  const [accountError, setAccountError] = useState("");
+  const [accountLoading, setAccountLoading] = useState(false);
   const [toast, setToast] = useState("");
-  const [selectedConversationId, setSelectedConversationId] = useState(null);
   const [newBotName, setNewBotName] = useState("");
-  const [leadFilter, setLeadFilter] = useState("all");
-  const [conversationQuery, setConversationQuery] = useState("");
-  const [selectedLead, setSelectedLead] = useState(null);
   const [savingAppearance, setSavingAppearance] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -222,8 +236,6 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
     const query = botSearch.trim().toLowerCase();
     return query ? bots.filter((item) => item.name.toLowerCase().includes(query)) : bots;
   }, [bots, botSearch]);
-  const activeConversation =
-    conversations.find((conv) => conv.id === selectedConversationId) || conversations[0];
 
   const selectBot = useCallback(
     (nextId) => {
@@ -268,6 +280,22 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
         setOnboarding(onboardingResult.value || { checklist: {} });
     });
   }, [loadBots]);
+
+  const loadAccount = useCallback(async () => {
+    setAccountLoading(true);
+    setAccountError("");
+    try {
+      setAccount(await getAccount());
+    } catch {
+      setAccountError("Could not load account settings.");
+    } finally {
+      setAccountLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (page === "Settings") loadAccount();
+  }, [page, loadAccount]);
 
   useEffect(() => {
     if (page !== "Bots" || !bots.length) return;
@@ -325,6 +353,7 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
 
     async function fetchBotDetails() {
       setLoading(true);
+      setDetailError("");
       try {
         const [botResponse, leadResponse, documentResponse, conversationResponse] =
           await Promise.all([
@@ -339,16 +368,15 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
         setLeads(leadResponse || []);
         setDocuments(documentResponse || []);
         setConversations(conversationResponse || []);
-        setSelectedConversationId((conversationResponse || [])[0]?.id || null);
       } catch (error) {
-        setToast("Failed to load this bot.");
+        setDetailError("Could not load this bot's data.");
       } finally {
         setLoading(false);
       }
     }
 
     fetchBotDetails();
-  }, [page, selectedBotId]);
+  }, [page, selectedBotId, reloadKey]);
 
   useEffect(() => {
     if (!toast) return;
@@ -414,9 +442,13 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
     }
     setSavingAppearance(true);
     try {
-      const saved = await updateBot(selectedBotId, draft);
+      const saved = await updateBot(selectedBotId, {
+        ...draft,
+        name: draft.texts.botName.trim() || draft.name,
+      });
       setBot(saved);
       setDraft(saved);
+      setBots((current) => current.map((item) => item.id === selectedBotId ? saved : item));
       setToast("Appearance saved. The public widget is updated.");
     } catch (error) {
       setToast(error.message || "Unable to save this appearance yet.");
@@ -442,52 +474,37 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
       setSavingSettings(false);
     }
   };
-  const exportLeads = () => {
-    const safe = (value) =>
-      `"${String(value ?? "")
-        .replace(/^[=+@-]/, "'$&")
-        .replaceAll('"', '""')}"`;
-    const rows = [
-      ["Name", "Email", "Status", "Created"],
-      ...filteredLeads.map((lead) => [lead.name, lead.email, lead.status, lead.createdAt]),
-    ];
-    const blob = new Blob([rows.map((row) => row.map(safe).join(",")).join("\r\n")], {
-      type: "text/csv;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "leads.csv";
-    anchor.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const filteredLeads =
-    leadFilter === "all" ? leads : leads.filter((lead) => lead.status === leadFilter);
-
   const onboardingChecklist = [
-    { key: "botCreated", label: "Bot created", href: "/onboarding" },
+    { key: "botCreated", label: "Bot created", href: "/onboarding", complete: Boolean(bot) },
     {
       key: "knowledgeAdded",
       label: "Knowledge added",
       href: `/dashboard/bots/${selectedBotId || "demo"}?tab=knowledge`,
+      complete: documents.length > 0,
     },
     {
       key: "lookCustomized",
       label: "Look customized",
       href: `/dashboard/bots/${selectedBotId || "demo"}?tab=appearance`,
+      complete: Boolean(bot && (
+        bot.theme?.primaryColor !== "#2563eb" ||
+        bot.theme?.mode !== "light" ||
+        bot.texts?.greetingMessage !== "Hi! How can I help with your visit today?"
+      )),
     },
     {
       key: "snippetInstalled",
       label: "Snippet installed",
       href: `/dashboard/bots/${selectedBotId || "demo"}?tab=install`,
+      complete: onboarding?.botId === selectedBotId && Boolean(onboarding?.snippetInstalled),
     },
-    { key: "firstTestDone", label: "First test chat done", href: "/test.html" },
+    { key: "firstTestDone", label: "First test chat done", href: "/test.html", complete: conversations.length > 0 },
   ];
 
-  const completedChecklistCount = onboardingChecklist.filter(
-    (item) => onboarding?.checklist?.[item.key],
-  ).length;
+  const completedChecklistCount = onboardingChecklist.filter((item) => item.complete).length;
+  const usageCount = usage?.conversations ?? 0;
+  const usageLimit = usage?.limit ?? 50;
+  const usagePercent = Math.min(100, (usageCount / Math.max(usageLimit, 1)) * 100);
 
   const handleBotCreate = async (event) => {
     event.preventDefault();
@@ -532,28 +549,28 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
     const metrics = [
       {
         label: "Conversations",
-        value: usage?.conversations || 32,
+        value: usageCount,
         suffix: "this month",
         icon: MessageSquare,
         trend: "Across your bots",
       },
       {
-        label: "Messages",
-        value: usage?.messages || 184,
-        suffix: "sent",
+        label: "Active bots",
+        value: bots.filter((item) => item.status === "active").length,
+        suffix: "live",
         icon: BarChart3,
-        trend: "Visitor and bot replies",
+        trend: "Ready to answer",
       },
       {
         label: "Leads captured",
-        value: leads.length || usage?.leads || 15,
+        value: leads.length,
         suffix: "total",
         icon: Users,
         trend: "New contacts",
       },
       {
         label: "Unanswered",
-        value: conversations.filter((item) => item.unanswered).length || 6,
+        value: conversations.filter((item) => item.unanswered).length,
         suffix: "queued",
         icon: CircleHelp,
         trend: "Needs your review",
@@ -562,19 +579,11 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
 
     return (
       <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Good to see you
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Here is what happened across your workspace.
-            </p>
-          </div>
-          <Badge tone="default">
-            <CalendarDays className="mr-1 size-3.5" /> Last 30 days
-          </Badge>
-        </div>
+        <PageHeader
+          title="Good to see you"
+          description="Here is what happened across your workspace."
+          actions={<Badge tone="default"><CalendarDays className="mr-1 size-3.5" /> Last 30 days</Badge>}
+        />
 
         <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-4">
           {metrics.map((metric) => (
@@ -720,21 +729,23 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
           </Card>
           <Card title="Usage" subtitle="Current plan allowance">
             <div className="flex items-end justify-between">
-              <span className="text-2xl font-semibold text-foreground">{usage?.messages || 0}</span>
+              <span className="text-2xl font-semibold text-foreground">{usageCount}</span>
               <span className="text-sm text-muted-foreground">
-                of {usage?.limit || 500} messages
+                of {usageLimit} conversations
               </span>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-primary"
+                className={`h-full rounded-full ${usagePercent >= 100 ? "bg-destructive" : usagePercent >= 80 ? "bg-warning" : "bg-primary"}`}
                 style={{
-                  width: `${Math.min(100, ((usage?.messages || 0) / Math.max(usage?.limit || 500, 1)) * 100)}%`,
+                  width: `${usagePercent}%`,
                 }}
               />
             </div>
-            {(usage?.messages || 0) > (usage?.limit || 500) && (
-              <p className="mt-2 text-xs text-warning-foreground">Plan limit reached</p>
+            {usagePercent >= 80 && (
+              <p className={`mt-2 text-xs ${usagePercent >= 100 ? "text-destructive" : "text-warning-foreground"}`}>
+                {usagePercent >= 100 ? "Plan limit reached" : "Approaching your plan limit"}
+              </p>
             )}
             <Link
               href="/dashboard/billing"
@@ -767,9 +778,9 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
                   className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm hover:bg-muted"
                 >
                   <span
-                    className={`grid size-6 shrink-0 place-items-center rounded-full ${onboarding?.checklist?.[item.key] ? "bg-success-bg text-success-foreground" : "bg-muted text-muted-foreground"}`}
+                    className={`grid size-6 shrink-0 place-items-center rounded-full ${item.complete ? "bg-success-bg text-success-foreground" : "bg-muted text-muted-foreground"}`}
                   >
-                    {onboarding?.checklist?.[item.key] ? (
+                    {item.complete ? (
                       <Check className="size-3.5" />
                     ) : (
                       <span className="size-1.5 rounded-full bg-current" />
@@ -1262,7 +1273,7 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
     );
   };
 
-  const renderKnowledge = () => (
+  const renderLegacyKnowledge = () => (
     <div className="space-y-6">
       <Card
         title="Knowledge base"
@@ -1349,6 +1360,29 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
         />
       )}
     </div>
+  );
+
+  const renderKnowledge = () => (
+    <KnowledgeBasePanel
+      botId={selectedBotId}
+      documents={documents}
+      loading={loading}
+      error={detailError}
+      onReload={() => setReloadKey((value) => value + 1)}
+      onAdd={async (payload) => {
+        await addDocument(selectedBotId, payload);
+        setDocuments(await listDocuments(selectedBotId));
+      }}
+      onUpdate={async (documentId, action) => {
+        await updateDocument(selectedBotId, documentId, action);
+        setDocuments(await listDocuments(selectedBotId));
+        notify.success(action === "retry" ? "Source retry started." : "Source re-sync started.");
+      }}
+      onDelete={async (documentId) => {
+        await deleteDocument(selectedBotId, documentId);
+        setDocuments((current) => current.filter((document) => document.id !== documentId));
+      }}
+    />
   );
 
   const renderSettings = () => {
@@ -1527,228 +1561,37 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
   };
 
   const renderConversations = () => (
-    <div className="grid min-w-0 gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <Card title="Conversations" subtitle="Recent interactions for selected bot">
-        <div className="relative mb-4">
-          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            aria-label="Search conversations"
-            placeholder="Search conversations"
-            value={conversationQuery}
-            onChange={(event) => setConversationQuery(event.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="max-h-[min(680px,calc(100vh-15rem))] space-y-3 overflow-y-auto pr-1">
-          {conversations
-            .filter((conversation) =>
-              `${conversation.visitor} ${conversation.preview}`
-                .toLowerCase()
-                .includes(conversationQuery.toLowerCase()),
-            )
-            .map((conversation) => (
-              <Button
-                variant="ghost"
-                key={conversation.id}
-                type="button"
-                onClick={() => setSelectedConversationId(conversation.id)}
-                className={`block h-auto w-full whitespace-normal rounded-xl border p-4 text-left transition ${selectedConversationId === conversation.id ? "border-primary/20 bg-accent" : "border-border bg-card hover:bg-background"}`}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="font-medium text-foreground">{conversation.visitor}</span>
-                  <Badge tone={conversation.unanswered ? "warning" : "success"}>
-                    {conversation.unanswered ? "Needs follow-up" : "Resolved"}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{conversation.preview}</p>
-              </Button>
-            ))}
-          {!conversations.length && (
-            <EmptyState title="No conversations yet" body="New chats will appear here." />
-          )}
-        </div>
-      </Card>
-
-      <Card
-        title="Transcript"
-        className="self-start"
-        subtitle={
-          activeConversation
-            ? `${activeConversation.visitor} • ${new Date(activeConversation.createdAt).toLocaleDateString()}`
-            : "No conversation selected"
-        }
-      >
-        {activeConversation ? (
-          <div className="mt-4 space-y-3">
-            {activeConversation.transcript?.map((item, index) => (
-              <div
-                key={`${item.role}-${index}`}
-                className={`rounded-2xl px-3 py-2 text-sm ${item.role === "assistant" ? "bg-muted text-foreground" : "bg-accent text-accent-foreground"}`}
-              >
-                <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  <span>{item.role}</span>
-                  <span>{item.time}</span>
-                </div>
-                {item.text}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="No transcript" body="Select a conversation to view its details." />
-        )}
-      </Card>
-    </div>
+    <ConversationsPanel
+      conversations={conversations}
+      leads={leads}
+      loading={loading}
+      error={detailError}
+      onRetry={() => setReloadKey((value) => value + 1)}
+      botId={selectedBotId}
+      initialConversationId={searchParams.get("conversation")}
+    />
   );
 
   const renderLeads = () => (
-    <div className="space-y-6">
-      <Card title="Leads" subtitle="Track visitor intent and conversion status.">
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-2">
-            {["all", "new", "confirmed", "done"].map((status) => (
-              <Button
-                variant="ghost"
-                key={status}
-                type="button"
-                onClick={() => setLeadFilter(status)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${leadFilter === status ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-              >
-                {status}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={exportLeads}
-            disabled={!filteredLeads.length}
-          >
-            Export CSV
-          </Button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table className="min-w-full text-left text-sm text-foreground">
-            <TableHeader>
-              <TableRow className="border-b border-border text-muted-foreground">
-                <TableHead className="pb-3 pr-6">Name</TableHead>
-                <TableHead className="pb-3 pr-6">Contact</TableHead>
-                <TableHead className="pb-3 pr-6">Status</TableHead>
-                <TableHead className="pb-3 pr-6">Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLeads.map((lead) => (
-                <TableRow
-                  key={lead.id}
-                  className="cursor-pointer border-b border-border last:border-none hover:bg-muted/70"
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`View lead ${lead.name}`}
-                  onClick={() => setSelectedLead(lead)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setSelectedLead(lead);
-                    }
-                  }}
-                >
-                  <TableCell className="py-3 pr-6">
-                    <span className="inline-flex items-center gap-1">
-                      {lead.name}
-                      <ChevronRight className="size-3.5 text-muted-foreground sm:hidden" />
-                    </span>
-                    <span className="mt-1 block sm:hidden">
-                      <Badge
-                        tone={
-                          lead.status === "done"
-                            ? "success"
-                            : lead.status === "confirmed"
-                              ? "info"
-                              : "warning"
-                        }
-                      >
-                        {lead.status}
-                      </Badge>
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 pr-6">{lead.email}</TableCell>
-                  <TableCell className="py-3 pr-6">
-                    <Badge
-                      tone={
-                        lead.status === "done"
-                          ? "success"
-                          : lead.status === "confirmed"
-                            ? "info"
-                            : "warning"
-                      }
-                    >
-                      {lead.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-3 pr-6">
-                    {new Date(lead.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        {!filteredLeads.length && (
-          <EmptyState
-            title="No leads found"
-            body="Try another status filter or wait for the first contact."
-          />
-        )}
-      </Card>
-      <Sheet
-        open={Boolean(selectedLead)}
-        onOpenChange={(open) => {
-          if (!open) setSelectedLead(null);
-        }}
-      >
-        <SheetContent className="w-full p-6 sm:max-w-md">
-          <SheetHeader className="p-0 pr-8">
-            <SheetTitle>{selectedLead?.name || "Lead details"}</SheetTitle>
-            <SheetDescription>Lead details and contact information</SheetDescription>
-          </SheetHeader>
-          {selectedLead && (
-            <div className="space-y-4 text-sm">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
-                <p className="mt-1 break-all text-foreground">
-                  {selectedLead.email || "No email provided"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>
-                <Badge
-                  className="mt-1"
-                  tone={
-                    selectedLead.status === "done"
-                      ? "success"
-                      : selectedLead.status === "confirmed"
-                        ? "info"
-                        : "warning"
-                  }
-                >
-                  {selectedLead.status}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Created</p>
-                <p className="mt-1 text-foreground">
-                  {new Date(selectedLead.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
-    </div>
+    <LeadsPanel
+      leads={leads}
+      loading={loading}
+      error={detailError}
+      onRetry={() => setReloadKey((value) => value + 1)}
+      onStatusChange={async (leadId, status) => {
+        try {
+          const updated = await updateLeadStatus(leadId, status);
+          setLeads((current) => current.map((lead) => lead.id === leadId ? updated : lead));
+          notify.success("Lead status updated.");
+        } catch (error) {
+          notify.error(error.message || "Could not update lead.");
+          throw error;
+        }
+      }}
+    />
   );
 
-  const renderBilling = () => (
+  const renderLegacyBilling = () => (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         {[
@@ -1804,24 +1647,57 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
           </Card>
         ))}
       </div>
-      <Card title="Current usage" subtitle="Messages counted for this plan">
+      <Card title="Current usage" subtitle="Conversations counted for this plan">
         <div className="flex items-end justify-between gap-3 text-sm">
-          <strong className="text-2xl text-foreground">{usage?.messages || 0}</strong>
-          <span className="text-muted-foreground">of {usage?.limit || 500} messages</span>
+          <strong className="text-2xl text-foreground">{usageCount}</strong>
+          <span className="text-muted-foreground">of {usageLimit} conversations</span>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-primary"
+            className={`h-full rounded-full ${usagePercent >= 100 ? "bg-destructive" : usagePercent >= 80 ? "bg-warning" : "bg-primary"}`}
             style={{
-              width: `${Math.min(100, ((usage?.messages || 0) / Math.max(usage?.limit || 500, 1)) * 100)}%`,
+              width: `${usagePercent}%`,
             }}
           />
         </div>
+        {usagePercent >= 80 && (
+          <p className={`mt-2 text-xs ${usagePercent >= 100 ? "text-destructive" : "text-warning-foreground"}`}>
+            {usagePercent >= 100 ? "Plan limit reached" : "Approaching your plan limit"}
+          </p>
+        )}
       </Card>
     </div>
   );
 
+  const renderBilling = () => (
+    <BillingPanel
+      usage={usage}
+      bots={bots}
+      conversations={conversations}
+      leads={leads}
+      loading={loading}
+      error={detailError}
+      onRetry={() => setReloadKey((value) => value + 1)}
+    />
+  );
+
   const renderAccount = () => (
+    <AccountSettingsPanel
+      account={account}
+      loading={accountLoading}
+      error={accountError}
+      onRetry={loadAccount}
+      onSave={async (payload) => {
+        const saved = await updateAccount(payload);
+        setAccount(saved);
+        return saved;
+      }}
+      onPassword={updatePassword}
+      onDelete={deleteAccount}
+    />
+  );
+
+  const renderLegacyAccount = () => (
     <div className="space-y-6">
       <Card title="Account details">
         <div className="grid gap-4 md:grid-cols-2">
@@ -1840,7 +1716,7 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
           <Label htmlFor="new-password">New password</Label>
           <Input
             id="new-password"
-            placeholder="Password changes are not available in the mock dashboard"
+            placeholder="Enter a new password"
             type="password"
             disabled
           />
@@ -1868,7 +1744,10 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
     return renderOverview();
   };
 
-  const isBotDetailPage = page === "Appearance" || page === "Knowledge Base" || page === "Install";
+  const isBotDetailPage = page === "Appearance" || page === "Install";
+  const currentPageLabel = isBotDetailPage
+    ? botTabs.find((tab) => tab.value === tabFromQuery)?.label || "Appearance"
+    : page;
   const botTabContent = isBotDetailPage
     ? (() => {
         if (tabFromQuery === "knowledge") return renderKnowledge();
@@ -1911,13 +1790,8 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
                   (item.label === "Bots" &&
                     page === "Appearance" &&
                     tabFromQuery !== "knowledge") ||
-                  (item.label === "Knowledge Base" &&
-                    tabFromQuery === "knowledge" &&
-                    page === "Appearance");
-                const href =
-                  item.label === "Knowledge Base"
-                    ? `/dashboard/bots/${selectedBotId || "demo"}?tab=knowledge`
-                    : item.href;
+                  (item.label === "Knowledge Base" && page === "Knowledge Base");
+                const href = item.href;
                 return (
                   <Link
                     key={item.label}
@@ -1946,7 +1820,7 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
               </Avatar>
               <span className="min-w-0 flex-1 text-left">
                 <span className="block truncate text-sm font-medium text-foreground">
-                  Workspace owner
+                  {account?.name || "Alex Morgan"}
                 </span>
                 <span className="block text-xs text-muted-foreground">Account menu</span>
               </span>
@@ -1972,7 +1846,7 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
   );
 
   return (
-    <div className="min-h-screen bg-muted text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border bg-card lg:block">
           {sidebar}
@@ -1995,8 +1869,10 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
                   <Menu className="size-5" />
                 </Button>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Workspace / {page}</p>
-                  <p className="truncate text-sm font-semibold text-foreground">{page}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isBotDetailPage ? `Bots / ${selectedBot?.name || "Bot"} / ${currentPageLabel}` : `Workspace / ${currentPageLabel}`}
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">{currentPageLabel}</p>
                 </div>
               </div>
 
@@ -2032,21 +1908,13 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
           </Sheet>
 
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-            {page === "Appearance" || page === "Knowledge Base" || page === "Install" ? (
+            {isBotDetailPage ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">
-                      Bot detail
-                    </p>
-                    <h1 className="mt-1 text-2xl font-semibold text-foreground">
-                      {selectedBot?.name || "Bot details"}
-                    </h1>
-                  </div>
-                  <Button type="button" variant="secondary" onClick={handleDeleteBot}>
-                    Delete bot
-                  </Button>
-                </div>
+                <PageHeader
+                  title={currentPageLabel}
+                  description={selectedBot?.name || "Bot details"}
+                  actions={<Button type="button" variant="secondary" onClick={handleDeleteBot}>Delete bot</Button>}
+                />
 
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {botTabs.map((tab) => (
@@ -2064,16 +1932,17 @@ export default function DashboardApp({ page = "Overview", botId = null }) {
               </div>
             ) : (
               <div>
-                {page !== "Overview" && page !== "Bots" && (
-                  <div className="mb-6 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">
-                        Dashboard
-                      </p>
-                      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                        {page}
-                      </h1>
-                    </div>
+                {page !== "Overview" && page !== "Bots" && page !== "Knowledge Base" && page !== "Usage & Billing" && page !== "Settings" && (
+                  <div className="mb-6">
+                    <PageHeader
+                      title={page}
+                      description={{
+                        Conversations: "Review chats and follow up with visitors.",
+                        Leads: "Manage contacts and appointment requests.",
+                        "Usage & Billing": "Track your plan and conversation allowance.",
+                        Settings: "Manage your account.",
+                      }[page]}
+                    />
                   </div>
                 )}
                 {renderContent()}

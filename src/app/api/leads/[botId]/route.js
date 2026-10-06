@@ -20,3 +20,17 @@ export async function POST(request, { params }) {
   writeDb(db);
   return Response.json({ ok: true, lead });
 }
+
+export async function PATCH(request, { params }) {
+  const { botId: leadId } = await params;
+  const { status } = await request.json();
+  if (!["new", "confirmed", "done"].includes(status)) {
+    return Response.json({ error: "Status must be new, confirmed, or done." }, { status: 400 });
+  }
+  const db = readDb();
+  const lead = db.leads.find((entry) => entry.id === leadId);
+  if (!lead) return Response.json({ error: "Lead not found." }, { status: 404 });
+  lead.status = status;
+  writeDb(db);
+  return Response.json(lead);
+}
