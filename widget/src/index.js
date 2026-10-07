@@ -31,8 +31,8 @@ async function init(options = {}) {
     try {
       raw = await loadConfig(apiBase, botId);
     } catch {
-      raw = {};
-      failed = true;
+      console.warn("ChatbotWidget: configuration unavailable.");
+      return null;
     }
   }
   let config = sanitizeConfig(deepMerge(raw, scriptOverrides(script)));
@@ -53,24 +53,25 @@ async function init(options = {}) {
     },
   };
   mounted = mountWidget({
-      container: options.container,
-      botId,
-      apiBase,
-      config,
-      failed,
-      defaultOpen: options.open ?? options.defaultOpen ?? false,
-      onOpenChange: options.onOpenChange,
-      preview: options.preview,
-      previewMessages: options.previewMessages,
-    });
+    container: options.container,
+    botId,
+    apiBase,
+    config,
+    defaultOpen: options.open ?? options.defaultOpen ?? false,
+    onOpenChange: options.onOpenChange,
+    preview: options.preview,
+    previewMessages: options.previewMessages,
+  });
   instances.set(key, instance);
   return instance;
 }
+window.__chatbot = window.__chatbot || {};
 window.ChatbotWidget = window.ChatbotWidget || {};
-window.ChatbotWidget.init = init;
+if (!window.__chatbot.init) window.__chatbot.init = init;
+window.ChatbotWidget.init = window.__chatbot.init;
 const current = document.currentScript;
 if (current && current.dataset.botId) {
-  const start = () => init({ script: current });
+  const start = () => { if (!current.dataset.cbLoaded) { current.dataset.cbLoaded = "true"; window.__chatbot.init({ script: current }); } };
   document.readyState === "loading"
     ? document.addEventListener("DOMContentLoaded", start, { once: true })
     : start();

@@ -612,6 +612,21 @@
             }
         }
     </style>
+    <style id="widget-isolation-probe">
+        /* Deliberately hostile host styles: the widget must remain unaffected in Shadow DOM. */
+        * {
+            box-sizing: content-box;
+            font-size: 30px;
+        }
+
+        button {
+            all: revert;
+        }
+
+        body {
+            font-family: Comic Sans MS, cursive;
+        }
+    </style>
 </head>
 
 <body>

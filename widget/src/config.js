@@ -15,8 +15,11 @@ const DEFAULT_CONFIG = {
     starterQuestions: [],
     offlineMessage: "",
   },
-  features: { leadCapture: true },
-  branding: { showBadge: true },
+  features: { leadCapture: true, dentalNotice: false },
+  branding: { showBadge: true, badgeText: "" },
+  contactText: "the office",
+  dir: "",
+  zIndex: 2147483647,
 };
 import { HEX_COLOR, TEXT_LIMITS } from "../../src/lib/limits.js";
 const FONTS = {
@@ -43,7 +46,7 @@ function sanitizeConfig(raw) {
   config.theme.primaryColor = HEX_COLOR.test(config.theme.primaryColor)
     ? config.theme.primaryColor
     : DEFAULT_CONFIG.theme.primaryColor;
-  config.theme.mode = config.theme.mode === "dark" ? "dark" : "light";
+  config.theme.mode = ["light", "dark", "auto"].includes(config.theme.mode) ? config.theme.mode : "light";
   config.theme.position = config.theme.position === "left" ? "left" : "right";
   config.theme.borderRadius = Math.max(
     0,
@@ -73,7 +76,12 @@ function sanitizeConfig(raw) {
         .map((item) => item.slice(0, TEXT_LIMITS.starterQuestion))
     : [];
   config.features.leadCapture = Boolean(config.features.leadCapture);
+  config.features.dentalNotice = Boolean(config.features.dentalNotice);
   config.branding.showBadge = Boolean(config.branding.showBadge);
+  config.branding.badgeText = text(config.branding.badgeText, "", 80);
+  config.contactText = text(config.contactText, "the office", 120);
+  config.dir = config.dir === "rtl" ? "rtl" : "";
+  config.zIndex = Math.max(1, Math.min(2147483647, Number(config.zIndex) || 2147483647));
   return config;
 }
 function scriptOverrides(script) {
@@ -90,12 +98,19 @@ function scriptOverrides(script) {
   return { theme, texts };
 }
 async function loadConfig(apiBase, botId) {
+  const key = `cb-config-${botId}`;
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(key) || "null");
+    if (cached && cached.expires > Date.now()) return cached.config;
+  } catch {}
   const response = await fetch(
     `${apiBase.replace(/\/$/, "")}/api/widget/config/${encodeURIComponent(botId)}`,
     { headers: { Accept: "application/json" } },
   );
   if (!response.ok) throw new Error("Configuration unavailable");
-  return response.json();
+  const config = await response.json();
+  try { sessionStorage.setItem(key, JSON.stringify({ config, expires: Date.now() + 60000 })); } catch {}
+  return config;
 }
 export {
   DEFAULT_CONFIG,

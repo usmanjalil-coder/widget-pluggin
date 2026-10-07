@@ -13,7 +13,7 @@ function onPrimary(hex) {
     : "#ffffff";
 }
 function applyTheme(host, config) {
-  const dark = config.theme.mode === "dark";
+  const dark = config.theme.mode === "dark" || (config.theme.mode === "auto" && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
   host.style.setProperty("--cb-primary", config.theme.primaryColor);
   host.style.setProperty(
     "--cb-on-primary",
@@ -27,5 +27,6 @@ function applyTheme(host, config) {
   host.style.setProperty("--cb-danger", dark ? "#fca5a5" : "#dc2626");
   host.style.setProperty("--cb-radius", `${config.theme.borderRadius}px`);
   host.style.setProperty("--cb-font", config.theme.fontFamily);
+  host.style.setProperty("--cb-z", String(config.zIndex || 2147483647));
 }
 export { applyTheme, onPrimary };

@@ -152,11 +152,14 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   );
   copy.append(presence);
   // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
+  const reset = make("button", "cb-header-action", "Reset");
+  reset.type = "button";
+  reset.setAttribute("aria-label", "Reset chat");
   const close = make("button", "cb-close");
   close.type = "button";
   close.setAttribute("aria-label", "Close chat");
   close.append(xIcon("cb-icon cb-close-icon"));
-  header.append(avatar, copy, close);
+  header.append(avatar, copy, reset, close);
   const messages = make("div", "cb-messages");
   messages.setAttribute("aria-live", "polite");
   const scrollButton = make("button", "cb-scroll-bottom", "\u2193");
@@ -177,9 +180,12 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     make("div", "cb-message-avatar", initials(config.texts.botName)),
     typeDots,
   );
+  const counter = make("span", "cb-counter");
+  counter.hidden = true;
   const compose = make("form", "cb-compose");
   const input = make("textarea", "cb-input");
   input.rows = 1;
+  input.maxLength = 500;
   input.placeholder = config.texts.inputPlaceholder;
   input.setAttribute("aria-label", config.texts.inputPlaceholder);
   const send = make("button", "cb-send");
@@ -187,7 +193,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   send.disabled = true;
   send.setAttribute("aria-label", "Send message");
   send.append(sendIcon());
-  compose.append(input, send);
+  compose.append(input, counter, send);
   win.append(header, messages, typing, compose);
   const footer = make("footer", "cb-footer", `Powered by ${brand.name}`);
   footer.hidden = !config.branding.showBadge;
@@ -206,6 +212,12 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   let lastSender = "";
   let lastMinute = "";
   let chipsUsed = false;
+  const stateKey = `cb-state-${botId}`;
+  const persist = () => {
+    if (preview) return;
+    try { localStorage.setItem(stateKey, JSON.stringify({ updatedAt: Date.now(), conversationId: localStorage.getItem(`cb-conversation-${botId}`) || crypto.randomUUID?.() || String(Date.now()), messages: history })); } catch {}
+  };
+  const history = [];
   const teaserKey = `cb-teaser-${botId}`;
   const scroll = () => {
     messages.scrollTop = messages.scrollHeight;
@@ -240,6 +252,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     wrap.append(bubble, make("time", "cb-timestamp", stamp));
     row.append(wrap);
     messages.insertBefore(row, chips);
+    if (content && !preview) { history.push({ kind, content, stamp }); persist(); }
     lastSender = kind;
     lastMinute = stamp;
     scroll();
@@ -277,6 +290,10 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   const autoGrow = () => {
     input.style.height = "auto";
     input.style.height = `${Math.min(input.scrollHeight, 96)}px`;
+    const length = input.value.length;
+    counter.hidden = length < 450;
+    counter.textContent = `${length}/500`;
+    counter.classList.toggle("cb-counter-limit", length >= 500);
   };
   const renderLeadForm = (payload) => {
     const form = make("form", "cb-form");
@@ -382,16 +399,18 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       sending = false;
       input.disabled = false;
       input.focus();
-      send.disabled = !input.value.trim();
+      send.disabled = !input.value.trim() || input.value.length > 500;
       typing.hidden = true;
     }
   };
-  let greeting = addMessage(
-    "bot",
-    failed && config.texts.offlineMessage
-      ? config.texts.offlineMessage
-      : config.texts.greetingMessage,
-  );
+  let greeting;
+  let restored = null;
+  if (!preview) { try { const saved = JSON.parse(localStorage.getItem(stateKey) || "null"); if (saved && Date.now() - saved.updatedAt < 86400000 && Array.isArray(saved.messages)) restored = saved; } catch {} }
+  if (restored) {
+    if (restored.conversationId) localStorage.setItem(`cb-conversation-${botId}`, restored.conversationId);
+    restored.messages.forEach((item) => { const entry = addMessage(item.kind, item.content); if (!greeting && item.kind === "bot") greeting = entry; });
+    chipsUsed = restored.messages.some((item) => item.kind === "user");
+  } else greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
   previewMessages.forEach(({ role, text }) => {
     if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
   });
@@ -407,6 +426,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   });
   launcher.addEventListener("click", () => setOpen(!open));
   close.addEventListener("click", () => setOpen(false));
+  reset.addEventListener("click", () => widget.resetChat());
   compose.addEventListener("submit", (event) => {
     event.preventDefault();
     sendMessage(input.value);
@@ -430,7 +450,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     if (event.key === "Escape" && open) setOpen(false);
   };
   document.addEventListener("keydown", escape);
-  return {
+  const widget = {
     destroy() {
       if (destroyed) return;
       destroyed = true;
@@ -449,6 +469,8 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       lastMessage = "";
       messageCount = 0;
       localStorage.removeItem(`cb-conversation-${botId}`);
+      localStorage.removeItem(stateKey);
+      history.length = 0;
       messages.replaceChildren(chips);
       greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
       renderChips();
@@ -502,5 +524,6 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       messages.scrollTop = scrollTop;
     },
   };
+  return widget;
 }
 export { mountWidget };

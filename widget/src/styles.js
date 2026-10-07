@@ -33,14 +33,14 @@ button {
 .cb-preview .cb-window { width: min(380px, calc(100% - 32px)); height: min(560px, calc(100% - 92px)); max-width: none; max-height: none; }
 .cb-fixed {
   position: fixed;
-  bottom: 24px;
-  z-index: 2147483647;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: var(--cb-z, 2147483647);
 }
 .cb-left {
-  left: 24px;
+  left: max(24px, env(safe-area-inset-left));
 }
 .cb-right {
-  right: 24px;
+  right: max(24px, env(safe-area-inset-right));
 }
 .cb-launch-area {
   position: relative;
@@ -260,6 +260,16 @@ button {
   background: #62e8a1;
   box-shadow: 0 0 0 3px rgba(98, 232, 161, .18);
 }
+.cb-header-action {
+  flex: none;
+  border: 1px solid rgba(255,255,255,.32);
+  border-radius: calc(var(--cb-radius) * .72);
+  padding: 7px 8px;
+  color: inherit;
+  background: rgba(255,255,255,.12);
+  font-size: 11px;
+}
+.cb-header-action:hover { background: rgba(255,255,255,.24); }
 .cb-close {
   display: grid;
   place-items: center;
@@ -430,6 +440,8 @@ button {
   background: var(--cb-primary);
   transform: translateY(-1px);
 }
+.cb-counter { flex: none; color: var(--cb-muted); font-size: 10px; padding-bottom: 7px; }
+.cb-counter-limit { color: var(--cb-danger); }
 .cb-compose {
   flex: none;
   display: flex;
@@ -604,12 +616,12 @@ button {
 }
 @media (max-width: 479px) {
   .cb-fixed {
-    right: 12px;
-    bottom: 12px;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
     left: auto;
   }
   .cb-left {
-    left: 12px;
+    left: max(12px, env(safe-area-inset-left));
     right: auto;
   }
   :where(.cb-fixed) .cb-window {
@@ -621,11 +633,14 @@ button {
     max-height: none;
     border: 0;
     border-radius: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
     transform: translateY(18px);
   }
   .cb-preview .cb-launch-area { right: 12px; bottom: 12px; }
   .cb-preview.cb-left .cb-launch-area { right: auto; left: 12px; }
   .cb-preview .cb-window { width: calc(100% - 24px); height: calc(100% - 84px); min-height: 0; }
+  .cb-header { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
   .cb-form,
   .cb-form-success {
     margin-left: 0;
