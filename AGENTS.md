@@ -22,13 +22,13 @@ appointment requests, and emails the owner.
 - Plain JavaScript only: `.js` / `.jsx`. No TypeScript. Use `jsconfig.json` for path aliases.
 - Reply in concise Roman Urdu + English; give ready-to-paste code blocks, not step-by-step prose.
 - Check `node_modules/next/dist/docs/` before using any Next.js API (App Router conventions may differ).
-- Build order: FRONTEND FIRST (against a mock API), then BACKEND. Keep the API contract below stable.
+- Frontend calls the Laravel backend directly. Do not add Next.js API route handlers or mock data.
 
 ## Architecture
 - Dashboard: Next.js (this repo), App Router, plain JS.
 - Widget: standalone plain-JS bundle (`widget.js`), NOT part of the Next.js page bundle.
   Renders inside Shadow DOM (or iframe) so host-site CSS cannot break it.
-- Backend (later, separate service): FastAPI + RAG (LangChain/LlamaIndex), Postgres + pgvector.
+- Backend: Laravel service in `../AI_ASSISTANT`.
 - Multi-tenant: every record has `bot_id` / `tenant_id`.
 
 ---
@@ -38,7 +38,7 @@ appointment requests, and emails the owner.
 ## 1A. Widget (`widget.js`)
 - Install snippet:
   `<script src="https://app.example.com/widget.js" data-bot-id="abc123"></script>`
-- On load: read `data-bot-id`, fetch public config `GET /api/widget/config/:botId`, apply theme,
+- On load: read `data-bot-id`, fetch public config `GET /api/v1/widget/config/:botId`, apply theme,
   then mount launcher bubble + chat window. Cache config briefly (about 60s or ETag).
 - UI: launcher button, chat window, message list with streaming text, input, typing indicator,
   quick-reply chips (starter questions), lead/appointment form inside the chat, offline message,
@@ -77,25 +77,24 @@ new/confirmed/done) · Settings (notification emails, booking form fields, worki
 rules) · Install (snippet + WordPress plugin instructions) · Usage and Billing (plan limits).
 Super-admin later: tenants, usage, plans, abuse control.
 
-## 1D. Frontend-first workflow
-Use mock route handlers or a JSON mock for the API below so the dashboard and widget are fully
-usable before the backend exists. Swap the base URL via env var when the backend is ready.
+## 1D. API workflow
+Use `NEXT_PUBLIC_API_BASE_URL` and the Laravel `/api/v1` routes. Keep unsupported backend
+features in honest loading, empty, or error states until Laravel implements their endpoints.
 
 ---
 
-# PART 2 — BACKEND (after frontend)
+# PART 2 — BACKEND
 
 ## 2A. API contract (frontend and backend must agree on this)
 Public (widget, no login, rate limited, CORS restricted per bot's allowed domains):
-- `GET  /api/widget/config/:botId` -> `{ theme, texts, features, branding: { showBadge } }`
-- `POST /api/chat/:botId` -> streams the answer (SSE). Body: `{ conversationId?, message }`
-- `POST /api/leads/:botId` -> `{ conversationId, fields: {...} }`
+- `GET  /api/v1/widget/config/:botId` -> `{ theme, texts, features, branding: { showBadge } }`
+- `POST /api/v1/chat/:botId` -> streams the answer (SSE). Body: `{ conversationId?, message }`
+- `POST /api/v1/leads/:botId` -> `{ conversationId, fields: {...} }`
 
 Authenticated (dashboard):
-- `GET/PUT /api/bots/:id` (theme, texts, settings), `POST /api/bots`
-- `POST /api/bots/:id/documents` (upload / URL), `GET /api/bots/:id/documents`, `DELETE ...`
-- `GET /api/bots/:id/conversations`, `GET /api/bots/:id/leads`, `PATCH /api/leads/:id` (status)
-- `GET /api/usage`, billing webhooks
+- Current Laravel routes include `/api/v1/auth/*`, `/api/v1/account`, and read-only `/api/v1/bots`.
+- Bot mutations, documents, conversations, leads, public widget routes, and billing mutations
+  require backend implementation before those features can work.
 
 Example config JSON:
 ```json
@@ -122,8 +121,7 @@ Example config JSON:
   booking_fields, working_hours), documents, chunks, conversations, messages, leads, plans, usage.
 - Plan limits per month (conversations, bots, doc size); hard-stop and upgrade prompt.
 - Plans: Free (~50 msgs, "Powered by" badge) · Starter (~$19-29) · Pro (~$49-79, no badge).
-- Payments: Stripe is not available for Pakistan-based businesses (verify); use Lemon Squeezy/Paddle
-  or PayPal/Wise/Payoneer.
+- Payment integration is undecided.
 
 ## 2D. Later
 WordPress plugin (thin PHP wrapper that injects the script + bot-id setting), WhatsApp channel,
@@ -134,8 +132,8 @@ Product name (invented, unique; check domain/Google/trademark) · LLM + embeddin
 single-tenant demo first vs multi-tenant from day one.
 
 ## Frontend conventions
-- Dashboard client requests go through `src/lib/api.js`; set `NEXT_PUBLIC_API_BASE` when replacing mock handlers with FastAPI.
-- Temporary handler data lives in ignored `.mock-data/db.json`; `npm run mock:reset` recreates seed data on next request.
+- Dashboard client requests go through `src/lib/api.js` and endpoint files in `src/lib/api/`;
+  set `NEXT_PUBLIC_API_BASE_URL` to the Laravel origin.
 - Appearance preview loads the standalone `public/widget.js` and mounts it with `ChatbotWidget.init({ config, container })`.
 
 ## Design system
@@ -145,8 +143,8 @@ single-tenant demo first vs multi-tenant from day one.
 - 4/8px spacing; card padding and gaps 24px; max width 1152px; marketing vertical sections 96px. Controls radius 10px, cards 12px, panels 16px. Cards border/shadow-sm; only overlays/widget use larger shadows.
 - Soft semantic badges, tinted stat icons, muted uppercase 12px table headers, hover rows, useful empty states and skeletons. Use Sonner notifications. Transitions 150ms ease and visible focus rings; respect reduced motion.
 - Widget stays standalone in Shadow DOM; safe text rendering, strict hex/HTTPS/avatar/font validation, auto-contrast and full-screen mobile below 480px.
-- Gallery: `/design-system`. Demos: `/test.html`, `/test-brand.html`. Build bundle with `npm run build:widget`; regenerate demos with `npm run build:demos`.
-- Verification: `npm run lint`, `npm run build`, then serve port 3100 and `npm run verify:ui -- final`. The verification scripts generate ignored screenshots on demand.
+- Build the standalone bundle with `npm run build:widget`.
+- Verification: `npm run lint` and `npm run build`.
 
 ## UI conventions
 - Keep dashboard content within `max-w-6xl`; use the shared shell, grouped sidebar navigation, mobile Sheet, and section cards for forms.

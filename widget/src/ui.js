@@ -14,10 +14,7 @@ const svg = (paths, className = "") => {
   el.setAttribute("aria-hidden", "true");
   if (className) el.setAttribute("class", className);
   paths.forEach((attrs) => {
-    const path = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      attrs.tag || "path",
-    );
+    const path = document.createElementNS("http://www.w3.org/2000/svg", attrs.tag || "path");
     Object.keys(attrs).forEach((key) => {
       if (key !== "tag") path.setAttribute(key, attrs[key]);
     });
@@ -54,22 +51,18 @@ const time = () =>
 function markdown(target, value) {
   target.replaceChildren();
   const inline = (parent, text) =>
-    text
-      .split(/(\*\*[^*]+\*\*|\*[^*]+\*|https?:\/\/[^\s]+)/g)
-      .forEach((part) => {
-        if (!part) return;
-        if (/^\*\*[^*]+\*\*$/.test(part))
-          parent.append(make("strong", "", part.slice(2, -2)));
-        else if (/^\*[^*]+\*$/.test(part))
-          parent.append(make("em", "", part.slice(1, -1)));
-        else if (/^https?:\/\//.test(part)) {
-          const link = make("a", "", part);
-          link.href = part;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          parent.append(link);
-        } else parent.append(document.createTextNode(part));
-      });
+    text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|https?:\/\/[^\s]+)/g).forEach((part) => {
+      if (!part) return;
+      if (/^\*\*[^*]+\*\*$/.test(part)) parent.append(make("strong", "", part.slice(2, -2)));
+      else if (/^\*[^*]+\*$/.test(part)) parent.append(make("em", "", part.slice(1, -1)));
+      else if (/^https?:\/\//.test(part)) {
+        const link = make("a", "", part);
+        link.href = part;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        parent.append(link);
+      } else parent.append(document.createTextNode(part));
+    });
   let list;
   String(value || "")
     .split("\n")
@@ -91,7 +84,17 @@ function markdown(target, value) {
       }
     });
 }
-function mountWidget({ container, botId, apiBase, config: initialConfig, failed, defaultOpen, onOpenChange, preview = false, previewMessages = [] }) {
+function mountWidget({
+  container,
+  botId,
+  apiBase,
+  config: initialConfig,
+  failed,
+  defaultOpen,
+  onOpenChange,
+  preview = false,
+  previewMessages = [],
+}) {
   let config = initialConfig;
   const host = make("div", "cb-host");
   if (container) host.classList.add("cb-embedded-host");
@@ -112,15 +115,9 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   launcher.setAttribute("aria-expanded", "false");
   launcher.append(chatIcon(), xIcon());
   if (config.texts.launcherLabel)
-    launchArea.append(
-      make("span", "cb-launch-label", config.texts.launcherLabel),
-    );
+    launchArea.append(make("span", "cb-launch-label", config.texts.launcherLabel));
   launchArea.append(launcher);
-  const teaser = make(
-    "div",
-    "cb-teaser",
-    config.texts.greetingMessage.slice(0, 140),
-  );
+  const teaser = make("div", "cb-teaser", config.texts.greetingMessage.slice(0, 140));
   const teaserClose = make("button", "cb-teaser-close", "\xD7");
   teaserClose.type = "button";
   teaserClose.setAttribute("aria-label", "Dismiss greeting");
@@ -133,11 +130,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   const header = make("header", "cb-header");
   let avatar = config.texts.avatarUrl
     ? make("img", "cb-avatar")
-    : make(
-        "div",
-        "cb-avatar cb-avatar-initials",
-        initials(config.texts.botName),
-      );
+    : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
   if (config.texts.avatarUrl) {
     avatar.src = config.texts.avatarUrl;
     avatar.alt = "";
@@ -146,10 +139,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   const title = make("div", "cb-title", config.texts.botName);
   copy.append(title);
   const presence = make("div", "cb-presence");
-  presence.append(
-    make("span", "cb-online"),
-    document.createTextNode("Online"),
-  );
+  presence.append(make("span", "cb-online"), document.createTextNode("Online"));
   copy.append(presence);
   // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
   const reset = make("button", "cb-header-action", "Reset");
@@ -171,15 +161,8 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   const typing = make("div", "cb-typing-row");
   typing.hidden = true;
   const typeDots = make("div", "cb-typing-bubble");
-  typeDots.append(
-    make("span", "cb-dot"),
-    make("span", "cb-dot"),
-    make("span", "cb-dot"),
-  );
-  typing.append(
-    make("div", "cb-message-avatar", initials(config.texts.botName)),
-    typeDots,
-  );
+  typeDots.append(make("span", "cb-dot"), make("span", "cb-dot"), make("span", "cb-dot"));
+  typing.append(make("div", "cb-message-avatar", initials(config.texts.botName)), typeDots);
   const counter = make("span", "cb-counter");
   counter.hidden = true;
   const compose = make("form", "cb-compose");
@@ -201,8 +184,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   root.append(launchArea, win);
   shadow.append(root);
   const mountTarget = container || document.body;
-  if (mountTarget && mountTarget !== document.body)
-    mountTarget.replaceChildren();
+  if (mountTarget && mountTarget !== document.body) mountTarget.replaceChildren();
   mountTarget.append(host);
   let open = false;
   let generation = 0;
@@ -215,15 +197,26 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   const stateKey = `cb-state-${botId}`;
   const persist = () => {
     if (preview) return;
-    try { localStorage.setItem(stateKey, JSON.stringify({ updatedAt: Date.now(), conversationId: localStorage.getItem(`cb-conversation-${botId}`) || crypto.randomUUID?.() || String(Date.now()), messages: history })); } catch {}
+    try {
+      localStorage.setItem(
+        stateKey,
+        JSON.stringify({
+          updatedAt: Date.now(),
+          conversationId:
+            localStorage.getItem(`cb-conversation-${botId}`) ||
+            crypto.randomUUID?.() ||
+            String(Date.now()),
+          messages: history,
+        }),
+      );
+    } catch {}
   };
   const history = [];
   const teaserKey = `cb-teaser-${botId}`;
   const scroll = () => {
     messages.scrollTop = messages.scrollHeight;
   };
-  const nearBottom = () =>
-    messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
+  const nearBottom = () => messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
   const botAvatar = () => {
     const node = make("div", "cb-message-avatar");
     if (config.texts.avatarUrl) {
@@ -238,10 +231,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     messageCount += 1;
     const stamp = time();
     const grouped = kind === lastSender && stamp === lastMinute;
-    const row = make(
-      "div",
-      `cb-message-row cb-${kind}-row${grouped ? " cb-grouped" : ""}`,
-    );
+    const row = make("div", `cb-message-row cb-${kind}-row${grouped ? " cb-grouped" : ""}`);
     const wrap = make("div", "cb-message-wrap");
     const bubble = make("div", `cb-message cb-${kind}`);
     if (kind === "bot") {
@@ -252,7 +242,10 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     wrap.append(bubble, make("time", "cb-timestamp", stamp));
     row.append(wrap);
     messages.insertBefore(row, chips);
-    if (content && !preview) { history.push({ kind, content, stamp }); persist(); }
+    if (content && !preview) {
+      history.push({ kind, content, stamp });
+      persist();
+    }
     lastSender = kind;
     lastMinute = stamp;
     scroll();
@@ -267,7 +260,10 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
     if (value) {
       teaser.classList.remove("cb-visible");
       localStorage.setItem(teaserKey, "seen");
-      if (!preview) setTimeout(() => { if (!destroyed && open) input.focus(); }, 210);
+      if (!preview)
+        setTimeout(() => {
+          if (!destroyed && open) input.focus();
+        }, 210);
     } else launcher.focus();
     onOpenChange?.(value);
   };
@@ -325,7 +321,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       try {
         const fields = Object.fromEntries(new FormData(form));
         const response = await fetch(
-          `${apiBase.replace(/\/$/, "")}/api/leads/${encodeURIComponent(botId)}`,
+          `${apiBase.replace(/\/$/, "")}/api/v1/leads/${encodeURIComponent(botId)}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -336,9 +332,7 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
           },
         );
         if (!response.ok) throw new Error();
-        form.replaceWith(
-          make("p", "cb-form-success", "Thanks! We'll contact you soon."),
-        );
+        form.replaceWith(make("p", "cb-form-success", "Thanks! We'll contact you soon."));
         scroll();
       } catch {
         submit.disabled = false;
@@ -377,7 +371,9 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
           markdown(reply.bubble, answer);
           if (nearBottom()) scroll();
         },
-        onLeadForm: (payload) => { if (!destroyed && requestGeneration === generation) renderLeadForm(payload); },
+        onLeadForm: (payload) => {
+          if (!destroyed && requestGeneration === generation) renderLeadForm(payload);
+        },
       });
       if (destroyed || requestGeneration !== generation) return;
       if (!answer) reply.row.remove();
@@ -405,12 +401,28 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
   };
   let greeting;
   let restored = null;
-  if (!preview) { try { const saved = JSON.parse(localStorage.getItem(stateKey) || "null"); if (saved && Date.now() - saved.updatedAt < 86400000 && Array.isArray(saved.messages)) restored = saved; } catch {} }
+  if (!preview) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(stateKey) || "null");
+      if (saved && Date.now() - saved.updatedAt < 86400000 && Array.isArray(saved.messages))
+        restored = saved;
+    } catch {}
+  }
   if (restored) {
-    if (restored.conversationId) localStorage.setItem(`cb-conversation-${botId}`, restored.conversationId);
-    restored.messages.forEach((item) => { const entry = addMessage(item.kind, item.content); if (!greeting && item.kind === "bot") greeting = entry; });
+    if (restored.conversationId)
+      localStorage.setItem(`cb-conversation-${botId}`, restored.conversationId);
+    restored.messages.forEach((item) => {
+      const entry = addMessage(item.kind, item.content);
+      if (!greeting && item.kind === "bot") greeting = entry;
+    });
     chipsUsed = restored.messages.some((item) => item.kind === "user");
-  } else greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
+  } else
+    greeting = addMessage(
+      "bot",
+      failed && config.texts.offlineMessage
+        ? config.texts.offlineMessage
+        : config.texts.greetingMessage,
+    );
   previewMessages.forEach(({ role, text }) => {
     if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
   });
@@ -458,8 +470,12 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       document.removeEventListener("keydown", escape);
       host.remove();
     },
-    open() { setOpen(true); },
-    close() { setOpen(false); },
+    open() {
+      setOpen(true);
+    },
+    close() {
+      setOpen(false);
+    },
     resetChat() {
       generation += 1;
       sending = false;
@@ -472,30 +488,18 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       localStorage.removeItem(stateKey);
       history.length = 0;
       messages.replaceChildren(chips);
-      greeting = addMessage("bot", failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
+      greeting = addMessage(
+        "bot",
+        failed && config.texts.offlineMessage
+          ? config.texts.offlineMessage
+          : config.texts.greetingMessage,
+      );
       renderChips();
       input.disabled = false;
       input.value = "";
       send.disabled = true;
       typing.hidden = true;
       autoGrow();
-    },
-    playDemo({ user, reply }) {
-      this.resetChat();
-      if (!user || !reply) return;
-      window.setTimeout(() => {
-        if (destroyed) return;
-        hideChips();
-        addMessage("user", user);
-        typing.hidden = false;
-        scroll();
-        window.setTimeout(() => {
-          if (destroyed) return;
-          typing.hidden = true;
-          addMessage("bot", reply);
-          scroll();
-        }, 650);
-      }, 180);
     },
     update(nextConfig) {
       if (destroyed) return;
@@ -508,18 +512,30 @@ function mountWidget({ container, botId, apiBase, config: initialConfig, failed,
       launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
       win.setAttribute("aria-label", `${config.texts.botName} chat`);
       title.textContent = config.texts.botName;
-      const nextAvatar = config.texts.avatarUrl ? make("img", "cb-avatar") : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
-      if (config.texts.avatarUrl) { nextAvatar.src = config.texts.avatarUrl; nextAvatar.alt = ""; }
+      const nextAvatar = config.texts.avatarUrl
+        ? make("img", "cb-avatar")
+        : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
+      if (config.texts.avatarUrl) {
+        nextAvatar.src = config.texts.avatarUrl;
+        nextAvatar.alt = "";
+      }
       avatar.replaceWith(nextAvatar);
       avatar = nextAvatar;
       typing.querySelector(".cb-message-avatar").textContent = initials(config.texts.botName);
       launchArea.querySelector(".cb-launch-label")?.remove();
-      if (config.texts.launcherLabel) launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
+      if (config.texts.launcherLabel)
+        launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
       teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
       input.placeholder = config.texts.inputPlaceholder;
       input.setAttribute("aria-label", config.texts.inputPlaceholder);
       footer.hidden = !config.branding.showBadge;
-      if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage) markdown(greeting.bubble, failed && config.texts.offlineMessage ? config.texts.offlineMessage : config.texts.greetingMessage);
+      if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage)
+        markdown(
+          greeting.bubble,
+          failed && config.texts.offlineMessage
+            ? config.texts.offlineMessage
+            : config.texts.greetingMessage,
+        );
       if (!chipsUsed) renderChips();
       messages.scrollTop = scrollTop;
     },

@@ -5,21 +5,21 @@
 import { Button, Input, Label } from "@/components/ui";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AuthShowcase from "@/components/auth/AuthShowcase";
+import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
+import { establishAuthSession, login } from "@/lib/api/auth.api";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [plan, setPlan] = useState("free");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
-    const nextPlan =
-      new URLSearchParams(window.location.search).get("plan") || "free";
+    const nextPlan = new URLSearchParams(window.location.search).get("plan") || "free";
     setPlan(nextPlan);
   }, []);
 
@@ -29,22 +29,9 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const bots = await fetch("/api/bots").then((res) => res.json());
-      router.push(
-        bots.length
-          ? "/dashboard"
-          : `/onboarding?plan=${encodeURIComponent(plan)}`,
-      );
+      const authResult = await login({ email, password });
+      establishAuthSession(authResult);
+      window.location.replace("/dashboard");
     } catch (loginError) {
       setError(loginError.message || "Unable to sign in right now.");
     } finally {
@@ -55,7 +42,11 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-muted">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <AuthShowcase title="Your website assistant, ready to help" description="Answer questions and capture leads with the content you already have." items={["Answer from your own docs", "Capture leads and requests", "Match your brand"]} />
+        <AuthShowcase
+          title="Your website assistant, ready to help"
+          description="Answer questions and capture leads with the content you already have."
+          items={["Answer from your own docs", "Capture leads and requests", "Match your brand"]}
+        />
 
         <div className="order-1 mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-3">
@@ -70,9 +61,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label className="mb-1 block text-sm font-medium text-foreground">
-                Email
-              </Label>
+              <Label className="mb-1 block text-sm font-medium text-foreground">Email</Label>
               <Input
                 type="email"
                 required
@@ -83,9 +72,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-sm font-medium text-foreground">
-                Password
-              </Label>
+              <Label className="mb-1 block text-sm font-medium text-foreground">Password</Label>
               <Input
                 type="password"
                 required
@@ -95,6 +82,15 @@ export default function LoginPage() {
                 placeholder="••••••••"
               />
             </div>
+            <div className="-mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setForgotOpen(true)}
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
 
             {error && (
               <p className="rounded-xl border border-destructive/20 bg-destructive-bg px-3 py-2 text-sm text-destructive">
@@ -102,11 +98,7 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Button variant="primary"
-              type="submit"
-              disabled={loading}
-              className="w-full"
-            >
+            <Button variant="primary" type="submit" disabled={loading} className="w-full">
               {loading ? "Signing in…" : "Log in"}
             </Button>
           </form>
@@ -122,6 +114,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+      <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
     </main>
   );
 }

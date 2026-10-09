@@ -21,8 +21,7 @@ export const PLANS = [
     badge: "Most popular",
     highlight: true,
     cta: "Start with Starter",
-    description:
-      "For small businesses that want more traffic and more coverage.",
+    description: "For small businesses that want more traffic and more coverage.",
   },
   {
     id: "pro",

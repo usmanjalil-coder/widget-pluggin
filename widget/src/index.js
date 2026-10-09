@@ -1,9 +1,4 @@
-import {
-  deepMerge,
-  loadConfig,
-  sanitizeConfig,
-  scriptOverrides,
-} from "./config.js";
+import { deepMerge, loadConfig, sanitizeConfig, scriptOverrides } from "./config.js";
 import { mountWidget } from "./ui.js";
 const instances = /* @__PURE__ */ new Map();
 function inferApiBase(script) {
@@ -21,10 +16,7 @@ async function init(options = {}) {
   if (!botId) throw new Error("ChatbotWidget requires a botId.");
   const key = options.container || botId;
   if (instances.has(key)) return instances.get(key);
-  const apiBase =
-    options.apiBase ||
-    (script && script.dataset.apiBase) ||
-    inferApiBase(script);
+  const apiBase = options.apiBase || (script && script.dataset.apiBase) || inferApiBase(script);
   let raw = options.config;
   let failed = false;
   if (!raw) {
@@ -46,7 +38,6 @@ async function init(options = {}) {
     open: () => mounted?.open(),
     close: () => mounted?.close(),
     resetChat: () => mounted?.resetChat(),
-    playDemo: (payload) => mounted?.playDemo(payload),
     destroy() {
       mounted?.destroy();
       instances.delete(key);
@@ -71,7 +62,12 @@ if (!window.__chatbot.init) window.__chatbot.init = init;
 window.ChatbotWidget.init = window.__chatbot.init;
 const current = document.currentScript;
 if (current && current.dataset.botId) {
-  const start = () => { if (!current.dataset.cbLoaded) { current.dataset.cbLoaded = "true"; window.__chatbot.init({ script: current }); } };
+  const start = () => {
+    if (!current.dataset.cbLoaded) {
+      current.dataset.cbLoaded = "true";
+      window.__chatbot.init({ script: current });
+    }
+  };
   document.readyState === "loading"
     ? document.addEventListener("DOMContentLoaded", start, { once: true })
     : start();

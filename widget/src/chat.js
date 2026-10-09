@@ -7,16 +7,9 @@ function parseEvent(block) {
     return { event, data };
   }
 }
-async function streamChat({
-  apiBase,
-  botId,
-  conversationId,
-  message,
-  onToken,
-  onLeadForm,
-}) {
+async function streamChat({ apiBase, botId, conversationId, message, onToken, onLeadForm }) {
   const response = await fetch(
-    `${apiBase.replace(/\/$/, "")}/api/chat/${encodeURIComponent(botId)}`,
+    `${apiBase.replace(/\/$/, "")}/api/v1/chat/${encodeURIComponent(botId)}`,
     {
       method: "POST",
       headers: {
@@ -26,8 +19,7 @@ async function streamChat({
       body: JSON.stringify({ conversationId, message }),
     },
   );
-  if (!response.ok || !response.body)
-    throw new Error("Chat is temporarily unavailable.");
+  if (!response.ok || !response.body) throw new Error("Chat is temporarily unavailable.");
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -42,10 +34,7 @@ async function streamChat({
       if (item.event === "token") onToken(item.data.token || "");
       if (item.event === "lead_form") onLeadForm(item.data);
       if (item.event === "conversation")
-        localStorage.setItem(
-          `cb-conversation-${botId}`,
-          item.data.conversationId,
-        );
+        localStorage.setItem(`cb-conversation-${botId}`, item.data.conversationId);
     });
   }
 }

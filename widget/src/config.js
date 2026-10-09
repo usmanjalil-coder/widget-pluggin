@@ -27,10 +27,9 @@ const FONTS = {
     'Inter, var(--font-inter, system-ui), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   sans: "Arial, Helvetica, sans-serif",
   serif: "Georgia, serif",
-  mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
 };
-const text = (value, fallback, max) =>
-  typeof value === "string" ? value.slice(0, max) : fallback;
+const text = (value, fallback, max) => (typeof value === "string" ? value.slice(0, max) : fallback);
 function deepMerge(base, value) {
   const result = { ...base };
   Object.keys(value || {}).forEach((key) => {
@@ -46,7 +45,9 @@ function sanitizeConfig(raw) {
   config.theme.primaryColor = HEX_COLOR.test(config.theme.primaryColor)
     ? config.theme.primaryColor
     : DEFAULT_CONFIG.theme.primaryColor;
-  config.theme.mode = ["light", "dark", "auto"].includes(config.theme.mode) ? config.theme.mode : "light";
+  config.theme.mode = ["light", "dark", "auto"].includes(config.theme.mode)
+    ? config.theme.mode
+    : "light";
   config.theme.position = config.theme.position === "left" ? "left" : "right";
   config.theme.borderRadius = Math.max(
     0,
@@ -88,12 +89,9 @@ function scriptOverrides(script) {
   if (!script) return {};
   const theme = {};
   const texts = {};
-  if (script.dataset.primaryColor !== void 0)
-    theme.primaryColor = script.dataset.primaryColor;
-  if (script.dataset.position !== void 0)
-    theme.position = script.dataset.position;
-  if (script.dataset.greeting !== void 0)
-    texts.greetingMessage = script.dataset.greeting;
+  if (script.dataset.primaryColor !== void 0) theme.primaryColor = script.dataset.primaryColor;
+  if (script.dataset.position !== void 0) theme.position = script.dataset.position;
+  if (script.dataset.greeting !== void 0) texts.greetingMessage = script.dataset.greeting;
   if (script.dataset.botName !== void 0) texts.botName = script.dataset.botName;
   return { theme, texts };
 }
@@ -104,18 +102,15 @@ async function loadConfig(apiBase, botId) {
     if (cached && cached.expires > Date.now()) return cached.config;
   } catch {}
   const response = await fetch(
-    `${apiBase.replace(/\/$/, "")}/api/widget/config/${encodeURIComponent(botId)}`,
+    `${apiBase.replace(/\/$/, "")}/api/v1/widget/config/${encodeURIComponent(botId)}`,
     { headers: { Accept: "application/json" } },
   );
   if (!response.ok) throw new Error("Configuration unavailable");
-  const config = await response.json();
-  try { sessionStorage.setItem(key, JSON.stringify({ config, expires: Date.now() + 60000 })); } catch {}
+  const payload = await response.json();
+  const config = payload.data || payload;
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ config, expires: Date.now() + 60000 }));
+  } catch {}
   return config;
 }
-export {
-  DEFAULT_CONFIG,
-  deepMerge,
-  loadConfig,
-  sanitizeConfig,
-  scriptOverrides,
-};
+export { DEFAULT_CONFIG, deepMerge, loadConfig, sanitizeConfig, scriptOverrides };
