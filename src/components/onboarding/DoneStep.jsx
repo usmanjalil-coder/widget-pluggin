@@ -1,8 +1,15 @@
 import Link from "next/link";
+import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, Check, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button, Card } from "@/components/ui";
+import { completeOnboarding } from "@/lib/api/onboarding.api";
 
 export default function DoneStep({ state, headingRef }) {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const checklist = [
     ["Assistant created by registration", Boolean(state.botId)],
     ["Knowledge uploaded", false],
@@ -10,9 +17,25 @@ export default function DoneStep({ state, headingRef }) {
     ["Snippet copied", state.snippetCopied],
   ];
 
-  const handleGotoDashboardAfterOnBoard = () => {
-    console.log(state)
-  }
+  const handleGotoDashboardAfterOnBoard = useCallback(async () => {
+    if (saving) return;
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await completeOnboarding(state);
+      toast.success("Onboarding completed.");
+      router.push("/dashboard");
+    } catch (saveError) {
+      const message = saveError?.message || "Could not finish onboarding. Please try again.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [router, saving, state]);
+
   return (
     <div className="mx-auto max-w-xl py-8 text-center">
       <span className="mx-auto grid size-14 place-items-center rounded-xl bg-success-bg text-success-foreground">
@@ -26,9 +49,13 @@ export default function DoneStep({ state, headingRef }) {
         Your setup draft is saved
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Your choices are saved on this device. Publishing branding and knowledge needs the Laravel
-        write APIs.
+        Your setup is ready. Save these choices to your account to continue to the dashboard.
       </p>
+      {error && (
+        <p role="alert" aria-live="polite" className="mt-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
       <Card className="mt-7 gap-0 p-0 text-left">
         {checklist.map(([label, complete], index) => (
           <div
@@ -54,8 +81,8 @@ export default function DoneStep({ state, headingRef }) {
         ))}
       </Card>
       <div className="mt-7 flex flex-col items-center gap-3">
-        <Button onClick={handleGotoDashboardAfterOnBoard} >
-          Go to dashboard
+        <Button onClick={handleGotoDashboardAfterOnBoard} disabled={saving}>
+          {saving ? "Saving setup..." : "Go to dashboard"}
         </Button>
         <Link
           className="text-sm font-medium text-primary hover:underline"
