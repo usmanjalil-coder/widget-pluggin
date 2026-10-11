@@ -48,9 +48,11 @@ export default function SignupPage() {
   useEffect(() => {
     setPlan(new URLSearchParams(window.location.search).get("plan") || "free");
   }, []);
+
   useEffect(() => {
     if (step === 2) inputRefs.current[0]?.focus();
   }, [step]);
+
   useEffect(() => {
     if (!resendIn) return;
     const timer = setTimeout(() => setResendIn((current) => Math.max(0, current - 1)), 1000);
@@ -131,7 +133,7 @@ export default function SignupPage() {
 
     try {
       establishAuthSession(result);
-      window.location.replace("/dashboard");
+      window.location.replace("/onboarding");
     } catch (err) {
       setError(
         err.message || "Your email was verified, but the session could not start. Please sign in.",

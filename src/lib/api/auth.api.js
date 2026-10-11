@@ -3,7 +3,7 @@ import callApi from "@/lib/api";
 const post = (url, data) => callApi({ url, method: "POST", data, toastr: false });
 
 export function getAccessToken(result) {
-  return result?.data?.access_token || result?.access_token || null;
+  return result?.data?.access_token || null;
 }
 
 export function establishAuthSession(result) {
