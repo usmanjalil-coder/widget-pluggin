@@ -33,9 +33,10 @@ export default function ForgotPasswordDialog({ open, onOpenChange }) {
       setSuccess(true);
     } catch (err) {
       setError(
-        err.status === 429
+        err?.errors?.email?.[0] ??
+        (err.status === 429
           ? "Too many requests. Please wait a little and try again."
-          : "We couldn’t send the reset link. Please try again.",
+          : "We couldn’t send the reset link. Please try again."),
       );
     } finally {
       setLoading(false);

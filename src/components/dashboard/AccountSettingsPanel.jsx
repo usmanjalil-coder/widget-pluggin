@@ -30,6 +30,8 @@ export default function AccountSettingsPanel({
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [passwordSaving, setPasswordSaving] = useState(false);
   const [saving, setSaving] = useState(false);
   const data = draft || account;
   const dirty = useMemo(
@@ -63,14 +65,26 @@ export default function AccountSettingsPanel({
   };
   const submitPassword = async (event) => {
     event.preventDefault();
-    if (passwords.newPassword !== passwords.confirmPassword)
-      return toast.error("New passwords do not match.");
+    setPasswordErrors({});
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      setPasswordErrors({ confirmPassword: "New passwords do not match." });
+      return;
+    }
+    setPasswordSaving(true);
     try {
-      await onPassword(passwords);
+      const response = await onPassword(passwords);
       setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      toast.success("Password updated.");
+      toast.success(response?.message || "Password updated.");
     } catch (nextError) {
-      toast.error(nextError.message || "Could not update password.");
+      const errors = nextError?.errors || {};
+      setPasswordErrors({
+        currentPassword: errors.current_password?.[0],
+        newPassword: errors.password?.[0],
+        confirmPassword: errors.password_confirmation?.[0],
+        form: Object.keys(errors).length ? "" : nextError.message || "Could not update password.",
+      });
+    } finally {
+      setPasswordSaving(false);
     }
   };
   return (
@@ -133,7 +147,14 @@ export default function AccountSettingsPanel({
                   <Input
                     type={showPassword ? "text" : "password"}
                     value={passwords[key]}
-                    onChange={(event) => setPasswords({ ...passwords, [key]: event.target.value })}
+                    aria-invalid={Boolean(passwordErrors[key])}
+                    aria-describedby={passwordErrors[key] ? `${key}-error` : undefined}
+                    onChange={(event) => {
+                      setPasswords({ ...passwords, [key]: event.target.value });
+                      if (passwordErrors[key]) {
+                        setPasswordErrors((current) => ({ ...current, [key]: "", form: "" }));
+                      }
+                    }}
                   />
                   <Button
                     type="button"
@@ -146,8 +167,18 @@ export default function AccountSettingsPanel({
                     {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
                 </div>
+                {passwordErrors[key] ? (
+                  <span id={`${key}-error`} className="block text-sm text-destructive" role="alert">
+                    {passwordErrors[key]}
+                  </span>
+                ) : null}
               </Label>
             ))}
+            {passwordErrors.form ? (
+              <p className="text-sm text-destructive" role="alert">
+                {passwordErrors.form}
+              </p>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               Use 8 or more characters with a mix of letters and numbers.
             </p>
@@ -156,10 +187,11 @@ export default function AccountSettingsPanel({
               disabled={
                 !passwords.currentPassword ||
                 passwords.newPassword.length < 8 ||
-                !passwords.confirmPassword
+                !passwords.confirmPassword ||
+                passwordSaving
               }
             >
-              Update password
+              {passwordSaving ? "Updating..." : "Update password"}
             </Button>
           </form>
         </Card>
