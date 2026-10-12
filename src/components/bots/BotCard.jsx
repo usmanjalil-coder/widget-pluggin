@@ -3,12 +3,13 @@
 import { memo } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Copy, MessageSquare, MoreHorizontal, Users } from "lucide-react";
+import { Copy, MessageSquare, MoreHorizontal, Trash2, Users } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import BotAvatar from "./BotAvatar";
@@ -25,7 +26,7 @@ function relativeTime(value) {
   return `${Math.floor(minutes / 1440)}d ago`;
 }
 
-function BotCard({ bot, current, onSwitch }) {
+function BotCard({ bot, current, onSwitch, onDelete }) {
   const href = `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=appearance`;
   const conversations =
     bot.conversationsCount ?? bot.conversations_count ?? bot.stats?.conversations ?? bot.conversations;
@@ -111,6 +112,17 @@ function BotCard({ bot, current, onSwitch }) {
                   </Link>
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={(event) => {
+                  event.preventDefault();
+                  onDelete(bot);
+                }}
+              >
+                <Trash2 className="size-4" />
+                Delete bot
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

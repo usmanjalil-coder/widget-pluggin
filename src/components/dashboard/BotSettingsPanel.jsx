@@ -3,6 +3,15 @@
 import { Clock3, GripVertical, Mail } from "lucide-react";
 import { Badge, Button, Card, Input, Label, Skeleton, Switch, Textarea } from "@/components/ui";
 
+function toList(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default function BotSettingsPanel({
   draft,
   bot,
@@ -11,6 +20,11 @@ export default function BotSettingsPanel({
   saveSettings,
 }) {
   if (!draft) return <Skeleton className="h-72 w-full rounded-2xl" />;
+  const notificationEmails = toList(draft.settings?.notificationEmails);
+  const allowedDomains = toList(draft.settings?.allowedDomains);
+  const bookingFields = Array.isArray(draft.settings?.bookingFields)
+    ? draft.settings.bookingFields
+    : [];
 
   return (
     <div className="space-y-6">
@@ -19,7 +33,7 @@ export default function BotSettingsPanel({
           <Label className="space-y-2 text-sm text-foreground">
             <span>Notification emails</span>
             <Input
-              value={(draft.settings?.notificationEmails || []).join(", ")}
+              value={notificationEmails.join(", ")}
               onChange={(event) =>
                 updateDraftField(
                   "settings",
@@ -33,7 +47,7 @@ export default function BotSettingsPanel({
             />
           </Label>
           <div className="flex flex-wrap gap-2">
-            {(draft.settings?.notificationEmails || []).map((email) => (
+            {notificationEmails.map((email) => (
               <Badge key={email} tone="info">
                 <Mail className="mr-1 size-3" />
                 {email}
@@ -58,7 +72,7 @@ export default function BotSettingsPanel({
 
       <Card title="Allowed domains" subtitle="Optional hosts for embed and CORS validation.">
         <Input
-          value={(draft.settings?.allowedDomains || []).join(", ")}
+          value={allowedDomains.join(", ")}
           onChange={(event) =>
             updateDraftField(
               "settings",
@@ -76,7 +90,7 @@ export default function BotSettingsPanel({
         subtitle="Fields visitors see when requesting an appointment"
       >
         <div className="space-y-2">
-          {(draft.settings?.bookingFields || []).map((field) => (
+          {bookingFields.map((field) => (
             <div
               key={field.id}
               className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm"

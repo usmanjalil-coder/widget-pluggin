@@ -14,6 +14,7 @@ export default function BotsPanel({
   selectBot,
   loadBots,
   setCreateDialogOpen,
+  onDelete,
 }) {
   const [botSearch, setBotSearch] = useState("");
   const visibleBots = useMemo(() => {
@@ -89,6 +90,7 @@ export default function BotsPanel({
               bot={item}
               current={item.id === selectedBotId}
               onSwitch={selectBot}
+              onDelete={onDelete}
             />
           ))}
         </div>
