@@ -1,5 +1,5 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import BotDetailPage from "@/components/dashboard/pages/BotDetailPage";
 export default async function Page({ params }) {
   const { id } = await params;
-  return <DashboardApp page="Appearance" botId={id} />;
+  return <BotDetailPage botId={id} />;
 }

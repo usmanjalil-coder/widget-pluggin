@@ -1,4 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import BillingPage from "@/components/dashboard/pages/BillingPage";
 export default function Page() {
-  return <DashboardApp page="Usage & Billing" />;
+  return <BillingPage />;
 }

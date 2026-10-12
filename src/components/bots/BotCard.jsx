@@ -55,6 +55,7 @@ function BotCard({ bot, current, stats, onSwitch }) {
         />
       )}
       <Link
+        prefetch={false}
         href={href}
         className="absolute inset-0 z-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring"
         aria-label={`Open ${bot.name} Appearance`}
@@ -102,7 +103,9 @@ function BotCard({ bot, current, stats, onSwitch }) {
             <DropdownMenuContent align="end">
               {menus.map(([label, link]) => (
                 <DropdownMenuItem key={label} asChild>
-                  <Link href={link}>{label}</Link>
+                  <Link prefetch={false} href={link}>
+                    {label}
+                  </Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

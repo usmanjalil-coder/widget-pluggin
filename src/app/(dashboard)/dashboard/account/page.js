@@ -1,4 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import AccountPage from "@/components/dashboard/pages/AccountPage";
 export default function Page() {
-  return <DashboardApp page="Settings" />;
+  return <AccountPage />;
 }

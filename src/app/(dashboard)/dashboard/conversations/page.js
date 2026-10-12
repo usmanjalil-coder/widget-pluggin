@@ -1,4 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import ConversationsPage from "@/components/dashboard/pages/ConversationsPage";
 export default function Page() {
-  return <DashboardApp page="Conversations" />;
+  return <ConversationsPage />;
 }

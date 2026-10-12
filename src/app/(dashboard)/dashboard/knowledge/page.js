@@ -1,5 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
-
-export default function KnowledgeBasePage() {
-  return <DashboardApp page="Knowledge Base" />;
+import KnowledgePage from "@/components/dashboard/pages/KnowledgePage";
+export default function Page() {
+  return <KnowledgePage />;
 }

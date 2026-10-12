@@ -1,4 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import LeadsPage from "@/components/dashboard/pages/LeadsPage";
 export default function Page() {
-  return <DashboardApp page="Leads" />;
+  return <LeadsPage />;
 }

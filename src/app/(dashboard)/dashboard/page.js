@@ -1,4 +1,4 @@
-import DashboardApp from "@/components/dashboard/DashboardApp";
+import OverviewPage from "@/components/dashboard/pages/OverviewPage";
 export default function Page() {
-  return <DashboardApp />;
+  return <OverviewPage />;
 }

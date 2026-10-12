@@ -374,6 +374,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
               {selected.conversationId && (
                 <Button asChild variant="secondary">
                   <Link
+                    prefetch={false}
                     href={`/dashboard/conversations?conversation=${encodeURIComponent(selected.conversationId)}`}
                   >
                     View conversation
