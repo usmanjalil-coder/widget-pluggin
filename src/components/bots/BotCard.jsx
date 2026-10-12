@@ -25,9 +25,12 @@ function relativeTime(value) {
   return `${Math.floor(minutes / 1440)}d ago`;
 }
 
-function BotCard({ bot, current, stats, onSwitch }) {
+function BotCard({ bot, current, onSwitch }) {
   const href = `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=appearance`;
-  const lastActive = relativeTime(bot.lastActiveAt || stats?.lastActiveAt || bot.updatedAt);
+  const conversations =
+    bot.conversationsCount ?? bot.conversations_count ?? bot.stats?.conversations ?? bot.conversations;
+  const leads = bot.leadsCount ?? bot.leads_count ?? bot.stats?.leads ?? bot.leads;
+  const lastActive = relativeTime(bot.lastActiveAt ?? bot.last_active_at ?? bot.updatedAt);
   const menus = [
     ["Open", href],
     ["Appearance", href],
@@ -117,7 +120,7 @@ function BotCard({ bot, current, stats, onSwitch }) {
           <MessageSquare className="size-4 shrink-0 text-muted-foreground" />
           <div>
             <p className="text-lg font-semibold tabular-nums leading-6 text-foreground">
-              {stats?.conversations ?? "—"}
+              {conversations ?? "—"}
             </p>
             <p className="text-xs text-muted-foreground">Conversations</p>
           </div>
@@ -127,7 +130,7 @@ function BotCard({ bot, current, stats, onSwitch }) {
           <Users className="size-4 shrink-0 text-muted-foreground" />
           <div>
             <p className="text-lg font-semibold tabular-nums leading-6 text-foreground">
-              {stats?.leads ?? "—"}
+              {leads ?? "—"}
             </p>
             <p className="text-xs text-muted-foreground">Leads</p>
           </div>

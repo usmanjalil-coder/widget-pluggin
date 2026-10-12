@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
 import PageHeader from "@/components/shared/PageHeader";
-import { listConversations } from "@/lib/api/bots.api";
-import { listLeads } from "@/lib/api/leads.api";
 import BotCard from "@/components/bots/BotCard";
 
 export default function BotsPanel({
@@ -17,44 +15,6 @@ export default function BotsPanel({
   loadBots,
   setCreateDialogOpen,
 }) {
-  const [botStats, setBotStats] = useState({});
-  useEffect(() => {
-    if (!bots.length) return;
-    let cancelled = false;
-    Promise.all(
-      bots.map(async (item) => {
-        const [conversationsResult, leadsResult] = await Promise.allSettled([
-          listConversations(item.id),
-          listLeads(item.id),
-        ]);
-        return [
-          item.id,
-          {
-            conversations:
-              conversationsResult.status === "fulfilled"
-                ? (conversationsResult.value?.length ?? 0)
-                : null,
-            leads: leadsResult.status === "fulfilled" ? (leadsResult.value?.length ?? 0) : null,
-            lastActiveAt:
-              conversationsResult.status === "fulfilled"
-                ? conversationsResult.value?.reduce((latest, entry) => {
-                    const value = entry.updatedAt || entry.createdAt;
-                    return value && (!latest || new Date(value) > new Date(latest))
-                      ? value
-                      : latest;
-                  }, null)
-                : null,
-          },
-        ];
-      }),
-    ).then((entries) => {
-      if (!cancelled) setBotStats(Object.fromEntries(entries));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [bots]);
-
   const [botSearch, setBotSearch] = useState("");
   const visibleBots = useMemo(() => {
     const query = botSearch.trim().toLowerCase();
@@ -127,7 +87,6 @@ export default function BotsPanel({
             <BotCard
               key={item.id}
               bot={item}
-              stats={botStats[item.id]}
               current={item.id === selectedBotId}
               onSwitch={selectBot}
             />
