@@ -17,6 +17,7 @@ import {
   CircleCheck,
 } from "lucide-react";
 import { FaqAccordion, PricingCards } from "@/components/marketing/MarketingUI";
+import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
 import { brand } from "@/lib/brand";
 
 export const metadata = {
@@ -323,12 +324,9 @@ export default function MarketingHome() {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">{brand.tagline}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/signup"
+              <MarketingAuthCta
                 className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                Get started free
-              </Link>
+              />
               <a
                 href="#features"
                 className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-background"
@@ -445,12 +443,9 @@ export default function MarketingHome() {
               <h2 className="mt-2 text-3xl font-semibold">Start your website assistant today.</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/signup"
+              <MarketingAuthCta
                 className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                Get started free
-              </Link>
+              />
               <Link
                 href="/contact"
                 className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-muted"

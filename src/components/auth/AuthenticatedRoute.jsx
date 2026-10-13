@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import { getCurrentUser } from "@/lib/api/auth.api";
+import { getCurrentUser } from "@/lib/api/auth.api";
 
 export default function AuthenticatedRoute({ children }) {
-  // const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -13,14 +13,14 @@ export default function AuthenticatedRoute({ children }) {
       return;
     }
 
-    // getCurrentUser()
-    //   .then(() => {
-    //     if (active) setReady(true);
-    //   })
-    //   .catch(() => {
-    //     window.localStorage.removeItem("token");
-    //     if (active) window.location.replace("/login");
-    //   });
+    getCurrentUser()
+      .then(() => {
+        if (active) setReady(true);
+      })
+      .catch(() => {
+        window.localStorage.removeItem("token");
+        if (active) window.location.replace("/login");
+      });
 
     return () => {
       active = false;

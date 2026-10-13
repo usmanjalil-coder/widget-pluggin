@@ -6,22 +6,45 @@ import { Button, Input, Label } from "@/components/ui";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
-import { establishAuthSession, login } from "@/lib/api/auth.api";
+import { establishAuthSession, getCurrentUser, login } from "@/lib/api/auth.api";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [plan, setPlan] = useState("free");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     const nextPlan = new URLSearchParams(window.location.search).get("plan") || "free";
     setPlan(nextPlan);
-  }, []);
+
+    if (!window.localStorage.getItem("token")) {
+      setCheckingSession(false);
+      return;
+    }
+
+    let active = true;
+
+    getCurrentUser()
+      .then(() => {
+        if (active) router.replace("/dashboard");
+      })
+      .catch(() => {
+        window.localStorage.removeItem("token");
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -38,6 +61,16 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <p role="status" className="text-sm text-muted-foreground">
+          Checking your session…
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-muted">
