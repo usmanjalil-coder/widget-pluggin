@@ -25,7 +25,7 @@ export default function BotDetailPage({ botId }) {
     try {
       await deleteBot(botId);
       const nextBots = await getBots();
-      setBots(nextBots);
+      setBots(nextBots.map(({ id, name }) => ({ id, name })));
       setSelectedBotId(nextBots[0]?.id || "");
       toast("Bot deleted.");
       router.push("/dashboard/bots");

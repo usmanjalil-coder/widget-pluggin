@@ -6,15 +6,14 @@ import { Menu, Search } from "lucide-react";
 import { Badge, Button, Input } from "@/components/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getBots } from "@/lib/api/bots.api";
-import { getAccount } from "@/lib/api/account.api";
-import { getUsage } from "@/lib/api/usage.api";
+import { getDashboard } from "@/lib/api/dashboard.api";
 import DashboardSidebar from "./DashboardSidebar";
 import { DashboardContext } from "./dashboard-context";
 import { botTabs, dashboardPages } from "./dashboard-navigation";
 import useDashboardResource from "./useDashboardResource";
 
 const EMPTY_BOTS = [];
+const EMPTY_DASHBOARD = { bots: EMPTY_BOTS, usage: null, account: null };
 
 // Shared chrome only. Route content is supplied by Next.js through children.
 export default function DashboardApp({ children }) {
@@ -22,12 +21,18 @@ export default function DashboardApp({ children }) {
   const pathname = usePathname();
   const params = useParams();
   const searchParams = useSearchParams();
-  const botsResource = useDashboardResource(getBots);
-  const usageResource = useDashboardResource(getUsage);
-  const accountResource = useDashboardResource(getAccount);
-  const bots = botsResource.data || EMPTY_BOTS;
-  const usage = usageResource.data;
-  const account = accountResource.data;
+  const dashboardResource = useDashboardResource(getDashboard);
+  const {
+    data: dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+    reload: reloadDashboard,
+    setData: setDashboardData,
+  } = dashboardResource;
+  const dashboard = dashboardData || EMPTY_DASHBOARD;
+  const bots = Array.isArray(dashboard.bots) ? dashboard.bots : EMPTY_BOTS;
+  const usage = dashboard.usage;
+  const account = dashboard.account;
   const [storedBotId, setStoredBotId] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navigationGuard = useRef(null);
@@ -89,46 +94,66 @@ export default function DashboardApp({ children }) {
       if (navigationGuard.current === guard) navigationGuard.current = null;
     };
   }, []);
+  const setBots = useCallback(
+    (update) => {
+      setDashboardData((current) => {
+        const currentDashboard = current || EMPTY_DASHBOARD;
+        const nextBots = typeof update === "function" ? update(currentDashboard.bots) : update;
+        return {
+          ...currentDashboard,
+          bots: Array.isArray(nextBots) ? nextBots : EMPTY_BOTS,
+        };
+      });
+    },
+    [setDashboardData],
+  );
+  const setAccount = useCallback(
+    (update) => {
+      setDashboardData((current) => {
+        const currentDashboard = current || EMPTY_DASHBOARD;
+        return {
+          ...currentDashboard,
+          account:
+            typeof update === "function" ? update(currentDashboard.account) : update,
+        };
+      });
+    },
+    [setDashboardData],
+  );
   const context = useMemo(
     () => ({
       bots,
-      botsLoading: botsResource.loading,
-      botsError: botsResource.error,
-      loadBots: botsResource.reload,
-      setBots: botsResource.setData,
+      botsLoading: dashboardLoading,
+      botsError: dashboardError,
+      loadBots: reloadDashboard,
+      setBots,
       selectedBotId,
       setSelectedBotId: setStoredBotId,
       selectedBot,
       selectBot,
       usage,
-      usageLoading: usageResource.loading,
-      usageError: usageResource.error,
-      loadUsage: usageResource.reload,
+      usageLoading: dashboardLoading,
+      usageError: dashboardError,
+      loadUsage: reloadDashboard,
       account,
-      accountLoading: accountResource.loading,
-      accountError: accountResource.error,
-      loadAccount: accountResource.reload,
-      setAccount: accountResource.setData,
+      accountLoading: dashboardLoading,
+      accountError: dashboardError,
+      loadAccount: reloadDashboard,
+      setAccount,
       registerNavigationGuard,
     }),
     [
       bots,
-      botsResource.loading,
-      botsResource.error,
-      botsResource.reload,
-      botsResource.setData,
+      dashboardLoading,
+      dashboardError,
+      reloadDashboard,
+      setBots,
       selectedBotId,
       selectedBot,
       selectBot,
       usage,
-      usageResource.loading,
-      usageResource.error,
-      usageResource.reload,
       account,
-      accountResource.loading,
-      accountResource.error,
-      accountResource.reload,
-      accountResource.setData,
+      setAccount,
       registerNavigationGuard,
     ],
   );

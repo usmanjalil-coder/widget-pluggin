@@ -16,18 +16,27 @@ import { deleteBot, getBots } from "@/lib/api/bots.api";
 import BotsPanel from "../BotsPanel";
 import CreateBotDialog from "../CreateBotDialog";
 import { useDashboard } from "../dashboard-context";
+import useDashboardResource from "../useDashboardResource";
+
+const EMPTY_BOTS = [];
+const toBotOptions = (bots) => bots.map(({ id, name }) => ({ id, name }));
 
 export default function BotsPage() {
   const {
-    bots,
-    botsLoading,
-    botsError,
     selectedBotId,
     selectBot,
-    loadBots,
-    setBots,
+    setBots: setDashboardBots,
     setSelectedBotId,
   } = useDashboard();
+  const botsResource = useDashboardResource(getBots);
+  const {
+    data: botsData,
+    loading: botsLoading,
+    error: botsError,
+    reload: loadBots,
+    setData: setBots,
+  } = botsResource;
+  const bots = Array.isArray(botsData) ? botsData : EMPTY_BOTS;
   const [localOpen, setLocalOpen] = useState(false);
   const [botToDelete, setBotToDelete] = useState(null);
   const [deletingBot, setDeletingBot] = useState(false);
@@ -44,9 +53,10 @@ export default function BotsPage() {
   const onCreated = useCallback(
     (created, nextBots) => {
       setBots(nextBots);
+      setDashboardBots(toBotOptions(nextBots));
       setSelectedBotId(created.id);
     },
-    [setBots, setSelectedBotId],
+    [setBots, setDashboardBots, setSelectedBotId],
   );
   const handleDelete = useCallback(async () => {
     if (!botToDelete) return;
@@ -56,6 +66,7 @@ export default function BotsPage() {
       await deleteBot(botToDelete.id);
       const nextBots = await getBots();
       setBots(nextBots);
+      setDashboardBots(toBotOptions(nextBots));
       if (selectedBotId === botToDelete.id) setSelectedBotId(nextBots[0]?.id || "");
       setBotToDelete(null);
       toast.success("Bot deleted.");
@@ -64,7 +75,13 @@ export default function BotsPage() {
     } finally {
       setDeletingBot(false);
     }
-  }, [botToDelete, selectedBotId, setBots, setSelectedBotId]);
+  }, [
+    botToDelete,
+    selectedBotId,
+    setBots,
+    setDashboardBots,
+    setSelectedBotId,
+  ]);
   return (
     <>
       <BotsPanel

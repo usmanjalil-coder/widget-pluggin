@@ -121,7 +121,11 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       });
       setBot(saved);
       setDraft(saved);
-      setBots((current) => current.map((item) => (item.id === selectedBotId ? saved : item)));
+      setBots((current) =>
+        current.map((item) =>
+          item.id === selectedBotId ? { id: saved.id, name: saved.name } : item,
+        ),
+      );
       notify("Appearance saved. The public widget is updated.");
     } catch (error) {
       notify(error.message || "Unable to save this appearance yet.");

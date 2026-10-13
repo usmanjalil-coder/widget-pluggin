@@ -28,10 +28,6 @@ function relativeTime(value) {
 
 function BotCard({ bot, current, onSwitch, onDelete }) {
   const href = `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=appearance`;
-  const conversations =
-    bot.conversationsCount ?? bot.conversations_count ?? bot.stats?.conversations ?? bot.conversations;
-  const leads = bot.leadsCount ?? bot.leads_count ?? bot.stats?.leads ?? bot.leads;
-  const lastActive = relativeTime(bot.lastActiveAt ?? bot.last_active_at ?? bot.updatedAt);
   const menus = [
     ["Open", href],
     ["Appearance", href],
@@ -132,7 +128,7 @@ function BotCard({ bot, current, onSwitch, onDelete }) {
           <MessageSquare className="size-4 shrink-0 text-muted-foreground" />
           <div>
             <p className="text-lg font-semibold tabular-nums leading-6 text-foreground">
-              {conversations ?? "—"}
+              {bot?.conversations_count ?? "—"}
             </p>
             <p className="text-xs text-muted-foreground">Conversations</p>
           </div>
@@ -142,7 +138,7 @@ function BotCard({ bot, current, onSwitch, onDelete }) {
           <Users className="size-4 shrink-0 text-muted-foreground" />
           <div>
             <p className="text-lg font-semibold tabular-nums leading-6 text-foreground">
-              {leads ?? "—"}
+              {bot?.leads_count ?? "—"}
             </p>
             <p className="text-xs text-muted-foreground">Leads</p>
           </div>
@@ -150,7 +146,7 @@ function BotCard({ bot, current, onSwitch, onDelete }) {
       </div>
       <div className="relative z-10 mt-auto flex min-h-16 items-center justify-between gap-2 border-t border-border px-5 py-3 pointer-events-none">
         <span className="min-w-0 truncate text-xs text-muted-foreground">
-          {lastActive ? `Last active ${lastActive}` : ""}
+          {bot?.last_activity ? `Last active ${relativeTime(bot?.last_activity)}` : ""}
         </span>
         {current ? (
           <Badge tone="info" className="shrink-0">
