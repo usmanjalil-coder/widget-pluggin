@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteBot, getBots } from "@/lib/api/bots.api";
+import { deleteBot, getBots, toggleBotStatus } from "@/lib/api/bots.api";
 import BotsPanel from "../BotsPanel";
 import CreateBotDialog from "../CreateBotDialog";
 import { useDashboard } from "../dashboard-context";
@@ -82,6 +82,29 @@ export default function BotsPage() {
     setDashboardBots,
     setSelectedBotId,
   ]);
+  const handleToggleStatus = useCallback(
+    async (bot) => {
+      try {
+        const result = await toggleBotStatus(bot.id);
+        const returnedBot = result?.bot ?? result;
+        const nextStatus =
+          returnedBot?.status ?? (bot.status === "active" ? "paused" : "active");
+        const nextBots = bots.map((item) =>
+          String(item.id) === String(bot.id)
+            ? { ...item, ...(returnedBot?.id ? returnedBot : {}), status: nextStatus }
+            : item,
+        );
+
+        setBots(nextBots);
+        setDashboardBots(toBotOptions(nextBots));
+        toast.success(nextStatus === "active" ? "Bot resumed." : "Bot paused.");
+      } catch (error) {
+        toast.error(error.message || "Bot status could not be updated.");
+        throw error;
+      }
+    },
+    [bots, setBots, setDashboardBots],
+  );
   return (
     <>
       <BotsPanel
@@ -94,6 +117,7 @@ export default function BotsPage() {
           loadBots,
           setCreateDialogOpen,
           onDelete: setBotToDelete,
+          onToggleStatus: handleToggleStatus,
         }}
       />
       <CreateBotDialog

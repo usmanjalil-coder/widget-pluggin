@@ -1,10 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Copy, MessageSquare, MoreHorizontal, Trash2, Users } from "lucide-react";
-import { Badge, Button } from "@/components/ui";
+import { Copy, Info, MessageSquare, MoreHorizontal, Trash2, Users } from "lucide-react";
+import { Badge, Button, Switch } from "@/components/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import BotAvatar from "./BotAvatar";
 import StatusBadge from "./StatusBadge";
 
@@ -26,7 +27,9 @@ function relativeTime(value) {
   return `${Math.floor(minutes / 1440)}d ago`;
 }
 
-function BotCard({ bot, current, onSwitch, onDelete }) {
+function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
+  const isActive = bot.status === "active";
+  const [statusLoading, setStatusLoading] = useState(false);
   const href = `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=appearance`;
   const menus = [
     ["Open", href],
@@ -44,6 +47,15 @@ function BotCard({ bot, current, onSwitch, onDelete }) {
       toast.error("Could not copy bot ID");
     }
   };
+  const handleStatusChange = useCallback(async () => {
+    if (statusLoading) return;
+    setStatusLoading(true);
+    try {
+      await onToggleStatus(bot);
+    } finally {
+      setStatusLoading(false);
+    }
+  }, [bot, onToggleStatus, statusLoading]);
   return (
     <article
       className={`group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-[border-color,box-shadow] duration-150 hover:border-primary/30 hover:shadow-md focus-within:border-primary/30 focus-within:shadow-md ${current ? "ring-1 ring-primary/40" : ""}`}
@@ -144,10 +156,41 @@ function BotCard({ bot, current, onSwitch, onDelete }) {
           </div>
         </div>
       </div>
-      <div className="relative z-10 mt-auto flex min-h-16 items-center justify-between gap-2 border-t border-border px-5 py-3 pointer-events-none">
-        <span className="min-w-0 truncate text-xs text-muted-foreground">
-          {bot?.last_activity ? `Last active ${relativeTime(bot?.last_activity)}` : ""}
-        </span>
+      <div className="relative z-10 mt-auto flex min-h-16 items-center justify-between gap-3 border-t border-border px-5 py-3 pointer-events-none">
+        <div className="pointer-events-auto flex min-w-0 items-center gap-2">
+          <Switch
+            checked={isActive}
+            disabled={statusLoading}
+            onChange={handleStatusChange}
+            aria-label={`${isActive ? "Pause" : "Resume"} ${bot.name}`}
+          />
+          <span className="min-w-0">
+            <span className="block text-xs font-medium text-foreground">
+              {statusLoading ? "Updating..." : isActive ? "Active" : "Paused"}
+            </span>
+            {bot?.last_activity && (
+              <span className="block truncate text-[11px] text-muted-foreground">
+                Last active {relativeTime(bot.last_activity)}
+              </span>
+            )}
+          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/40"
+                aria-label="What happens when a bot is paused?"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Info className="size-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-64" sideOffset={6}>
+              A paused bot cannot start or continue visitor conversations. Resume it whenever you
+              are ready.
+            </TooltipContent>
+          </Tooltip>
+        </div>
         {current ? (
           <Badge tone="info" className="shrink-0">
             Current

@@ -14,6 +14,10 @@ export const updateBot = async (botId, data) =>
   (await request(botPath(botId), { method: "PUT", data })).data;
 export const createBot = async (data) => (await request("bot", { method: "POST", data })).data;
 export const deleteBot = (botId) => request(`bot/${encodeURIComponent(botId)}`, { method: "DELETE" });
+export const toggleBotStatus = async (botId) => {
+  const response = await request("bot/status", { data: { bot_id: botId } });
+  return response?.data ?? null;
+};
 
 // Documents routes
 export const listDocuments = async (botId) => (await request(documentsPath(botId))).data;
