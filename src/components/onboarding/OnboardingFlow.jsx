@@ -52,8 +52,8 @@ export default function OnboardingFlow() {
         try {
           stored = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
         } catch {}
-        const bot = Array.isArray(bots) ? bots[0] : null;
-        setState({ ...INITIAL, ...stored, botId: bot?.id || "" });
+        const bot = bots[0];
+        setState({ ...INITIAL, ...stored, botId: bot?.public_id ?? bot?.id ?? "" });
         setStorageKey(storageKey);
       } catch (loadError) {
         if (mounted) {

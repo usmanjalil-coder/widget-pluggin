@@ -87,9 +87,9 @@ export default function BotsPanel({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 xl:gap-6">
           {visibleBots.map((item) => (
             <BotCard
-              key={item.id}
+              key={item.public_id ?? item.id}
               bot={item}
-              current={item.id === selectedBotId}
+              current={String(item.public_id ?? item.id) === String(selectedBotId)}
               onSwitch={selectBot}
               onDelete={onDelete}
               onToggleStatus={onToggleStatus}

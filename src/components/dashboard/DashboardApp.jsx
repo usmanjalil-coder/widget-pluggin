@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, Search } from "lucide-react";
-import { Badge, Button, Input } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getDashboard } from "@/lib/api/dashboard.api";
@@ -30,7 +30,7 @@ export default function DashboardApp({ children }) {
     setData: setDashboardData,
   } = dashboardResource;
   const dashboard = dashboardData || EMPTY_DASHBOARD;
-  const bots = Array.isArray(dashboard.bots) ? dashboard.bots : EMPTY_BOTS;
+  const bots = dashboard.bots;
   const usage = dashboard.usage;
   const account = dashboard.account;
   const [storedBotId, setStoredBotId] = useState("");
@@ -38,9 +38,12 @@ export default function DashboardApp({ children }) {
   const navigationGuard = useRef(null);
   const routeBotId = typeof params.id === "string" ? params.id : "";
   const selectedBotId =
-    routeBotId || (bots.some((bot) => bot.id === storedBotId) ? storedBotId : bots[0]?.id || "");
+    routeBotId ||
+    (bots.some((bot) => String(bot.public_id ?? bot.id) === String(storedBotId))
+      ? storedBotId
+      : bots[0]?.public_id ?? bots[0]?.id ?? "");
   const selectedBot = useMemo(
-    () => bots.find((bot) => bot.id === selectedBotId),
+    () => bots.find((bot) => String(bot.public_id ?? bot.id) === String(selectedBotId)),
     [bots, selectedBotId],
   );
   const isBotDetailPage = Boolean(routeBotId);
@@ -101,7 +104,7 @@ export default function DashboardApp({ children }) {
         const nextBots = typeof update === "function" ? update(currentDashboard.bots) : update;
         return {
           ...currentDashboard,
-          bots: Array.isArray(nextBots) ? nextBots : EMPTY_BOTS,
+          bots: nextBots,
         };
       });
     },
@@ -219,12 +222,6 @@ export default function DashboardApp({ children }) {
                       className="w-48 pl-9"
                     />
                   </div>
-                  <Badge
-                    tone="default"
-                    className="hidden border-border bg-transparent capitalize md:inline-flex"
-                  >
-                    {usage?.plan || "free"}
-                  </Badge>
                   <Avatar className="hidden sm:flex">
                     <AvatarFallback className="bg-accent text-primary">U</AvatarFallback>
                   </Avatar>

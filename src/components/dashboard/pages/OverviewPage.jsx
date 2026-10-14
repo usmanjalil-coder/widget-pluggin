@@ -4,10 +4,15 @@ import OverviewPanel from "../OverviewPanel";
 import { useDashboard } from "../dashboard-context";
 
 export default function OverviewPage() {
-  const { usage, bots, botsLoading, botsError, usageError, loadUsage } = useDashboard();
-  return <OverviewPanel 
-    {
-      ...{ usage, bots, botsLoading, botsError, usageError, loadUsage }
-    } 
-  />;
+  const { usage, account, accountLoading, accountError, loadAccount } = useDashboard();
+
+  return (
+    <OverviewPanel
+      usage={usage}
+      account={account}
+      loading={accountLoading}
+      error={accountError}
+      onRetry={loadAccount}
+    />
+  );
 }

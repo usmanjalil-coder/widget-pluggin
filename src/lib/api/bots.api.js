@@ -7,7 +7,7 @@ const documentsPath = (botId) => `${botPath(botId)}/documents`;
 // Bots routes
 export const getBots = async () => {
   const response = await request("bots");
-  return Array.isArray(response?.data?.data) ? response.data.data : [];
+  return response.data.data;
 };
 export const getBot = async (botId) => (await request(botPath(botId))).data;
 export const updateBot = async (botId, data) =>
@@ -15,8 +15,8 @@ export const updateBot = async (botId, data) =>
 export const createBot = async (data) => (await request("bot", { method: "POST", data })).data;
 export const deleteBot = (botId) => request(`bot/${encodeURIComponent(botId)}`, { method: "DELETE" });
 export const toggleBotStatus = async (botId) => {
-  const response = await request("bot/status", { data: { bot_id: botId } });
-  return response?.data ?? null;
+  const response = await request(`bot/${encodeURIComponent(botId)}/status`);
+  return response.data;
 };
 
 // Documents routes

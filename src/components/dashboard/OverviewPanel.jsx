@@ -2,40 +2,37 @@
 
 import Link from "next/link";
 import { BarChart3, ChevronRight, MessageSquare, Users } from "lucide-react";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, Skeleton } from "@/components/ui";
 import PageHeader from "@/components/shared/PageHeader";
 
 export default function OverviewPanel({
   usage,
-  bots,
-  botsLoading,
-  botsError,
-  usageError,
-  loadUsage,
+  account,
+  loading,
+  error,
+  onRetry,
 }) {
-  const usageCount = usage?.conversations ?? 0;
-  const usageLimit = usage?.limit ?? 0;
-  const usagePercent = Math.min(100, (usageCount / Math.max(usageLimit, 1)) * 100);
+  const usagePercent = usage?.percent;
+  const metricValue = (value) => (loading || error ? "—" : (value ?? 0));
 
   const metrics = [
     {
       label: "Conversations",
-      value: usage?.conversations ?? "—",
-      suffix: "this month",
+      value: metricValue(account?.total_conversations),
+      suffix: "total",
       icon: MessageSquare,
       trend: "Across your bots",
     },
     {
-      label: "Active bots",
-      value:
-        botsLoading || botsError ? "—" : bots.filter((item) => item.status === "active").length,
-      suffix: "live",
+      label: "Total bots",
+      value: metricValue(account?.total_bots),
+      suffix: "created",
       icon: BarChart3,
       trend: "Ready to answer",
     },
     {
       label: "Leads captured",
-      value: usage?.leads ?? "—",
+      value: metricValue(account?.total_leads),
       suffix: "total",
       icon: Users,
       trend: "New contacts",
@@ -49,12 +46,12 @@ export default function OverviewPanel({
         description="Here is what happened across your workspace."
       />
 
-      {usageError && (
+      {error && (
         <Card>
           <p role="alert" className="text-sm text-destructive">
-            {usageError}
+            {error}
           </p>
-          <Button className="mt-4" onClick={loadUsage}>
+          <Button className="mt-4" onClick={onRetry}>
             Retry
           </Button>
         </Card>
@@ -80,12 +77,35 @@ export default function OverviewPanel({
       </div>
 
       <div className="grid gap-6">
-        <Card title="Usage" subtitle="Current plan allowance">
+        <Card title="Usage" subtitle="Current plan allowance" aria-busy={loading}>
+          {loading ? (
+            <div role="status" className="space-y-4">
+              <div className="flex items-end justify-between gap-4">
+                <Skeleton className="h-8 w-16 motion-reduce:animate-none" />
+                <span className="text-sm text-muted-foreground">Loading usage...</span>
+              </div>
+              <Skeleton className="h-2 w-full rounded-full motion-reduce:animate-none" />
+            </div>
+          ) : error ? (
+            <p className="text-sm text-muted-foreground">Usage unavailable. Please retry above.</p>
+          ) : (
+            <>
           <div className="flex items-end justify-between">
-            <span className="text-2xl font-semibold text-foreground">{usageCount}</span>
-            <span className="text-sm text-muted-foreground">of {usageLimit} conversations</span>
+            <span className="text-2xl font-semibold text-foreground">
+              {Math.round(usagePercent)}%
+            </span>
+            <span className="text-sm text-muted-foreground">
+              of monthly conversations used
+            </span>
           </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+          <div
+            className="mt-4 h-2 overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+            aria-label="Monthly conversation usage"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={usagePercent}
+          >
             <div
               className={`h-full rounded-full ${usagePercent >= 100 ? "bg-destructive" : usagePercent >= 80 ? "bg-warning" : "bg-primary"}`}
               style={{
@@ -99,6 +119,8 @@ export default function OverviewPanel({
             >
               {usagePercent >= 100 ? "Plan limit reached" : "Approaching your plan limit"}
             </p>
+          )}
+            </>
           )}
           <Link
             prefetch={false}

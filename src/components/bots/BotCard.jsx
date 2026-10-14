@@ -28,20 +28,21 @@ function relativeTime(value) {
 }
 
 function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
+  const botId = bot.public_id ?? bot.id;
   const isActive = bot.status === "active";
   const [statusLoading, setStatusLoading] = useState(false);
-  const href = `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=appearance`;
+  const href = `/dashboard/bots/${encodeURIComponent(botId)}?tab=appearance`;
   const menus = [
     ["Open", href],
     ["Appearance", href],
-    ["Knowledge Base", `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=knowledge`],
-    ["Settings", `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=settings`],
-    ["Install", `/dashboard/bots/${encodeURIComponent(bot.id)}?tab=install`],
+    ["Knowledge Base", `/dashboard/bots/${encodeURIComponent(botId)}?tab=knowledge`],
+    ["Settings", `/dashboard/bots/${encodeURIComponent(botId)}?tab=settings`],
+    ["Install", `/dashboard/bots/${encodeURIComponent(botId)}?tab=install`],
   ];
   const copyId = async (event) => {
     event.stopPropagation();
     try {
-      await navigator.clipboard.writeText(bot.id);
+      await navigator.clipboard.writeText(String(botId));
       toast.success("Copied");
     } catch {
       toast.error("Could not copy bot ID");
@@ -81,9 +82,9 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
           <div className="mt-1 flex min-w-0 items-center gap-1">
             <span
               className="min-w-0 truncate font-mono text-xs text-muted-foreground"
-              title={bot.id}
+              title={botId}
             >
-              {bot.id}
+              {botId}
             </span>
             <Button
               type="button"
@@ -203,7 +204,7 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
             className="pointer-events-auto shrink-0"
             onClick={(event) => {
               event.stopPropagation();
-              onSwitch(bot.id);
+              onSwitch(botId);
             }}
           >
             Switch to this bot

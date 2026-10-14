@@ -19,7 +19,8 @@ import { useDashboard } from "../dashboard-context";
 import useDashboardResource from "../useDashboardResource";
 
 const EMPTY_BOTS = [];
-const toBotOptions = (bots) => bots.map(({ id, name }) => ({ id, name }));
+const toBotOptions = (bots) =>
+  bots.map(({ public_id, id, name, status }) => ({ id: public_id ?? id, name, status }));
 
 export default function BotsPage() {
   const {
@@ -36,7 +37,7 @@ export default function BotsPage() {
     reload: loadBots,
     setData: setBots,
   } = botsResource;
-  const bots = Array.isArray(botsData) ? botsData : EMPTY_BOTS;
+  const bots = botsData ?? EMPTY_BOTS;
   const [localOpen, setLocalOpen] = useState(false);
   const [botToDelete, setBotToDelete] = useState(null);
   const [deletingBot, setDeletingBot] = useState(false);
@@ -54,7 +55,7 @@ export default function BotsPage() {
     (created, nextBots) => {
       setBots(nextBots);
       setDashboardBots(toBotOptions(nextBots));
-      setSelectedBotId(created.id);
+      setSelectedBotId(created.public_id ?? created.id);
     },
     [setBots, setDashboardBots, setSelectedBotId],
   );
@@ -63,11 +64,13 @@ export default function BotsPage() {
 
     setDeletingBot(true);
     try {
-      await deleteBot(botToDelete.id);
+      await deleteBot(botToDelete.public_id ?? botToDelete.id);
       const nextBots = await getBots();
       setBots(nextBots);
       setDashboardBots(toBotOptions(nextBots));
-      if (selectedBotId === botToDelete.id) setSelectedBotId(nextBots[0]?.id || "");
+      if (String(selectedBotId) === String(botToDelete.public_id ?? botToDelete.id)) {
+        setSelectedBotId(nextBots[0]?.public_id ?? nextBots[0]?.id ?? "");
+      }
       setBotToDelete(null);
       toast.success("Bot deleted.");
     } catch (error) {
@@ -85,13 +88,11 @@ export default function BotsPage() {
   const handleToggleStatus = useCallback(
     async (bot) => {
       try {
-        const result = await toggleBotStatus(bot.id);
-        const returnedBot = result?.bot ?? result;
-        const nextStatus =
-          returnedBot?.status ?? (bot.status === "active" ? "paused" : "active");
+        const result = await toggleBotStatus(bot.public_id ?? bot.id);
+        const nextStatus = result?.status;
         const nextBots = bots.map((item) =>
-          String(item.id) === String(bot.id)
-            ? { ...item, ...(returnedBot?.id ? returnedBot : {}), status: nextStatus }
+          String(item.public_id ?? item.id) === String(bot.public_id ?? bot.id)
+            ? { ...item, status: nextStatus }
             : item,
         );
 

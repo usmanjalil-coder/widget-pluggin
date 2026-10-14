@@ -123,7 +123,9 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       setDraft(saved);
       setBots((current) =>
         current.map((item) =>
-          item.id === selectedBotId ? { id: saved.id, name: saved.name } : item,
+          String(item.public_id ?? item.id) === String(selectedBotId)
+            ? { ...item, id: saved.public_id ?? saved.id, name: saved.name, status: saved.status ?? item.status }
+            : item,
         ),
       );
       notify("Appearance saved. The public widget is updated.");
