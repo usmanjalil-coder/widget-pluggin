@@ -1,7 +1,7 @@
 import callApi from "@/lib/api";
 
 const request = (url, options = {}) => callApi({ url, toastr: false, ...options });
-const botPath = (botId) => `bots/${encodeURIComponent(botId)}`;
+const botPath = (botId) => `bot/${encodeURIComponent(botId)}`;
 const documentsPath = (botId) => `${botPath(botId)}/documents`;
 
 // Bots routes
