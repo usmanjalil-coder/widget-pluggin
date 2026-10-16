@@ -42,7 +42,8 @@ function BotKnowledge({ botId }) {
   const onAdd = useCallback(
     async (payload) => {
       await addDocument(botId, payload);
-      setFilters((current) => ({ ...current, page: 1 }));
+      setSearch("");
+      setFilters((current) => ({ ...current, search: "", status: "all", page: 1 }));
       await invalidate();
     },
     [botId, invalidate],

@@ -88,7 +88,20 @@ export default function KnowledgeBasePanel({
   const [faqText, setFaqText] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [urlError, setUrlError] = useState("");
   const add = async (payload) => {
+    if (payload.type === "url") {
+      try {
+        const parsed = new URL(payload.url);
+        if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) {
+          throw new Error();
+        }
+      } catch {
+        setUrlError("Enter a valid public HTTP or HTTPS page URL.");
+        return;
+      }
+    }
+    setUrlError("");
     setSaving(true);
     try {
       await onAdd(payload);
@@ -96,8 +109,13 @@ export default function KnowledgeBasePanel({
       setUrl("");
       setFaqTitle("");
       setFaqText("");
-      toast.success("Source added. We are preparing it now.");
+      toast.success("Source accepted. Check its status in Knowledge Base.");
     } catch (nextError) {
+      if (payload.type === "url") {
+        setUrlError(
+          nextError.errors?.url?.[0] || nextError.message || "Could not import this URL.",
+        );
+      }
       toast.error(nextError.message || "Could not add this source.");
     } finally {
       setSaving(false);
@@ -379,7 +397,15 @@ export default function KnowledgeBasePanel({
         />
       )}
 
-      <Dialog open={Boolean(dialog)} onOpenChange={(open) => !open && setDialog("")}>
+      <Dialog
+        open={Boolean(dialog)}
+        onOpenChange={(open) => {
+          if (!open && !saving) {
+            setDialog("");
+            setUrlError("");
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -391,19 +417,45 @@ export default function KnowledgeBasePanel({
             </DialogTitle>
             <DialogDescription>
               {dialog === "url"
-                ? "We will import pages from this website."
+                ? "Import the text from this page. Processing continues in the background."
                 : dialog === "file"
                   ? "PDF, DOCX, or TXT up to 10 MB each."
                   : "Add a title and text for this knowledge source."}
             </DialogDescription>
           </DialogHeader>
           {dialog === "url" && (
-            <Input
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://example.com"
-              type="url"
-            />
+            <form
+              id="import-url-form"
+              className="space-y-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!saving) void add({ type: "url", url: url.trim() });
+              }}
+            >
+              <label htmlFor="knowledge-url" className="text-sm font-medium">
+                Page URL
+              </label>
+              <Input
+                id="knowledge-url"
+                value={url}
+                onChange={(event) => {
+                  setUrl(event.target.value);
+                  setUrlError("");
+                }}
+                placeholder="https://example.com/about"
+                type="url"
+                maxLength={2048}
+                required
+                disabled={saving}
+                aria-invalid={Boolean(urlError)}
+                aria-describedby={urlError ? "knowledge-url-error" : undefined}
+              />
+              {urlError && (
+                <p id="knowledge-url-error" role="alert" className="text-sm text-destructive">
+                  {urlError}
+                </p>
+              )}
+            </form>
           )}
           {dialog === "file" && (
             <label className="flex cursor-pointer flex-col items-center rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
@@ -452,23 +504,35 @@ export default function KnowledgeBasePanel({
           )}
           {dialog !== "file" && (
             <DialogFooter>
-              <Button type="button" variant="secondary" onClick={() => setDialog("")}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={saving}
+                onClick={() => {
+                  setDialog("");
+                  setUrlError("");
+                }}
+              >
                 Cancel
               </Button>
               <Button
-                type="button"
+                type={dialog === "url" ? "submit" : "button"}
+                form={dialog === "url" ? "import-url-form" : undefined}
                 disabled={saving || (dialog === "url" ? !url : !faqTitle || !faqText)}
-                onClick={() =>
-                  void add(
-                    dialog === "url"
-                      ? { name: url, type: "url", source: "Website" }
-                      : {
-                          name: faqTitle,
-                          type: "text",
-                          source: "Manual",
-                          size: Math.ceil(faqText.length / 4) + " chunks",
-                        },
-                  )
+                onClick={
+                  dialog === "url"
+                    ? undefined
+                    : () =>
+                        void add(
+                          dialog === "url"
+                            ? { url: url.trim(), type: "url" }
+                            : {
+                                name: faqTitle,
+                                type: "text",
+                                source: "Manual",
+                                size: Math.ceil(faqText.length / 4) + " chunks",
+                              },
+                        )
                 }
               >
                 {saving ? "Adding..." : dialog === "url" ? "Import" : "Add text"}
