@@ -16,20 +16,15 @@ import { deleteBot, getBots, toggleBotStatus } from "@/lib/api/bots.api";
 import BotsPanel from "../BotsPanel";
 import CreateBotDialog from "../CreateBotDialog";
 import { useDashboard } from "../dashboard-context";
-import useDashboardResource from "../useDashboardResource";
+import useBotsQuery from "../useBotsQuery";
 
 const EMPTY_BOTS = [];
 const toBotOptions = (bots) =>
   bots.map(({ public_id, id, name, status }) => ({ id: public_id ?? id, name, status }));
 
 export default function BotsPage() {
-  const {
-    selectedBotId,
-    selectBot,
-    setBots: setDashboardBots,
-    setSelectedBotId,
-  } = useDashboard();
-  const botsResource = useDashboardResource(getBots);
+  const { selectedBotId, selectBot, setBots: setDashboardBots, setSelectedBotId } = useDashboard();
+  const botsResource = useBotsQuery();
   const {
     data: botsData,
     loading: botsLoading,
@@ -78,25 +73,20 @@ export default function BotsPage() {
     } finally {
       setDeletingBot(false);
     }
-  }, [
-    botToDelete,
-    selectedBotId,
-    setBots,
-    setDashboardBots,
-    setSelectedBotId,
-  ]);
+  }, [botToDelete, selectedBotId, setBots, setDashboardBots, setSelectedBotId]);
   const handleToggleStatus = useCallback(
     async (bot) => {
       try {
         const result = await toggleBotStatus(bot.public_id ?? bot.id);
         const nextStatus = result?.status;
-        const nextBots = bots.map((item) =>
-          String(item.public_id ?? item.id) === String(bot.public_id ?? bot.id)
-            ? { ...item, status: nextStatus }
-            : item,
+        const nextBots = setBots((current) =>
+          (current ?? EMPTY_BOTS).map((item) =>
+            String(item.public_id ?? item.id) === String(bot.public_id ?? bot.id)
+              ? { ...item, status: nextStatus }
+              : item,
+          ),
         );
 
-        setBots(nextBots);
         setDashboardBots(toBotOptions(nextBots));
         toast.success(nextStatus === "active" ? "Bot resumed." : "Bot paused.");
       } catch (error) {
@@ -104,7 +94,7 @@ export default function BotsPage() {
         throw error;
       }
     },
-    [bots, setBots, setDashboardBots],
+    [setBots, setDashboardBots],
   );
   return (
     <>
@@ -148,7 +138,12 @@ export default function BotsPage() {
             >
               Cancel
             </Button>
-            <Button type="button" variant="destructive" disabled={deletingBot} onClick={handleDelete}>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deletingBot}
+              onClick={handleDelete}
+            >
               {deletingBot ? "Deleting…" : "Delete bot"}
             </Button>
           </DialogFooter>

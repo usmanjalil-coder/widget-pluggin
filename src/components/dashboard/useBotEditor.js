@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { botQueryKey } from "@/lib/query-client";
 import { toast as notify } from "sonner";
 import { getBot, updateBot } from "@/lib/api/bots.api";
 import { useDashboard } from "./dashboard-context";
@@ -8,11 +10,38 @@ import { HEX_COLOR } from "@/lib/limits";
 
 export default function useBotEditor({ selectedBotId, setBots }) {
   const { registerNavigationGuard } = useDashboard();
-  const [bot, setBot] = useState(null);
-  const [draft, setDraft] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [detailError, setDetailError] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
+  const {
+    data: bot = null,
+    isPending,
+    error,
+    refetch: reload,
+  } = useQuery({
+    queryKey: botQueryKey(selectedBotId),
+    queryFn: () => getBot(selectedBotId),
+    enabled: Boolean(selectedBotId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  });
+  // Draft edits stay local; both tabs share only the saved server response.
+  const [draftState, setDraftState] = useState(null);
+  const draft = draftState?.id === selectedBotId ? draftState.value : bot;
+  const setDraft = useCallback(
+    (update) => {
+      setDraftState((current) => {
+        const value = current?.id === selectedBotId ? current.value : bot;
+        return {
+          id: selectedBotId,
+          value: typeof update === "function" ? update(value) : update,
+        };
+      });
+    },
+    [selectedBotId, bot],
+  );
+  const loading = Boolean(selectedBotId) && isPending;
+  const detailError = error?.message || "";
   const [savingAppearance, setSavingAppearance] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const dirty = useMemo(
@@ -25,32 +54,6 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       ),
     [bot, draft],
   );
-  const reload = useCallback(() => setReloadKey((value) => value + 1), []);
-
-  useEffect(() => {
-    if (!selectedBotId) return;
-    let active = true;
-    async function load() {
-      setBot(null);
-      setDraft(null);
-      setLoading(true);
-      setDetailError("");
-      try {
-        const nextBot = await getBot(selectedBotId);
-        if (!active) return;
-        setBot(nextBot);
-        setDraft(nextBot);
-      } catch (error) {
-        if (active) setDetailError(error.message || "Could not load this bot's data.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      active = false;
-    };
-  }, [selectedBotId, reloadKey]);
 
   useEffect(() => {
     return registerNavigationGuard(
@@ -92,20 +95,23 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPopState);
     };
-  }, [dirty, bot]);
+  }, [dirty, bot, setDraft]);
 
-  const updateDraftField = useCallback((group, key, value) => {
-    setDraft((current) => {
-      if (!current || Object.is(current[group]?.[key], value)) return current;
-      return {
-        ...current,
-        [group]: {
-          ...current[group],
-          [key]: value,
-        },
-      };
-    });
-  }, []);
+  const updateDraftField = useCallback(
+    (group, key, value) => {
+      setDraft((current) => {
+        if (!current || Object.is(current[group]?.[key], value)) return current;
+        return {
+          ...current,
+          [group]: {
+            ...current[group],
+            [key]: value,
+          },
+        };
+      });
+    },
+    [setDraft],
+  );
 
   const saveAppearance = useCallback(async () => {
     if (!selectedBotId || !draft) return;
@@ -119,12 +125,16 @@ export default function useBotEditor({ selectedBotId, setBots }) {
         ...draft,
         name: draft.texts.botName.trim() || draft.name,
       });
-      setBot(saved);
       setDraft(saved);
       setBots((current) =>
         current.map((item) =>
           String(item.public_id ?? item.id) === String(selectedBotId)
-            ? { ...item, id: saved.public_id ?? saved.id, name: saved.name, status: saved.status ?? item.status }
+            ? {
+                ...item,
+                id: saved.public_id ?? saved.id,
+                name: saved.name,
+                status: saved.status ?? item.status,
+              }
             : item,
         ),
       );
@@ -134,17 +144,16 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     } finally {
       setSavingAppearance(false);
     }
-  }, [selectedBotId, draft, setBots]);
+  }, [selectedBotId, draft, setBots, setDraft]);
 
   const resetAppearance = useCallback(() => {
     setDraft(bot);
-  }, [bot]);
+  }, [bot, setDraft]);
   const saveSettings = useCallback(async () => {
     if (!draft || !selectedBotId) return;
     setSavingSettings(true);
     try {
       const saved = await updateBot(selectedBotId, { settings: draft.settings });
-      setBot(saved);
       setDraft(saved);
       notify("Settings saved.");
     } catch {
@@ -152,7 +161,7 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     } finally {
       setSavingSettings(false);
     }
-  }, [draft, selectedBotId]);
+  }, [draft, selectedBotId, setDraft]);
 
   return {
     bot,

@@ -1,4 +1,5 @@
 import callApi from "@/lib/api";
+import { clearQueryCache } from "@/lib/query-client";
 
 const post = (url, data) => callApi({ url, method: "POST", data, toastr: false });
 
@@ -11,6 +12,7 @@ export function establishAuthSession(result) {
   if (!token) {
     throw new Error("The authentication response did not include an access token.");
   }
+  clearQueryCache();
   window.localStorage.setItem("token", JSON.stringify(token));
 }
 
@@ -18,8 +20,9 @@ export async function endAuthSession() {
   try {
     await post("auth/logout");
   } catch {
-    // The browser session still ends if the backend is temporarily unavailable.
+
   } finally {
+    clearQueryCache();
     window.localStorage.removeItem("token");
   }
 }

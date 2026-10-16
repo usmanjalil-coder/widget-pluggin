@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/api/auth.api";
+import { clearQueryCache } from "@/lib/query-client";
 
 export default function AuthenticatedRoute({ children }) {
   const [ready, setReady] = useState(false);
@@ -9,6 +10,7 @@ export default function AuthenticatedRoute({ children }) {
   useEffect(() => {
     let active = true;
     if (!window.localStorage.getItem("token")) {
+      clearQueryCache();
       window.location.replace("/login");
       return;
     }
@@ -18,6 +20,7 @@ export default function AuthenticatedRoute({ children }) {
         if (active) setReady(true);
       })
       .catch(() => {
+        clearQueryCache();
         window.localStorage.removeItem("token");
         if (active) window.location.replace("/login");
       });
