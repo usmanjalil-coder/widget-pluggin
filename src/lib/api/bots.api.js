@@ -7,7 +7,7 @@ const documentsPath = (botId) => `${botPath(botId)}/documents`;
 // Bots routes
 export const getBots = async () => {
   const response = await request("bots");
-  return response.data.data;
+  return response?.data?.data;
 };
 export const getBot = async (botId) => (await request(botPath(botId))).data;
 export const updateBot = async (botId, data) =>

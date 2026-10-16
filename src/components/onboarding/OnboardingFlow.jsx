@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ChevronLeft, MessageSquare } from "lucide-react";
 import { Button, Card } from "@/components/ui";
-import { getCurrentUser } from "@/lib/api/auth.api";
-import { getBots } from "@/lib/api/bots.api";
+import { getOnboarding } from "@/lib/api/onboarding.api";
 import { brand } from "@/lib/brand";
 import AppearanceStep from "./AppearanceStep";
 import BusinessStep from "./BusinessStep";
@@ -44,16 +43,18 @@ export default function OnboardingFlow() {
     let mounted = true;
     async function load() {
       try {
-        const [userResult, bots] = await Promise.all([getCurrentUser(), getBots()]);
+        const { public_bot_id } = await getOnboarding();
         if (!mounted) return;
-        const userId = userResult?.data?.user?.id || userResult?.data?.user?.email;
-        const storageKey = `${STORAGE_KEY}:${userId}`;
+        if (!public_bot_id) {
+          setState(INITIAL);
+          return;
+        }
+        const storageKey = `${STORAGE_KEY}:${public_bot_id}`;
         let stored = {};
         try {
           stored = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
         } catch {}
-        const bot = bots[0];
-        setState({ ...INITIAL, ...stored, botId: bot?.public_id ?? bot?.id ?? "" });
+        setState({ ...INITIAL, ...stored, botId: public_bot_id });
         setStorageKey(storageKey);
       } catch (loadError) {
         if (mounted) {
