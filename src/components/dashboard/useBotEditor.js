@@ -44,6 +44,7 @@ export default function useBotEditor({ selectedBotId, setBots }) {
   const detailError = error?.message || "";
   const [savingAppearance, setSavingAppearance] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsErrors, setSettingsErrors] = useState({});
   const dirty = useMemo(
     () =>
       Boolean(
@@ -151,13 +152,15 @@ export default function useBotEditor({ selectedBotId, setBots }) {
   }, [bot, setDraft]);
   const saveSettings = useCallback(async () => {
     if (!draft || !selectedBotId) return;
+    setSettingsErrors({});
     setSavingSettings(true);
     try {
       const saved = await updateBot(selectedBotId, { settings: draft.settings });
       setDraft(saved);
       notify("Settings saved.");
-    } catch {
-      notify("Unable to save settings.");
+    } catch (error) {
+      setSettingsErrors(error.errors ?? {});
+      notify(error.message || "Unable to save settings.");
     } finally {
       setSavingSettings(false);
     }
@@ -177,5 +180,6 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     saveSettings,
     savingAppearance,
     savingSettings,
+    settingsErrors,
   };
 }

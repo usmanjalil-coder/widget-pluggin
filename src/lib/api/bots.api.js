@@ -12,7 +12,10 @@ export const getBots = async () => {
 };
 export const getBot = async (botId) => (await request(botPath(botId))).data;
 export const updateBot = async (botId, data) => {
-  const response = await request(`bots/${encodeURIComponent(botId)}/config`, { method: "PUT", data });
+  const response = await request(`bots/${encodeURIComponent(botId)}/config`, {
+    method: "PUT",
+    data,
+  });
   await updateBotCache(botId, response.data);
   await invalidateBotsCache();
   return response.data;
@@ -38,7 +41,8 @@ export const toggleBotStatus = async (botId) => {
 };
 
 // Documents routes
-export const listDocuments = async (botId) => (await request(documentsPath(botId))).data;
+export const listDocuments = async (botId, params = {}, signal) =>
+  (await request(documentsPath(botId), { data: params, signal })).data;
 export const addDocument = async (botId, data) =>
   (await request(documentsPath(botId), { method: "POST", data })).data;
 export const updateDocument = async (botId, documentId, action) =>

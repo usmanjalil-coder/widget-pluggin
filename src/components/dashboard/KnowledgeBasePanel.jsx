@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   AlertCircle,
   FileText,
@@ -57,6 +57,7 @@ const typeDetails = {
   url: { label: "URL", icon: Globe },
   text: { label: "Text", icon: Type },
 };
+const sourceSize = ({ size, chunks }) => size ?? `${chunks} chunks`;
 const relativeTime = (value) => {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60000));
   if (minutes < 60) return minutes + "m ago";
@@ -65,8 +66,15 @@ const relativeTime = (value) => {
 };
 
 export default function KnowledgeBasePanel({
-  botId,
   documents,
+  stats,
+  pagination,
+  query,
+  onSearchChange,
+  status,
+  onStatusChange,
+  onPageChange,
+  refreshing,
   loading,
   error,
   onReload,
@@ -78,29 +86,8 @@ export default function KnowledgeBasePanel({
   const [url, setUrl] = useState("");
   const [faqTitle, setFaqTitle] = useState("");
   const [faqText, setFaqText] = useState("");
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
-  const filtered = useMemo(
-    () =>
-      documents.filter((item) => {
-        const queryMatches = item.name.toLowerCase().includes(query.toLowerCase());
-        return queryMatches && (status === "all" || item.status === status);
-      }),
-    [documents, query, status],
-  );
-  const ready = documents.filter((item) => item.status === "ready").length;
-  const attention = documents.filter(
-    (item) => item.status === "processing" || item.status === "failed",
-  ).length;
-
-  useEffect(() => {
-    if (!documents.some((item) => item.status === "processing")) return undefined;
-    const timer = setInterval(onReload, 3000);
-    return () => clearInterval(timer);
-  }, [documents, onReload]);
-
   const add = async (payload) => {
     setSaving(true);
     try {
@@ -116,7 +103,6 @@ export default function KnowledgeBasePanel({
       setSaving(false);
     }
   };
-  const iconFor = (type) => typeDetails[type] || typeDetails.file;
   const actions = (compact = false) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -173,32 +159,37 @@ export default function KnowledgeBasePanel({
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Sources"
-          value={documents.length}
+          value={stats.sources}
           icon={FileText}
           description="All content sources"
         />
-        <StatCard label="Ready" value={ready} icon={Globe} description="Available to answer from" />
+        <StatCard
+          label="Ready"
+          value={stats.ready}
+          icon={Globe}
+          description="Available to answer from"
+        />
         <StatCard
           label="Needs attention"
-          value={attention}
+          value={stats.needs_attention}
           icon={AlertCircle}
           description="Processing or failed"
         />
       </div>
-      {documents.length ? (
+      {stats.sources || query || status !== "all" ? (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative w-full sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => onSearchChange(event.target.value)}
                 className="pl-9"
                 placeholder="Search sources"
                 aria-label="Search sources"
               />
             </div>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={onStatusChange}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -210,7 +201,7 @@ export default function KnowledgeBasePanel({
               </SelectContent>
             </Select>
           </div>
-          <Card className="p-0">
+          <Card className="p-0" aria-busy={refreshing}>
             <div className="hidden overflow-x-auto md:block">
               <Table>
                 <TableHeader>
@@ -226,8 +217,8 @@ export default function KnowledgeBasePanel({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((item) => {
-                    const detail = iconFor(item.type);
+                  {documents.map((item) => {
+                    const detail = typeDetails[item.type];
                     const Icon = detail.icon;
                     return (
                       <TableRow key={item.id}>
@@ -264,7 +255,7 @@ export default function KnowledgeBasePanel({
                             <StatusBadge status="ready" />
                           )}
                         </TableCell>
-                        <TableCell>{item.size || item.chunks || "—"}</TableCell>
+                        <TableCell>{sourceSize(item)}</TableCell>
                         <TableCell title={new Date(item.updatedAt).toLocaleString()}>
                           {relativeTime(item.updatedAt)}
                         </TableCell>
@@ -309,8 +300,8 @@ export default function KnowledgeBasePanel({
               </Table>
             </div>
             <div className="space-y-3 p-4 md:hidden">
-              {filtered.map((item) => {
-                const detail = iconFor(item.type);
+              {documents.map((item) => {
+                const detail = typeDetails[item.type];
                 const Icon = detail.icon;
                 return (
                   <Card key={item.id} className="gap-3 p-4">
@@ -319,8 +310,7 @@ export default function KnowledgeBasePanel({
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{item.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {detail.label} · {item.size || item.chunks || "—"} ·{" "}
-                          {relativeTime(item.updatedAt)}
+                          {detail.label} · {sourceSize(item)} · {relativeTime(item.updatedAt)}
                         </p>
                       </div>
                     </div>
@@ -344,7 +334,40 @@ export default function KnowledgeBasePanel({
               })}
             </div>
           </Card>
-          {!filtered.length && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3"
+            aria-label="Source pagination"
+          >
+            <p className="text-sm text-muted-foreground" role="status">
+              {refreshing
+                ? "Updating sources..."
+                : `Showing ${pagination?.from ?? 0}-${pagination?.to ?? 0} of ${pagination?.total ?? 0}`}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={refreshing || !pagination || pagination.current_page <= 1}
+                onClick={() => onPageChange(pagination.current_page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {pagination?.current_page ?? 1} of {pagination?.last_page ?? 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={
+                  refreshing || !pagination || pagination.current_page >= pagination.last_page
+                }
+                onClick={() => onPageChange(pagination.current_page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+          {!documents.length && (
             <EmptyState title="No matching sources" body="Try another search or status filter." />
           )}
         </>
@@ -468,10 +491,18 @@ export default function KnowledgeBasePanel({
             </Button>
             <Button
               variant="destructive"
+              disabled={saving || refreshing}
               onClick={async () => {
-                await onDelete(deleteTarget.id);
-                setDeleteTarget(null);
-                toast.success("Source deleted.");
+                try {
+                  setSaving(true);
+                  await onDelete(deleteTarget.id);
+                  setDeleteTarget(null);
+                  toast.success("Source deleted.");
+                } catch (error) {
+                  toast.error(error.message);
+                } finally {
+                  setSaving(false);
+                }
               }}
             >
               Delete source
