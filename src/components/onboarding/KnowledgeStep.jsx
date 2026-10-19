@@ -1,17 +1,14 @@
-import { AlertCircle, Check, FileText, FileUp, Globe } from "lucide-react";
-import { Card, Input, Label } from "@/components/ui";
-import CharLimitInput from "@/components/shared/CharLimitInput";
-import { TEXT_LIMITS } from "@/lib/limits";
+import { AlertCircle, Check, FileUp, Globe } from "lucide-react";
+import { Card } from "@/components/ui";
 
 const knowledgeOptions = [
   ["website", "Import from website URL", Globe],
   ["files", "Upload files", FileUp],
-  ["faq", "Paste FAQ text", FileText],
 ];
 export default function KnowledgeStep({ state, update, later, onAddLater }) {
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         {knowledgeOptions.map(([id, label, Icon]) => (
           <button
             key={id}
@@ -36,38 +33,17 @@ export default function KnowledgeStep({ state, update, later, onAddLater }) {
       </div>
       <Card className="p-6">
         <p className="text-sm text-muted-foreground">
-          Knowledge uploads will be available when the Laravel documents API is connected. You can
-          continue with your setup now.
+          After setup, add knowledge from the Knowledge Base page. Import a website or upload a PDF,
+          DOCX, or TXT file containing your questions and answers.
         </p>
         {state.knowledgeMethod === "website" && (
-          <div className="mt-4 space-y-2">
-            <Label htmlFor="knowledge-website">Website to import later</Label>
-            <Input
-              id="knowledge-website"
-              type="url"
-              value={state.websiteSource}
-              onChange={(event) => update({ websiteSource: event.target.value })}
-              placeholder="https://your-site.com"
-            />
-          </div>
-        )}
-        {state.knowledgeMethod === "faq" && (
-          <div className="mt-4">
-            <CharLimitInput
-              id="faq-text"
-              label="FAQ draft"
-              multiline
-              rows={6}
-              maxLength={TEXT_LIMITS.offlineMessage}
-              value={state.faqText}
-              onChange={(event) => update({ faqText: event.target.value })}
-              placeholder="Paste common questions and answers here."
-            />
-          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Choose one page or up to 10 linked pages from the website.
+          </p>
         )}
         {state.knowledgeMethod === "files" && (
           <p className="mt-4 text-sm text-muted-foreground">
-            File upload is unavailable until the documents API is ready.
+            PDF, DOCX, and TXT files up to 10 MB are supported.
           </p>
         )}
       </Card>

@@ -62,8 +62,6 @@ export const INITIAL = {
   position: "right",
   primaryColor: "#2563eb",
   knowledgeMethod: "website",
-  websiteSource: "",
-  faqText: "",
   sources: [],
   snippetCopied: false,
 };

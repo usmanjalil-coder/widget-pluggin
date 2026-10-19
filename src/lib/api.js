@@ -74,7 +74,7 @@ export default async function callApi({
       method: requestMethod,
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
+        ...(data instanceof FormData ? {} : { "Content-Type": "application/json" }),
         ...headers,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
@@ -82,7 +82,9 @@ export default async function callApi({
       body:
         ["GET", "HEAD"].includes(requestMethod) || data === undefined
           ? undefined
-          : JSON.stringify(data),
+          : data instanceof FormData
+            ? data
+            : JSON.stringify(data),
       ...(cache !== undefined ? { cache } : {}),
       ...(next !== undefined ? { next } : {}),
       ...(signal ? { signal } : {}),

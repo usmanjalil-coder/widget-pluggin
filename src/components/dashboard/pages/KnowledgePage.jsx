@@ -32,8 +32,7 @@ function BotKnowledge({ botId }) {
     staleTime: 30000,
     retry: false,
     refetchOnWindowFocus: false,
-    refetchInterval: (query) =>
-      query.state.data?.data.some((item) => item.status === "processing") ? 3000 : false,
+    refetchInterval: false,
   });
   const invalidate = useCallback(
     () => client.invalidateQueries({ queryKey: ["documents", botId] }),

@@ -16,11 +16,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
-import CharLimitInput from "@/components/shared/CharLimitInput";
 import PageHeader from "@/components/shared/PageHeader";
 import StatCard from "@/components/shared/StatCard";
 import StatusBadge from "@/components/bots/StatusBadge";
-import { TEXT_LIMITS } from "@/lib/limits";
 import {
   Table,
   TableBody,
@@ -84,12 +82,15 @@ export default function KnowledgeBasePanel({
 }) {
   const [dialog, setDialog] = useState("");
   const [url, setUrl] = useState("");
-  const [faqTitle, setFaqTitle] = useState("");
-  const [faqText, setFaqText] = useState("");
+  const [urlScope, setUrlScope] = useState("page");
+  const [files, setFiles] = useState([]);
+  const [dragging, setDragging] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [fileError, setFileError] = useState("");
   const add = async (payload) => {
+    if (saving) return;
     if (payload.type === "url") {
       try {
         const parsed = new URL(payload.url);
@@ -107,8 +108,8 @@ export default function KnowledgeBasePanel({
       await onAdd(payload);
       setDialog("");
       setUrl("");
-      setFaqTitle("");
-      setFaqText("");
+      setUrlScope("page");
+      setFiles([]);
       toast.success("Source accepted. Check its status in Knowledge Base.");
     } catch (nextError) {
       if (payload.type === "url") {
@@ -137,10 +138,6 @@ export default function KnowledgeBasePanel({
         <DropdownMenuItem onSelect={() => setDialog("file")}>
           <FileUp />
           Upload files
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setDialog("text")}>
-          <Type />
-          Paste text / FAQ
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -172,7 +169,23 @@ export default function KnowledgeBasePanel({
       <PageHeader
         title="Knowledge Base"
         description="What your assistant knows. Add content so it can answer accurately."
-        actions={actions()}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              onClick={() => void onReload()}
+            >
+              <RotateCw
+                className={refreshing ? "size-4 animate-spin motion-reduce:animate-none" : "size-4"}
+              />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+            {actions()}
+          </div>
+        }
       />
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
@@ -343,9 +356,20 @@ export default function KnowledgeBasePanel({
                       ) : (
                         <StatusBadge status="ready" />
                       )}
-                      <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(item)}>
-                        Delete
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {item.status === "failed" && item.type !== "file" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => void onUpdate(item.id, "retry")}
+                          >
+                            Retry
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(item)}>
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 );
@@ -392,7 +416,7 @@ export default function KnowledgeBasePanel({
       ) : (
         <EmptyState
           title="No knowledge added yet"
-          body="Add a website, file, or FAQ so your assistant can answer from real content."
+          body="Add a website or upload a file so your assistant can answer from real content."
           action={<div className="flex flex-wrap justify-center gap-2">{actions(true)}</div>}
         />
       )}
@@ -403,24 +427,19 @@ export default function KnowledgeBasePanel({
           if (!open && !saving) {
             setDialog("");
             setUrlError("");
+            setFileError("");
+            setFiles([]);
+            setDragging(false);
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {dialog === "url"
-                ? "Import website URL"
-                : dialog === "file"
-                  ? "Upload files"
-                  : "Paste text or FAQ"}
-            </DialogTitle>
+            <DialogTitle>{dialog === "url" ? "Import website" : "Upload files"}</DialogTitle>
             <DialogDescription>
               {dialog === "url"
-                ? "Import the text from this page. Processing continues in the background."
-                : dialog === "file"
-                  ? "PDF, DOCX, or TXT up to 10 MB each."
-                  : "Add a title and text for this knowledge source."}
+                ? "Choose a single page or discover pages across this website. Processing runs in the background."
+                : "Upload PDF, DOCX, or UTF-8 TXT files, up to 10 MB each."}
             </DialogDescription>
           </DialogHeader>
           {dialog === "url" && (
@@ -429,11 +448,43 @@ export default function KnowledgeBasePanel({
               className="space-y-2"
               onSubmit={(event) => {
                 event.preventDefault();
-                if (!saving) void add({ type: "url", url: url.trim() });
+                if (!saving) void add({ type: "url", url: url.trim(), scope: urlScope });
               }}
             >
-              <label htmlFor="knowledge-url" className="text-sm font-medium">
-                Page URL
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium">Import scope</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {[
+                    { value: "page", title: "Single page", description: "Only this URL" },
+                    {
+                      value: "site",
+                      title: "Website",
+                      description: "Up to 10 pages linked from this URL",
+                    },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${urlScope === option.value ? "border-primary bg-primary/5" : "border-border"}`}
+                    >
+                      <input
+                        type="radio"
+                        name="scope"
+                        value={option.value}
+                        checked={urlScope === option.value}
+                        onChange={() => setUrlScope(option.value)}
+                        disabled={saving}
+                        className="accent-primary"
+                      />
+                      <span>
+                        <span className="block text-sm font-medium">{option.title}</span>
+                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <label htmlFor="knowledge-url" className="block pt-2 text-sm font-medium">
+                Website URL
               </label>
               <Input
                 id="knowledge-url"
@@ -458,87 +509,127 @@ export default function KnowledgeBasePanel({
             </form>
           )}
           {dialog === "file" && (
-            <label className="flex cursor-pointer flex-col items-center rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
-              <FileUp className="size-6 text-primary" />
-              <span className="mt-3 text-sm font-medium">Drop files here or choose files</span>
-              <span className="mt-1 text-xs text-muted-foreground">
-                PDF, DOCX, TXT · max 10 MB each
-              </span>
-              <input
-                className="sr-only"
-                type="file"
-                multiple
-                accept=".pdf,.docx,.txt"
-                onChange={(event) => {
-                  Array.from(event.target.files || []).forEach(
-                    (file) =>
-                      void add({
-                        name: file.name,
-                        type: "file",
-                        source: "Upload",
-                        size: Math.max(1, Math.round(file.size / 1024)) + " KB",
-                      }),
-                  );
-                  event.target.value = "";
+            <div className="space-y-3">
+              <label
+                className={`flex cursor-pointer flex-col items-center rounded-lg border border-dashed p-8 text-center ${dragging ? "border-primary bg-primary/5" : "border-border bg-muted/30"}`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDragging(true);
                 }}
-              />
-            </label>
-          )}
-          {dialog === "text" && (
-            <div className="space-y-4">
-              <Input
-                value={faqTitle}
-                onChange={(event) => setFaqTitle(event.target.value)}
-                placeholder="Source title"
-              />
-              <CharLimitInput
-                id="knowledge-text"
-                label="Text or FAQ"
-                multiline
-                rows={6}
-                maxLength={TEXT_LIMITS.offlineMessage}
-                value={faqText}
-                onChange={(event) => setFaqText(event.target.value)}
-              />
+                onDragLeave={() => setDragging(false)}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setDragging(false);
+                  setFileError("");
+                  setFiles((current) => [...current, ...Array.from(event.dataTransfer.files)]);
+                }}
+              >
+                <FileUp className="size-6 text-primary" />
+                <span className="mt-3 text-sm font-medium">Drop files here or choose files</span>
+                <span className="mt-1 text-xs text-muted-foreground">
+                  PDF, DOCX, TXT · max 10 MB each
+                </span>
+                <input
+                  className="sr-only"
+                  type="file"
+                  multiple
+                  accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                  onChange={(event) => {
+                    setFileError("");
+                    setFiles((current) => [...current, ...Array.from(event.target.files || [])]);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              {files.map((file, index) => (
+                <div
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm"
+                >
+                  <span className="min-w-0 truncate">
+                    {file.name} · {Math.ceil(file.size / 1024)} KB
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      setFiles((current) => current.filter((_, position) => position !== index))
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              {fileError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {fileError}
+                </p>
+              )}
             </div>
           )}
-          {dialog !== "file" && (
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={saving}
-                onClick={() => {
-                  setDialog("");
-                  setUrlError("");
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type={dialog === "url" ? "submit" : "button"}
-                form={dialog === "url" ? "import-url-form" : undefined}
-                disabled={saving || (dialog === "url" ? !url : !faqTitle || !faqText)}
-                onClick={
-                  dialog === "url"
-                    ? undefined
-                    : () =>
-                        void add(
-                          dialog === "url"
-                            ? { url: url.trim(), type: "url" }
-                            : {
-                                name: faqTitle,
-                                type: "text",
-                                source: "Manual",
-                                size: Math.ceil(faqText.length / 4) + " chunks",
-                              },
-                        )
-                }
-              >
-                {saving ? "Adding..." : dialog === "url" ? "Import" : "Add text"}
-              </Button>
-            </DialogFooter>
-          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={saving}
+              onClick={() => {
+                setDialog("");
+                setUrlError("");
+                setFileError("");
+                setFiles([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type={dialog === "url" ? "submit" : "button"}
+              form={dialog === "url" ? "import-url-form" : undefined}
+              onClick={
+                dialog === "file"
+                  ? async () => {
+                      if (!files.length) return;
+                      for (const file of files) {
+                        if (
+                          !/\.(pdf|docx|txt)$/i.test(file.name) ||
+                          file.size > 10 * 1024 * 1024 ||
+                          file.size === 0
+                        ) {
+                          setFileError(
+                            `${file.name}: choose a PDF, DOCX, or TXT file under 10 MB.`,
+                          );
+                          return;
+                        }
+                      }
+                      setSaving(true);
+                      try {
+                        for (const [index, file] of files.entries()) {
+                          const data = new FormData();
+                          data.set("type", "file");
+                          data.set("file", file);
+                          try {
+                            await onAdd(data);
+                          } catch (error) {
+                            setFiles(files.slice(index));
+                            throw error;
+                          }
+                        }
+                        setFiles([]);
+                        setDialog("");
+                        toast.success("Files accepted for processing.");
+                      } catch (error) {
+                        setFileError(error.errors?.file?.[0] || error.message);
+                      } finally {
+                        setSaving(false);
+                      }
+                    }
+                  : undefined
+              }
+              disabled={saving || (dialog === "url" ? !url.trim() : !files.length)}
+            >
+              {saving ? "Adding..." : dialog === "url" ? "Import" : "Upload files"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
