@@ -45,21 +45,40 @@ export default function useBotEditor({ selectedBotId, setBots }) {
   const [savingAppearance, setSavingAppearance] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsErrors, setSettingsErrors] = useState({});
+  const [appearanceErrors, setAppearanceErrors] = useState({});
+  const [logoState, setLogoState] = useState(null);
+  const logoFile = logoState?.id === selectedBotId ? logoState.file : null;
+  const setLogoFile = useCallback(
+    (file) => {
+      setLogoState({ id: selectedBotId, file });
+      setAppearanceErrors({});
+    },
+    [selectedBotId],
+  );
   const dirty = useMemo(
     () =>
       Boolean(
         bot &&
         draft &&
-        JSON.stringify({ theme: draft.theme, texts: draft.texts, branding: draft.branding }) !==
-          JSON.stringify({ theme: bot.theme, texts: bot.texts, branding: bot.branding }),
+        (logoFile ||
+          JSON.stringify({
+            theme: draft.theme,
+            texts: draft.texts,
+            branding: draft.branding,
+            rules: draft.settings?.assistantRules || "",
+          }) !==
+            JSON.stringify({
+              theme: bot.theme,
+              texts: bot.texts,
+              branding: bot.branding,
+              rules: bot.settings?.assistantRules || "",
+            })),
       ),
-    [bot, draft],
+    [bot, draft, logoFile],
   );
 
   useEffect(() => {
-    return registerNavigationGuard(
-      () => !dirty || window.confirm("Discard unsaved appearance changes?"),
-    );
+    return registerNavigationGuard(() => !dirty || window.confirm("Discard unsaved bot changes?"));
   }, [dirty, registerNavigationGuard]);
 
   useEffect(() => {
@@ -77,14 +96,14 @@ export default function useBotEditor({ selectedBotId, setBots }) {
         anchor.href === window.location.href
       )
         return;
-      if (!window.confirm("Discard unsaved appearance changes?")) {
+      if (!window.confirm("Discard unsaved bot changes?")) {
         event.preventDefault();
         event.stopPropagation();
       } else setDraft(bot);
     };
     const currentUrl = window.location.href;
     const onPopState = () => {
-      if (!window.confirm("Discard unsaved appearance changes?"))
+      if (!window.confirm("Discard unsaved bot changes?"))
         window.history.pushState(null, "", currentUrl);
       else setDraft(bot);
     };
@@ -121,19 +140,29 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       return;
     }
     setSavingAppearance(true);
+    setAppearanceErrors({});
     try {
-      const saved = await updateBot(selectedBotId, {
-        ...draft,
-        name: draft.texts.botName.trim() || draft.name,
-      });
+      const texts = { ...draft.texts };
+      if (logoFile) delete texts.avatarUrl;
+      const saved = await updateBot(
+        selectedBotId,
+        {
+          theme: draft.theme,
+          texts,
+          branding: draft.branding,
+          settings: { assistantRules: draft.settings?.assistantRules || "" },
+        },
+        logoFile,
+      );
       setDraft(saved);
+      setLogoFile(null);
       setBots((current) =>
         current.map((item) =>
           String(item.public_id ?? item.id) === String(selectedBotId)
             ? {
                 ...item,
-                id: saved.public_id ?? saved.id,
-                name: saved.name,
+                id: saved.public_id ?? saved.id ?? item.id,
+                name: saved.texts?.botName || saved.name || item.name,
                 status: saved.status ?? item.status,
               }
             : item,
@@ -141,15 +170,18 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       );
       notify("Appearance saved. The public widget is updated.");
     } catch (error) {
+      setAppearanceErrors(error.errors ?? {});
       notify(error.message || "Unable to save this appearance yet.");
     } finally {
       setSavingAppearance(false);
     }
-  }, [selectedBotId, draft, setBots, setDraft]);
+  }, [selectedBotId, draft, logoFile, setLogoFile, setBots, setDraft]);
 
   const resetAppearance = useCallback(() => {
     setDraft(bot);
-  }, [bot, setDraft]);
+    setLogoFile(null);
+    setAppearanceErrors({});
+  }, [bot, setDraft, setLogoFile]);
   const saveSettings = useCallback(async () => {
     if (!draft || !selectedBotId) return;
     setSettingsErrors({});
@@ -181,5 +213,8 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     savingAppearance,
     savingSettings,
     settingsErrors,
+    appearanceErrors,
+    logoFile,
+    setLogoFile,
   };
 }

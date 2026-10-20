@@ -1,7 +1,8 @@
 "use client";
 
 import { Mail } from "lucide-react";
-import { Badge, Button, Card, Input, Label, Skeleton, Switch, Textarea } from "@/components/ui";
+import { Badge, Button, Card, Input, Label, Skeleton, Switch } from "@/components/ui";
+import AssistantRulesField from "@/components/shared/AssistantRulesField";
 
 import BookingSettingsEditor from "./BookingSettingsEditor";
 
@@ -69,8 +70,7 @@ export default function BotSettingsPanel({
         </Card>
 
         <Card title="Assistant rules" subtitle="Keep the bot aligned with your workflow.">
-          <Textarea
-            rows={5}
+          <AssistantRulesField
             value={draft.settings?.assistantRules || ""}
             onChange={(event) => updateDraftField("settings", "assistantRules", event.target.value)}
           />

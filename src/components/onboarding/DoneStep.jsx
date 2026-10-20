@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button, Card } from "@/components/ui";
 import { completeOnboarding } from "@/lib/api/onboarding.api";
 
-export default function DoneStep({ state, headingRef }) {
+export default function DoneStep({ state, assistant, greeting, headingRef }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -24,17 +24,20 @@ export default function DoneStep({ state, headingRef }) {
     setError("");
 
     try {
-      await completeOnboarding(state);
+      await completeOnboarding({ ...state, botName: assistant, greeting });
       toast.success("Onboarding completed.");
       router.push("/dashboard");
     } catch (saveError) {
-      const message = saveError?.message || "Could not finish onboarding. Please try again.";
+      const fieldError = Object.entries(saveError?.errors || {})[0];
+      const message = fieldError
+        ? `${fieldError[0]}: ${fieldError[1][0]}`
+        : saveError?.message || "Could not finish onboarding. Please try again.";
       setError(message);
       toast.error(message);
     } finally {
       setSaving(false);
     }
-  }, [router, saving, state]);
+  }, [router, saving, state, assistant, greeting]);
 
   return (
     <div className="mx-auto max-w-xl py-8 text-center">

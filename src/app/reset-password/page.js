@@ -1,5 +1,7 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -68,11 +70,14 @@ export default function ResetPasswordPage() {
         className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8"
         aria-labelledby="reset-title"
       >
-        <header className="mb-6">
-          <p className="text-sm font-medium text-muted-foreground">Account security</p>
-          <h1 id="reset-title" className="mt-1 text-2xl font-semibold">
-            Reset password
-          </h1>
+        <header className="mb-6 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Account security</p>
+            <h1 id="reset-title" className="mt-1 text-2xl font-semibold">
+              Reset password
+            </h1>
+          </div>
+          <ThemeToggle />
         </header>
         {!ready ? (
           <div className="space-y-4">

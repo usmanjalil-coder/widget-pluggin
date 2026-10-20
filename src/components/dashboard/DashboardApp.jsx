@@ -1,5 +1,7 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, Search } from "lucide-react";
@@ -41,7 +43,7 @@ export default function DashboardApp({ children }) {
     routeBotId ||
     (bots.some((bot) => String(bot.public_id ?? bot.id) === String(storedBotId))
       ? storedBotId
-      : bots[0]?.public_id ?? bots[0]?.id ?? "");
+      : (bots[0]?.public_id ?? bots[0]?.id ?? ""));
   const selectedBot = useMemo(
     () => bots.find((bot) => String(bot.public_id ?? bot.id) === String(selectedBotId)),
     [bots, selectedBotId],
@@ -116,8 +118,7 @@ export default function DashboardApp({ children }) {
         const currentDashboard = current || EMPTY_DASHBOARD;
         return {
           ...currentDashboard,
-          account:
-            typeof update === "function" ? update(currentDashboard.account) : update,
+          account: typeof update === "function" ? update(currentDashboard.account) : update,
         };
       });
     },
@@ -213,6 +214,7 @@ export default function DashboardApp({ children }) {
                 </div>
 
                 <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                  <ThemeToggle />
                   <div className="relative hidden xl:block">
                     <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input

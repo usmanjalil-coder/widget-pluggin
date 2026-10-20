@@ -55,6 +55,41 @@ const typeDetails = {
   url: { label: "URL", icon: Globe },
   text: { label: "Text", icon: Type },
 };
+const sourceLink = (item) => {
+  if (item.type !== "url") return null;
+  try {
+    const url = new URL(item.sourceUrl ?? item.name);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+  } catch {
+    return null;
+  }
+};
+
+function DocumentName({ item, Icon }) {
+  const url = sourceLink(item);
+
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center gap-2 font-medium">
+        <Icon className="size-4 shrink-0 text-primary" />
+        <span className="min-w-0 truncate" title={item.name}>
+          {item.name}
+        </span>
+      </div>
+      {url && (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 block break-all text-xs text-primary underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {item.sourceUrl ?? item.name}
+        </a>
+      )}
+    </div>
+  );
+}
+
 const sourceSize = ({ size, chunks }) => size ?? `${chunks} chunks`;
 const relativeTime = (value) => {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60000));
@@ -253,11 +288,8 @@ export default function KnowledgeBasePanel({
                     const Icon = detail.icon;
                     return (
                       <TableRow key={item.id}>
-                        <TableCell>
-                          <span className="flex items-center gap-2 font-medium">
-                            <Icon className="size-4 text-primary" />
-                            {item.name}
-                          </span>
+                        <TableCell className="max-w-72 lg:max-w-96">
+                          <DocumentName item={item} Icon={Icon} />
                         </TableCell>
                         <TableCell>
                           <Badge tone="default">{detail.label}</Badge>
@@ -336,10 +368,9 @@ export default function KnowledgeBasePanel({
                 const Icon = detail.icon;
                 return (
                   <Card key={item.id} className="gap-3 p-4">
-                    <div className="flex items-start gap-2">
-                      <Icon className="mt-0.5 size-4 text-primary" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{item.name}</p>
+                    <div className="min-w-0">
+                      <DocumentName item={item} Icon={Icon} />
+                      <div className="min-w-0 pl-6">
                         <p className="mt-1 text-xs text-muted-foreground">
                           {detail.label} · {sourceSize(item)} · {relativeTime(item.updatedAt)}
                         </p>

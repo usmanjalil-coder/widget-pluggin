@@ -1,5 +1,8 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import PasswordInput from "@/components/shared/PasswordInput";
+
 /* eslint-disable react-hooks/set-state-in-effect -- Preserve existing client-only query/storage synchronization in this visual-only change. */
 
 import { Button, Input, Label } from "@/components/ui";
@@ -87,9 +90,12 @@ export default function LoginPage() {
               <p className="text-sm font-medium text-muted-foreground">Welcome back</p>
               <h2 className="text-2xl font-semibold text-foreground">Log in</h2>
             </div>
-            <Link href="/" className="text-sm font-medium text-primary">
-              Back to home
-            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Link href="/" className="text-sm font-medium text-primary">
+                Back to home
+              </Link>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,9 +111,15 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-sm font-medium text-foreground">Password</Label>
-              <Input
-                type="password"
+              <Label
+                htmlFor="login-password"
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                Password
+              </Label>
+              <PasswordInput
+                id="login-password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}

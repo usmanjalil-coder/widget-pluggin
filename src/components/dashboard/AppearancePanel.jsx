@@ -14,6 +14,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import CharLimitInput from "@/components/shared/CharLimitInput";
 import AppearancePreview from "@/components/dashboard/AppearancePreview";
+import LogoPicker from "@/components/dashboard/LogoPicker";
+import AssistantRulesField from "@/components/shared/AssistantRulesField";
 import { HEX_COLOR, TEXT_LIMITS } from "@/lib/limits";
 import { DEFAULT_CONFIG } from "../../../widget/src/config.js";
 
@@ -55,6 +57,9 @@ export default function AppearancePanel({
   savingAppearance,
   resetAppearance,
   saveAppearance,
+  logoFile,
+  setLogoFile,
+  appearanceErrors = {},
 }) {
   if (detailError && !draft && !loading) {
     return (
@@ -76,8 +81,8 @@ export default function AppearancePanel({
   }
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-      <div className="flex min-w-0 flex-col gap-6">
+    <div className="grid items-start gap-6 pb-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+      <fieldset disabled={savingAppearance} className="flex min-w-0 flex-col gap-6">
         <Card title="Branding" subtitle="Your public widget identity." className="order-1">
           <div className="grid gap-4 md:grid-cols-2">
             <CharLimitInput
@@ -94,21 +99,26 @@ export default function AppearancePanel({
               value={draft.texts.launcherLabel || ""}
               onChange={(event) => updateDraftField("texts", "launcherLabel", event.target.value)}
             />
-            <CharLimitInput
-              id="appearance-avatar-url"
-              label="Avatar URL"
-              maxLength={TEXT_LIMITS.avatarUrl}
-              className="md:col-span-2"
+            <LogoPicker
+              key={selectedBotId}
               value={draft.texts.avatarUrl || ""}
-              onChange={(event) => updateDraftField("texts", "avatarUrl", event.target.value)}
-              placeholder="https://example.com/avatar.png"
-              error={
-                draft.texts.avatarUrl && !/^https:\/\//i.test(draft.texts.avatarUrl)
-                  ? "Use an HTTPS URL."
-                  : undefined
-              }
+              file={logoFile}
+              onFileChange={setLogoFile}
+              onUrlChange={(value) => updateDraftField("texts", "avatarUrl", value)}
             />
           </div>
+        </Card>
+
+        <Card
+          title="Assistant rules"
+          subtitle="Tell your assistant how to respond. You can also edit these same rules in Settings."
+          className="order-5"
+        >
+          <AssistantRulesField
+            id="appearance-assistant-rules"
+            value={draft.settings?.assistantRules}
+            onChange={(event) => updateDraftField("settings", "assistantRules", event.target.value)}
+          />
         </Card>
 
         <Card title="Colors" subtitle="Review text contrast before saving." className="order-2">
@@ -411,19 +421,30 @@ export default function AppearancePanel({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() =>
+              onClick={() => {
+                setLogoFile(null);
                 setDraft((current) => ({
                   ...current,
                   theme: { ...current.theme, ...DEFAULT_CONFIG.theme },
                   texts: { ...current.texts, ...DEFAULT_CONFIG.texts },
-                }))
-              }
+                }));
+              }}
             >
               Reset to defaults
             </Button>
           </div>
         </Card>
-      </div>
+        {Object.keys(appearanceErrors).length > 0 && (
+          <div
+            role="alert"
+            className="order-6 space-y-1 rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
+          >
+            {Object.entries(appearanceErrors).map(([field, messages]) => (
+              <p key={field}>{Array.isArray(messages) ? messages.join(" ") : messages}</p>
+            ))}
+          </div>
+        )}
+      </fieldset>
 
       <AppearancePreview botId={selectedBotId} config={draft} />
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-border bg-card/95 p-3 shadow-sm backdrop-blur-sm lg:left-64">

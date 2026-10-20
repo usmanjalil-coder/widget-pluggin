@@ -1,5 +1,8 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+import PasswordInput from "@/components/shared/PasswordInput";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, LoaderCircle } from "lucide-react";
@@ -200,9 +203,12 @@ export default function SignupPage() {
                 {step === 1 ? "Create account" : "Verify your email"}
               </h1>
             </div>
-            <Link href="/" className="text-sm font-medium text-primary">
-              Back to home
-            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Link href="/" className="text-sm font-medium text-primary">
+                Back to home
+              </Link>
+            </div>
           </header>
           <div className="mb-5 flex items-center gap-3" aria-label={`Step ${step} of 2`}>
             {["Account", "Verify email"].map((label, index) => (
@@ -271,7 +277,7 @@ export default function SignupPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-password">Password</Label>
-                <Input
+                <PasswordInput
                   id="register-password"
                   type="password"
                   autoComplete="new-password"
@@ -302,7 +308,7 @@ export default function SignupPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-confirm">Confirm password</Label>
-                <Input
+                <PasswordInput
                   id="register-confirm"
                   type="password"
                   autoComplete="new-password"

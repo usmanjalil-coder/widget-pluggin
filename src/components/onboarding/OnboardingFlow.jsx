@@ -1,5 +1,7 @@
 "use client";
 
+import ThemeToggle from "@/components/shared/ThemeToggle";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -212,7 +214,13 @@ export default function OnboardingFlow() {
       update={update}
     />,
     <InstallStep key="install" state={state} update={update} />,
-    <DoneStep key="done" state={state} headingRef={headingRef} />,
+    <DoneStep
+      key="done"
+      state={state}
+      assistant={assistant}
+      greeting={greeting}
+      headingRef={headingRef}
+    />,
   ][step];
 
   return (
@@ -225,11 +233,14 @@ export default function OnboardingFlow() {
             </span>
             {brand.name}
           </Link>
-          {step < 4 && (
-            <Button type="button" variant="ghost" onClick={skip}>
-              Skip for now
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {step < 4 && (
+              <Button type="button" variant="ghost" onClick={skip}>
+                Skip for now
+              </Button>
+            )}
+          </div>
         </div>
       </header>
       <div className="mx-auto max-w-4xl px-4 py-8 pb-28 sm:px-6 sm:py-10">

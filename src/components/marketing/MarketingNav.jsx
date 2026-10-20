@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import ThemeToggle from "@/components/shared/ThemeToggle";
+
 import { useCallback, useState } from "react";
-import { Menu, Moon, Sun } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { BrandWordmark } from "./BrandWordmark";
@@ -14,32 +16,6 @@ const navigation = [
   { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(
-    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
-  );
-
-  const toggle = useCallback(() => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-  }, [dark]);
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="rounded-lg"
-      onClick={toggle}
-      aria-label="Toggle color theme"
-    >
-      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </Button>
-  );
-}
 
 function AuthActions({ mobile = false }) {
   const authenticated = useAuthToken();
@@ -119,7 +95,11 @@ export function MarketingNav() {
           </SheetHeader>
           <div className="flex flex-col gap-2 text-sm text-foreground">
             {navigation.map((item) => (
-              <Link key={item.href} href={item.href} className="rounded-lg px-2 py-2 hover:bg-background">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-lg px-2 py-2 hover:bg-background"
+              >
                 {item.label}
               </Link>
             ))}

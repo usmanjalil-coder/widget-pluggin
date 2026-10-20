@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import PasswordInput from "@/components/shared/PasswordInput";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, Card, EmptyState, Input, Label, Skeleton, Switch } from "@/components/ui";
 import PageHeader from "@/components/shared/PageHeader";
 
 const initials = (name) =>
-  name
+  (name || "")
     .split(" ")
     .map((part) => part[0])
     .join("")
@@ -29,7 +29,6 @@ export default function AccountSettingsPanel({
     newPassword: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,7 +47,7 @@ export default function AccountSettingsPanel({
         </Button>
       </Card>
     );
-  if (!data)
+  if (!data || typeof data.name !== "string")
     return <EmptyState title="Account unavailable" body="Please retry loading your account." />;
   const update = (patch) => setDraft((current) => ({ ...(current || account), ...patch }));
   const save = async () => {
@@ -135,44 +134,35 @@ export default function AccountSettingsPanel({
         <Card title="Security" subtitle="Use a strong password with at least 8 characters.">
           <form className="grid gap-4 sm:max-w-md" onSubmit={submitPassword}>
             {["currentPassword", "newPassword", "confirmPassword"].map((key) => (
-              <Label key={key} className="space-y-2">
-                <span>
-                  {key === "currentPassword"
-                    ? "Current password"
-                    : key === "newPassword"
-                      ? "New password"
-                      : "Confirm password"}
-                </span>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={passwords[key]}
-                    aria-invalid={Boolean(passwordErrors[key])}
-                    aria-describedby={passwordErrors[key] ? `${key}-error` : undefined}
-                    onChange={(event) => {
-                      setPasswords({ ...passwords, [key]: event.target.value });
-                      if (passwordErrors[key]) {
-                        setPasswordErrors((current) => ({ ...current, [key]: "", form: "" }));
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide passwords" : "Show passwords"}
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </Button>
-                </div>
+              <div key={key} className="space-y-2">
+                <Label htmlFor={key}>
+                  <span>
+                    {key === "currentPassword"
+                      ? "Current password"
+                      : key === "newPassword"
+                        ? "New password"
+                        : "Confirm password"}
+                  </span>
+                </Label>
+                <PasswordInput
+                  id={key}
+                  autoComplete={key === "currentPassword" ? "current-password" : "new-password"}
+                  value={passwords[key]}
+                  aria-invalid={Boolean(passwordErrors[key])}
+                  aria-describedby={passwordErrors[key] ? `${key}-error` : undefined}
+                  onChange={(event) => {
+                    setPasswords({ ...passwords, [key]: event.target.value });
+                    if (passwordErrors[key]) {
+                      setPasswordErrors((current) => ({ ...current, [key]: "", form: "" }));
+                    }
+                  }}
+                />
                 {passwordErrors[key] ? (
                   <span id={`${key}-error`} className="block text-sm text-destructive" role="alert">
                     {passwordErrors[key]}
                   </span>
                 ) : null}
-              </Label>
+              </div>
             ))}
             {passwordErrors.form ? (
               <p className="text-sm text-destructive" role="alert">

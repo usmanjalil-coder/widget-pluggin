@@ -1,5 +1,11 @@
 import callApi from "@/lib/api";
-import { invalidateBotsCache, removeBotCache, updateBotCache } from "@/lib/query-client";
+import {
+  botQueryKey,
+  getQueryClient,
+  invalidateBotsCache,
+  removeBotCache,
+  updateBotCache,
+} from "@/lib/query-client";
 
 const request = (url, options = {}) => callApi({ url, toastr: false, ...options });
 const botPath = (botId) => `bot/${encodeURIComponent(botId)}`;
@@ -11,14 +17,22 @@ export const getBots = async () => {
   return response?.data?.data;
 };
 export const getBot = async (botId) => (await request(botPath(botId))).data;
-export const updateBot = async (botId, data) => {
+export const updateBot = async (botId, data, logoFile = null) => {
+  let body = data;
+  if (logoFile) {
+    body = new FormData();
+    body.append("config", JSON.stringify(data));
+    body.append("logo", logoFile);
+  }
   const response = await request(`bots/${encodeURIComponent(botId)}/config`, {
-    method: "PUT",
-    data,
+    method: logoFile ? "POST" : "PUT",
+    data: body,
   });
-  await updateBotCache(botId, response.data);
+  const current = getQueryClient().getQueryData(botQueryKey(botId));
+  const saved = { ...current, ...response.data };
+  await updateBotCache(botId, saved);
   await invalidateBotsCache();
-  return response.data;
+  return saved;
 };
 export const createBot = async (data) => {
   const response = await request("bot", { method: "POST", data });
