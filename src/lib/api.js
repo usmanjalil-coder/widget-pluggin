@@ -3,7 +3,7 @@ import { toast } from "sonner";
 const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
 const apiPrefix = "/api/v1";
 
-function getToken() {
+export function getToken() {
   if (typeof window === "undefined") return null;
   const value = window.localStorage.getItem("token");
   if (!value) return null;

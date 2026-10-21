@@ -35,6 +35,10 @@ const chatIcon = () =>
 const xIcon = (className = "cb-icon cb-icon-close") =>
   svg([{ d: "m7 7 10 10M17 7 7 17" }], className);
 const sendIcon = () => svg([{ d: "M12 19V5M6.5 10.5 12 5l5.5 5.5" }]);
+const retryIcon = () => svg([
+  { d: "M3 12a9 9 0 1 0 2.6-6.4L3 8" },
+  { d: "M3 3v5h5" },
+]);
 const initials = (name) =>
   name
     .split(/\s+/)
@@ -88,6 +92,7 @@ function mountWidget({
   container,
   botId,
   apiBase,
+  getAuthToken = () => null,
   config: initialConfig,
   failed,
   defaultOpen,
@@ -210,6 +215,7 @@ function mountWidget({
     } catch {}
   };
   const history = [];
+  const testHistory = [];
   const teaserKey = `cb-teaser-${botId}`;
   const scroll = () => {
     messages.scrollTop = messages.scrollHeight;
@@ -248,6 +254,28 @@ function mountWidget({
     lastMinute = stamp;
     scroll();
     return { row, bubble };
+  };
+  const addError = (message, retryMessage) => {
+    const notice = make("div", "cb-error-notice");
+    notice.setAttribute("role", "alert");
+    notice.append(
+      make("span", "cb-error-symbol", "!"),
+      make("span", "cb-error-text", message),
+    );
+    if (retryMessage) {
+      const retry = make("button", "cb-retry");
+      retry.type = "button";
+      retry.setAttribute("aria-label", "Retry message");
+      retry.title = "Retry message";
+      retry.append(retryIcon());
+      retry.addEventListener("click", () => {
+        notice.remove();
+        sendMessage(retryMessage);
+      });
+      notice.append(retry);
+    }
+    messages.append(notice);
+    scroll();
   };
   const setOpen = (value) => {
     if (destroyed || open === value) return;
@@ -299,8 +327,9 @@ function mountWidget({
       const label = make("label", "", field.label || field.name);
       const control = make("input");
       control.name = field.name;
-      control.required = true;
-      control.autocomplete = field.name === "phone" ? "tel" : "name";
+      control.required = field.required !== false;
+      control.type = ["email", "date", "tel"].includes(field.type) ? field.type : "text";
+      control.autocomplete = field.name === "phone" ? "tel" : field.name === "email" ? "email" : "name";
       label.append(control);
       form.append(label);
     });
@@ -343,6 +372,10 @@ function mountWidget({
   };
   const sendMessage = async (message) => {
     if (!message.trim() || sending) return;
+    if (preview && testHistory.length >= 30) {
+      addError("Test session limit reached. Reset chat to start a new session.");
+      return;
+    }
     const requestGeneration = generation;
     lastMessage = message.trim();
     hideChips();
@@ -354,18 +387,26 @@ function mountWidget({
     send.disabled = true;
     typing.hidden = false;
     scroll();
-    const reply = addMessage("bot", "");
+    let reply = null;
     let answer = "";
     try {
       await streamChat({
         apiBase,
         botId,
-        conversationId: localStorage.getItem(`cb-conversation-${botId}`),
+        conversationId: preview ? null : localStorage.getItem(`cb-conversation-${botId}`),
         message: lastMessage,
+        test: preview,
+        history: preview ? testHistory : undefined,
+        authToken: preview ? getAuthToken() : null,
+        assistantRules: preview ? config.settings?.assistantRules : undefined,
+        botName: preview ? config.texts.botName : undefined,
         onToken: (token) => {
           if (destroyed || requestGeneration !== generation) return;
-          typing.hidden = true;
+          if (!token) return;
           answer += token;
+          if (!answer.trim()) return;
+          typing.hidden = true;
+          reply ??= addMessage("bot", "");
           markdown(reply.bubble, answer);
           if (nearBottom()) scroll();
         },
@@ -374,20 +415,16 @@ function mountWidget({
         },
       });
       if (destroyed || requestGeneration !== generation) return;
-      if (!answer) reply.row.remove();
+      if (!answer) reply?.row.remove();
+      else if (preview) testHistory.push(
+        { role: "user", text: lastMessage },
+        { role: "assistant", text: answer.slice(0, 1000) },
+      );
     } catch (err) {
       if (destroyed || requestGeneration !== generation) return;
-      reply.bubble.classList.add("cb-error");
-      reply.bubble.replaceChildren(
-        document.createTextNode(err.message || "Unable to send message."),
-      );
-      const retry = make("button", "cb-retry", "Retry");
-      retry.type = "button";
-      retry.addEventListener("click", () => {
-        reply.row.remove();
-        sendMessage(lastMessage);
-      });
-      reply.bubble.append(retry);
+      typing.hidden = true;
+      reply?.row.remove();
+      addError(err.message || "Unable to send message.", lastMessage);
     } finally {
       if (destroyed || requestGeneration !== generation) return;
       sending = false;
@@ -481,9 +518,12 @@ function mountWidget({
       lastMinute = "";
       lastMessage = "";
       messageCount = 0;
-      localStorage.removeItem(`cb-conversation-${botId}`);
-      localStorage.removeItem(stateKey);
+      if (!preview) {
+        localStorage.removeItem(`cb-conversation-${botId}`);
+        localStorage.removeItem(stateKey);
+      }
       history.length = 0;
+      testHistory.length = 0;
       messages.replaceChildren();
       greeting = addMessage(
         "bot",

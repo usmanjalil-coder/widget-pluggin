@@ -48,6 +48,7 @@ async function init(options = {}) {
     container: options.container,
     botId,
     apiBase,
+    getAuthToken: options.getAuthToken,
     config,
     defaultOpen: options.open ?? options.defaultOpen ?? false,
     onOpenChange: options.onOpenChange,

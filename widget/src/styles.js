@@ -30,7 +30,7 @@ button {
 .cb-root.cb-preview { position: absolute; inset: 0; }
 .cb-preview .cb-launch-area { position: absolute; right: 16px; bottom: 16px; }
 .cb-preview.cb-left .cb-launch-area { right: auto; left: 16px; }
-.cb-preview .cb-window { width: min(380px, calc(100% - 32px)); height: min(560px, calc(100% - 92px)); min-height: 0; max-width: none; max-height: none; }
+.cb-preview .cb-window { top: 0; bottom: auto; width: min(350px, calc(100% - 32px)); height: min(580px, calc(100% - 92px)); min-height: 0; max-width: none; max-height: none; }
 .cb-preview.cb-left .cb-window { left: 16px; right: auto; }
 .cb-preview.cb-right .cb-window { right: 16px; left: auto; }
 .cb-fixed {
@@ -206,12 +206,15 @@ button {
   pointer-events: auto;
 }
 .cb-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   flex: none;
-  min-height: 96px;
-  padding: 20px;
+  min-height: 76px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--cb-on-primary);
   background:
     linear-gradient(
@@ -221,8 +224,9 @@ button {
       color-mix(in srgb, var(--cb-primary) 98%, black));
 }
 .cb-avatar {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
+  flex: none;
   border-radius: 50%;
   object-fit: cover;
   background: rgba(255, 255, 255, .22);
@@ -231,7 +235,7 @@ button {
 .cb-avatar-initials {
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .02em;
 }
@@ -243,7 +247,7 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
 }
 .cb-presence {
@@ -251,7 +255,7 @@ button {
   align-items: center;
   gap: 5px;
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 11px;
   flex-wrap: wrap;
 }
 .cb-reply-time { margin-top: 2px; font-size: 11px; line-height: 1.5; }
@@ -263,16 +267,18 @@ button {
   box-shadow: 0 0 0 3px rgba(98, 232, 161, .18);
 }
 .cb-close {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   flex: none;
   border: 0;
   border-radius: var(--cb-radius);
   color: inherit;
   background: rgba(255, 255, 255, .13);
 }
+.cb-close-icon { position: static; width: 18px; height: 18px; }
 .cb-close:hover {
   background: rgba(255, 255, 255, .24);
 }
@@ -339,7 +345,7 @@ button {
   background: var(--cb-bg);
   color: var(--cb-text);
   box-shadow: 0 1px 1px rgba(15, 23, 42, .025);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -349,9 +355,34 @@ button {
   background: var(--cb-primary);
   color: var(--cb-on-primary);
 }
-.cb-error {
-  border-color: var(--cb-danger);
+.cb-error-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px auto;
+  padding: 8px 9px;
+  border: 1px solid color-mix(in srgb, var(--cb-danger) 25%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cb-danger) 6%, var(--cb-surface));
+  color: var(--cb-muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
+.cb-error-symbol {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--cb-danger);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+.cb-error-text { overflow-wrap: anywhere; }
 .cb-timestamp {
   display: block; padding: 4px 2px 0; color: var(--cb-muted); font-size: 11px;
 }
@@ -553,8 +584,7 @@ button {
   border-color: var(--cb-primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cb-primary) 16%, transparent);
 }
-.cb-form button,
-.cb-retry {
+.cb-form button {
   border: 0;
   border-radius: var(--cb-radius);
   padding: 10px;
@@ -563,6 +593,20 @@ button {
   font-size: 13px;
   font-weight: 600;
 }
+.cb-retry {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 3px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cb-muted);
+}
+.cb-retry:hover { background: color-mix(in srgb, var(--cb-danger) 10%, transparent); color: var(--cb-danger); }
+.cb-retry svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .cb-form-error {
   margin: 0;
   color: var(--cb-danger);
@@ -635,7 +679,7 @@ button {
   .cb-preview.cb-left .cb-window { left: 12px; right: auto; }
   .cb-preview.cb-right .cb-window { right: 12px; left: auto; }
   .cb-preview .cb-window { width: calc(100% - 24px); height: calc(100% - 84px); min-height: 0; }
-  .cb-header { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  .cb-header { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
   .cb-form,
   .cb-form-success {
     margin-left: 0;
