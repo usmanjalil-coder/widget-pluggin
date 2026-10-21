@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Download, MoreHorizontal, Search } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
 import {
@@ -76,39 +77,33 @@ function StatusSelect({ lead, onChange, saving }) {
   );
 }
 
-export default function LeadsPanel({ leads, loading, error, onRetry, onStatusChange }) {
+export default function LeadsPanel({
+  leads,
+  counts,
+  pagination,
+  loading,
+  error,
+  onRetry,
+  query,
+  onQueryChange,
+  status,
+  onFilterChange,
+  page,
+  onPageChange,
+  selectedId,
+  onSelect,
+  onClose,
+  selected,
+  detailLoading,
+  detailError,
+  onDetailRetry,
+  onStatusChange,
+  onExport,
+}) {
   const [now] = useState(() => Date.now());
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
-  const [page, setPage] = useState(1);
-  const [selectedId, setSelectedId] = useState(null);
   const [savingId, setSavingId] = useState(null);
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        statuses.map((item) => [
-          item,
-          item === "all" ? leads.length : leads.filter((lead) => lead.status === item).length,
-        ]),
-      ),
-    [leads],
-  );
-  const filtered = useMemo(
-    () =>
-      leads.filter((lead) => {
-        const matchesStatus = status === "all" || lead.status === status;
-        const matchesQuery =
-          `${lead.name} ${lead.email} ${lead.phone} ${lead.intent || lead.fields?.concern || ""}`
-            .toLowerCase()
-            .includes(query.toLowerCase());
-        return matchesStatus && matchesQuery;
-      }),
-    [leads, status, query],
-  );
-  const pages = Math.max(1, Math.ceil(filtered.length / 10));
-  const currentPage = Math.min(page, pages);
-  const visible = filtered.slice((currentPage - 1) * 10, currentPage * 10);
-  const selected = leads.find((lead) => lead.id === selectedId);
+  const [exporting, setExporting] = useState(false);
+  const pages = pagination?.pages ?? 1;
   const setLeadStatus = async (id, value) => {
     setSavingId(id);
     try {
@@ -117,27 +112,35 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
       setSavingId(null);
     }
   };
-  const exportCsv = () => {
-    const rows = [
-      ["Name", "Email", "Phone", "Interest", "Status", "Created"],
-      ...filtered.map((lead) => [
-        lead.name,
-        lead.email,
-        lead.phone,
-        lead.intent || lead.fields?.concern,
-        lead.status,
-        lead.createdAt,
-      ]),
-    ];
-    const blob = new Blob([rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")], {
-      type: "text/csv;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "leads.csv";
-    anchor.click();
-    URL.revokeObjectURL(url);
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const exported = await onExport();
+      const rows = [
+        ["Name", "Email", "Phone", "Interest", "Status", "Created"],
+        ...exported.map((lead) => [
+          lead.name,
+          lead.email,
+          lead.phone,
+          lead.interest,
+          lead.status,
+          lead.createdAt,
+        ]),
+      ];
+      const blob = new Blob([rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")], {
+        type: "text/csv;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "leads.csv";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (requestError) {
+      toast.error(requestError.message || "Could not export leads.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (loading)
@@ -157,7 +160,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
         </Button>
       </Card>
     );
-  if (!leads.length)
+  if (!leads.length && !query && status === "all" && page === 1 && !counts?.all)
     return (
       <EmptyState
         title="No leads yet"
@@ -173,10 +176,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setPage(1);
-              }}
+              onChange={(event) => onQueryChange(event.target.value)}
               aria-label="Search leads"
               placeholder="Search leads"
               className="pl-9"
@@ -190,13 +190,10 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
                   type="button"
                   size="sm"
                   variant={status === item ? "default" : "ghost"}
-                  onClick={() => {
-                    setStatus(item);
-                    setPage(1);
-                  }}
+                  onClick={() => onFilterChange(item)}
                   className="shrink-0 capitalize"
                 >
-                  {item} <span className="text-xs opacity-70">{counts[item]}</span>
+                  {item} <span className="text-xs opacity-70">{counts?.[item] ?? 0}</span>
                 </Button>
               ))}
             </div>
@@ -205,9 +202,9 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
               variant="secondary"
               size="sm"
               onClick={exportCsv}
-              disabled={!filtered.length}
+              disabled={!pagination?.total || exporting}
             >
-              <Download className="size-4" /> Export CSV
+              <Download className="size-4" /> {exporting ? "Exporting…" : "Export CSV"}
             </Button>
           </div>
         </div>
@@ -226,18 +223,18 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visible.map((lead) => (
+              {leads.map((lead) => (
                 <TableRow
                   key={lead.id}
                   tabIndex={0}
                   aria-label={`View lead ${lead.name}`}
                   className="cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => setSelectedId(lead.id)}
+                  onClick={() => onSelect(lead.id)}
                   onKeyDown={(event) => {
                     if (event.target !== event.currentTarget) return;
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      setSelectedId(lead.id);
+                      onSelect(lead.id);
                     }
                   }}
                 >
@@ -246,7 +243,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
                     <span className="block">{lead.email || "—"}</span>
                     <span className="text-xs text-muted-foreground">{lead.phone || "—"}</span>
                   </TableCell>
-                  <TableCell>{lead.intent || lead.fields?.concern || "General inquiry"}</TableCell>
+                  <TableCell>{lead.interest || "General inquiry"}</TableCell>
                   <TableCell>
                     <StatusSelect
                       lead={lead}
@@ -267,7 +264,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setSelectedId(lead.id)}>
+                        <DropdownMenuItem onSelect={() => onSelect(lead.id)}>
                           View details
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -279,11 +276,11 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
           </Table>
         </div>
         <div className="mt-5 space-y-3 md:hidden">
-          {visible.map((lead) => (
+          {leads.map((lead) => (
             <Card key={lead.id} className="space-y-2 p-4">
               <button
                 type="button"
-                onClick={() => setSelectedId(lead.id)}
+                onClick={() => onSelect(lead.id)}
                 className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="block font-semibold text-foreground">{lead.name}</span>
@@ -291,7 +288,7 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
                   {lead.email || lead.phone || "No contact"}
                 </span>
                 <span className="block text-sm text-foreground">
-                  {lead.intent || lead.fields?.concern || "General inquiry"}
+                  {lead.interest || "General inquiry"}
                 </span>
                 <span
                   className="block text-xs text-muted-foreground"
@@ -304,33 +301,32 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
             </Card>
           ))}
         </div>
-        {!filtered.length && (
+        {!leads.length && (
           <EmptyState title="No leads found" body="Try another search or status." />
         )}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm text-muted-foreground">
           <span>
-            Showing {filtered.length ? (currentPage - 1) * 10 + 1 : 0}–
-            {Math.min(currentPage * 10, filtered.length)} of {filtered.length}
+            Showing {pagination?.from ?? 0}–{pagination?.to ?? 0} of {pagination?.total ?? 0}
           </span>
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               size="icon"
               aria-label="Previous page"
-              disabled={currentPage === 1}
-              onClick={() => setPage(currentPage - 1)}
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
             >
               <ChevronLeft className="size-4" />
             </Button>
             <span>
-              {currentPage} / {pages}
+              {page} / {pages}
             </span>
             <Button
               variant="secondary"
               size="icon"
               aria-label="Next page"
-              disabled={currentPage === pages}
-              onClick={() => setPage(currentPage + 1)}
+              disabled={page >= pages}
+              onClick={() => onPageChange(page + 1)}
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -338,9 +334,9 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
         </div>
       </Card>
       <Sheet
-        open={Boolean(selected)}
+        open={Boolean(selectedId)}
         onOpenChange={(open) => {
-          if (!open) setSelectedId(null);
+          if (!open) onClose();
         }}
       >
         <SheetContent className="w-full overflow-y-auto p-6 sm:max-w-md">
@@ -348,14 +344,21 @@ export default function LeadsPanel({ leads, loading, error, onRetry, onStatusCha
             <SheetTitle>{selected?.name || "Lead details"}</SheetTitle>
             <SheetDescription>Contact and appointment request</SheetDescription>
           </SheetHeader>
-          {selected && (
+          {detailLoading && <Skeleton className="h-72 w-full rounded-xl" />}
+          {detailError && (
+            <div>
+              <p className="text-sm text-destructive">{detailError}</p>
+              <Button className="mt-3" onClick={onDetailRetry}>Retry</Button>
+            </div>
+          )}
+          {selected && !detailError && (
             <div className="space-y-5 text-sm">
               {[
                 ["Email", selected.email || "—"],
                 ["Phone", selected.phone || "—"],
-                ["Interest", selected.intent || selected.fields?.concern || "General inquiry"],
+                ["Interest", selected.interest || "General inquiry"],
                 ["Source", selected.source || "Website widget"],
-                ["Preferred time", selected.fields?.preferred_time || "—"],
+                ["Preferred time", selected.preferredTime || "—"],
                 ["Notes", selected.notes || "No notes yet."],
               ].map(([label, value]) => (
                 <div key={label}>
