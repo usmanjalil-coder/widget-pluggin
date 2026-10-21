@@ -66,5 +66,10 @@ export const deleteDocument = (botId, documentId) =>
   request(`${documentsPath(botId)}?documentId=${encodeURIComponent(documentId)}`, {
     method: "DELETE",
   });
-export const listConversations = async (botId) =>
-  (await request(`${botPath(botId)}/conversations`)).data;
+export const listConversations = async (botId, params = {}, signal) =>
+  (await request(`${botPath(botId)}/conversations`, { data: params, cache: "no-store", signal })).data;
+export const getConversation = async (botId, conversationId, signal) =>
+  (await request(`${botPath(botId)}/conversations/${encodeURIComponent(conversationId)}`, {
+    cache: "no-store",
+    signal,
+  })).data;

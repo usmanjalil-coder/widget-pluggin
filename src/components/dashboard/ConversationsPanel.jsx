@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ContactRound, Search } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
@@ -20,7 +20,24 @@ const relativeTime = (value, now) => {
   return `${Math.floor(minutes / 1440)}d ago`;
 };
 
-function Transcript({ conversation, lead }) {
+const statusLabel = {
+  open: "Open",
+  needs_followup: "Needs follow-up",
+  resolved: "Resolved",
+};
+const statusTone = (status) =>
+  status === "needs_followup" ? "warning" : status === "resolved" ? "success" : "info";
+
+function Transcript({ conversation, loading, error, onRetry }) {
+  if (loading) return <Skeleton className="m-5 h-[440px] rounded-xl" />;
+  if (error) {
+    return (
+      <div className="p-5">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button className="mt-3" onClick={onRetry}>Retry</Button>
+      </div>
+    );
+  }
   if (!conversation) {
     return <EmptyState title="No transcript" body="Select a conversation to view its details." />;
   }
@@ -30,8 +47,8 @@ function Transcript({ conversation, lead }) {
       <div className="border-b border-border p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold text-foreground">{conversation.visitor || "Visitor"}</h2>
-          <Badge tone={conversation.unanswered ? "warning" : "success"}>
-            {conversation.unanswered ? "Needs follow-up" : "Resolved"}
+          <Badge tone={statusTone(conversation.status)}>
+            {statusLabel[conversation.status] || "Open"}
           </Badge>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -56,12 +73,12 @@ function Transcript({ conversation, lead }) {
               <p
                 className={`mt-1 text-[11px] ${message.role === "user" ? "text-primary-foreground/75" : "text-muted-foreground"}`}
               >
-                {message.time}
+                {new Date(message.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
             </div>
           </div>
         ))}
-        {lead && (
+        {conversation.lead && (
           <Card className="mt-6 p-4">
             <div className="flex items-center gap-2 font-semibold text-foreground">
               <ContactRound className="size-4 text-primary" />
@@ -70,15 +87,15 @@ function Transcript({ conversation, lead }) {
             <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
               <div>
                 <dt className="text-muted-foreground">Name</dt>
-                <dd>{lead.name}</dd>
+                <dd>{conversation.lead.name}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Email</dt>
-                <dd className="break-all">{lead.email || "—"}</dd>
+                <dd className="break-all">{conversation.lead.email || "—"}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Phone</dt>
-                <dd>{lead.phone || "—"}</dd>
+                <dd>{conversation.lead.phone || "—"}</dd>
               </div>
             </dl>
           </Card>
@@ -90,36 +107,28 @@ function Transcript({ conversation, lead }) {
 
 export default function ConversationsPanel({
   conversations,
-  leads,
+  conversation,
+  detailLoading,
+  detailError,
+  onDetailRetry,
   loading,
   error,
   onRetry,
   botId,
-  initialConversationId,
+  selectedId,
+  onSelect,
+  query,
+  onQueryChange,
+  status,
+  onStatusChange,
+  range,
+  onRangeChange,
+  page,
+  nextPage,
+  onPageChange,
 }) {
   const [now] = useState(() => Date.now());
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
-  const [range, setRange] = useState("all");
-  const [selectedId, setSelectedId] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const filtered = useMemo(
-    () =>
-      conversations.filter((item) => {
-        const matchQuery = `${item.visitor || ""} ${item.preview || ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase());
-        const matchStatus =
-          status === "all" || (status === "follow-up" ? item.unanswered : !item.unanswered);
-        const matchRange =
-          range === "all" || now - new Date(item.createdAt).getTime() <= Number(range) * 86400000;
-        return matchQuery && matchStatus && matchRange;
-      }),
-    [conversations, query, status, range, now],
-  );
-  const selected =
-    filtered.find((item) => item.id === (selectedId || initialConversationId)) || filtered[0];
-  const lead = leads.find((item) => item.conversationId === selected?.id);
 
   if (loading) {
     return (
@@ -139,7 +148,7 @@ export default function ConversationsPanel({
       </Card>
     );
   }
-  if (!conversations.length) {
+  if (!conversations.length && !query && status === "all" && range === "all" && page === 1 && !selectedId) {
     return (
       <EmptyState
         title="No conversations yet"
@@ -166,22 +175,23 @@ export default function ConversationsPanel({
                 aria-label="Search conversations"
                 placeholder="Search conversations"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => onQueryChange(event.target.value)}
                 className="pl-9"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Select value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={onStatusChange}>
                 <SelectTrigger aria-label="Filter by status" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="follow-up">Needs follow-up</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="needs_followup">Needs follow-up</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={range} onValueChange={setRange}>
+              <Select value={range} onValueChange={onRangeChange}>
                 <SelectTrigger aria-label="Filter by date" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -194,15 +204,15 @@ export default function ConversationsPanel({
             </div>
           </div>
           <div className="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
-            {filtered.map((item, index) => (
+            {conversations.map((item, index) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => {
-                  setSelectedId(item.id);
+                  onSelect(item.id);
                   if (window.matchMedia("(max-width: 1023px)").matches) setMobileOpen(true);
                 }}
-                className={`block w-full p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected?.id === item.id ? "bg-accent/60" : ""}`}
+                className={`block w-full p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === item.id ? "bg-accent/60" : ""}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-sm font-semibold text-foreground">
@@ -214,24 +224,33 @@ export default function ConversationsPanel({
                 </div>
                 <p className="mt-1 truncate text-sm text-muted-foreground">{item.preview}</p>
                 <div className="mt-2 flex items-center gap-2">
-                  <Badge tone={item.unanswered ? "warning" : "success"}>
-                    {item.unanswered ? "Needs follow-up" : "Resolved"}
+                  <Badge tone={statusTone(item.status)}>
+                    {statusLabel[item.status] || "Open"}
                   </Badge>
-                  {leads.some((entry) => entry.conversationId === item.id) && (
+                  {item.hasLead && (
                     <ContactRound className="size-4 text-primary" aria-label="Lead captured" />
                   )}
                 </div>
               </button>
             ))}
-            {!filtered.length && (
+            {!conversations.length && (
               <p className="p-6 text-center text-sm text-muted-foreground">
                 No matching conversations.
               </p>
             )}
           </div>
+          <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+              Previous
+            </Button>
+            <span className="text-muted-foreground">Page {page}</span>
+            <Button variant="outline" size="sm" disabled={!nextPage} onClick={() => onPageChange(nextPage)}>
+              Next
+            </Button>
+          </div>
         </Card>
         <Card className="hidden min-h-0 min-w-0 overflow-hidden p-0 lg:block">
-          <Transcript conversation={selected} lead={lead} />
+          <Transcript conversation={conversation} loading={detailLoading} error={detailError} onRetry={onDetailRetry} />
         </Card>
       </div>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -247,7 +266,7 @@ export default function ConversationsPanel({
             <ArrowLeft className="size-4" /> Back
           </Button>
           <div className="min-h-0 flex-1">
-            <Transcript conversation={selected} lead={lead} />
+            <Transcript conversation={conversation} loading={detailLoading} error={detailError} onRetry={onDetailRetry} />
           </div>
         </SheetContent>
       </Sheet>
