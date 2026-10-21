@@ -262,16 +262,6 @@ button {
   background: #62e8a1;
   box-shadow: 0 0 0 3px rgba(98, 232, 161, .18);
 }
-.cb-header-action {
-  flex: none;
-  border: 1px solid rgba(255,255,255,.32);
-  border-radius: calc(var(--cb-radius) * .72);
-  padding: 7px 8px;
-  color: inherit;
-  background: rgba(255,255,255,.12);
-  font-size: 11px;
-}
-.cb-header-action:hover { background: rgba(255,255,255,.24); }
 .cb-close {
   display: grid;
   place-items: center;
@@ -418,11 +408,12 @@ button {
   animation-delay: .28s;
 }
 .cb-chips {
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  padding: 4px 20px 20px;
-  background: var(--cb-surface);
+  padding: 12px 16px 0;
+  background: var(--cb-bg);
 }
 .cb-chip {
   border: 1px solid color-mix(in srgb, var(--cb-text) 18%, var(--cb-bg));

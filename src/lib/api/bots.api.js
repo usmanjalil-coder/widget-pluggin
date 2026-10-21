@@ -21,6 +21,7 @@ export const updateBot = async (botId, data, logoFile = null) => {
   let body = data;
   if (logoFile) {
     body = new FormData();
+    body.append("_method", "PUT");
     body.append("config", JSON.stringify(data));
     body.append("logo", logoFile);
   }

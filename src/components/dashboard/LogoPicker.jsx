@@ -5,6 +5,7 @@ import { Link as LinkIcon, Upload } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
 import CharLimitInput from "@/components/shared/CharLimitInput";
 import { TEXT_LIMITS } from "@/lib/limits";
+import { dashboardAvatarUrl } from "@/lib/avatars";
 
 function LocalLogoPreview({ file }) {
   const image = useRef(null);
@@ -21,7 +22,7 @@ export default function LogoPicker({ value = "", file, onFileChange, onUrlChange
   const [choice, setChoice] = useState(null);
   const [error, setError] = useState("");
   const mode = file ? "upload" : choice || (value.includes("/bot-logos/") ? "upload" : "link");
-  const source = /^https:\/\//i.test(value) ? value : "";
+  const source = dashboardAvatarUrl(value);
 
   return (
     <div className="space-y-3 md:col-span-2">
@@ -89,7 +90,7 @@ export default function LogoPicker({ value = "", file, onFileChange, onUrlChange
           value={value}
           onChange={(event) => onUrlChange(event.target.value)}
           placeholder="https://example.com/logo.png"
-          error={value && !/^https:\/\//i.test(value) ? "Use an HTTPS URL." : undefined}
+          error={value && !source ? "Use an HTTPS URL." : undefined}
         />
       )}
       {error && (
@@ -103,13 +104,13 @@ export default function LogoPicker({ value = "", file, onFileChange, onUrlChange
             {file ? (
               <LocalLogoPreview file={file} />
             ) : (
-              // User-selected raster preview; remote links are restricted to HTTPS.
+              // Uploaded local logos may use HTTP; external links require HTTPS.
               // eslint-disable-next-line @next/next/no-img-element
               <img src={source} alt="Logo preview" className="size-full object-contain" />
             )}
           </div>
           <span className="flex-1 text-xs text-muted-foreground">
-            {file ? "New logo. The widget preview updates after saving." : "Current logo"}
+            {file ? "New logo shown in the live preview. Save to publish." : "Current logo"}
           </span>
           <Button
             type="button"

@@ -142,14 +142,11 @@ function mountWidget({
   presence.append(make("span", "cb-online"), document.createTextNode("Online"));
   copy.append(presence);
   // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
-  const reset = make("button", "cb-header-action", "Reset");
-  reset.type = "button";
-  reset.setAttribute("aria-label", "Reset chat");
   const close = make("button", "cb-close");
   close.type = "button";
   close.setAttribute("aria-label", "Close chat");
   close.append(xIcon("cb-icon cb-close-icon"));
-  header.append(avatar, copy, reset, close);
+  header.append(avatar, copy, close);
   const messages = make("div", "cb-messages");
   messages.setAttribute("aria-live", "polite");
   const scrollButton = make("button", "cb-scroll-bottom", "\u2193");
@@ -157,7 +154,8 @@ function mountWidget({
   scrollButton.hidden = true;
   scrollButton.setAttribute("aria-label", "Scroll to latest message");
   const chips = make("div", "cb-chips");
-  messages.append(chips);
+  chips.setAttribute("role", "group");
+  chips.setAttribute("aria-label", "Suggested questions");
   const typing = make("div", "cb-typing-row");
   typing.hidden = true;
   const typeDots = make("div", "cb-typing-bubble");
@@ -177,7 +175,7 @@ function mountWidget({
   send.setAttribute("aria-label", "Send message");
   send.append(sendIcon());
   compose.append(input, counter, send);
-  win.append(header, messages, typing, compose);
+  win.append(header, messages, typing, chips, compose);
   const footer = make("footer", "cb-footer", `Powered by ${brand.name}`);
   footer.hidden = !config.branding.showBadge;
   win.append(footer);
@@ -241,7 +239,7 @@ function mountWidget({
     } else bubble.textContent = content;
     wrap.append(bubble, make("time", "cb-timestamp", stamp));
     row.append(wrap);
-    messages.insertBefore(row, chips);
+    messages.append(row);
     if (content && !preview) {
       history.push({ kind, content, stamp });
       persist();
@@ -438,7 +436,6 @@ function mountWidget({
   });
   launcher.addEventListener("click", () => setOpen(!open));
   close.addEventListener("click", () => setOpen(false));
-  reset.addEventListener("click", () => widget.resetChat());
   compose.addEventListener("submit", (event) => {
     event.preventDefault();
     sendMessage(input.value);
@@ -487,7 +484,7 @@ function mountWidget({
       localStorage.removeItem(`cb-conversation-${botId}`);
       localStorage.removeItem(stateKey);
       history.length = 0;
-      messages.replaceChildren(chips);
+      messages.replaceChildren();
       greeting = addMessage(
         "bot",
         failed && config.texts.offlineMessage
@@ -521,7 +518,9 @@ function mountWidget({
       }
       avatar.replaceWith(nextAvatar);
       avatar = nextAvatar;
-      typing.querySelector(".cb-message-avatar").textContent = initials(config.texts.botName);
+      root.querySelectorAll(".cb-message-avatar").forEach((node) => {
+        node.replaceWith(botAvatar());
+      });
       launchArea.querySelector(".cb-launch-label")?.remove();
       if (config.texts.launcherLabel)
         launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));

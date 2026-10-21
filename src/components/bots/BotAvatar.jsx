@@ -3,9 +3,11 @@
 import { memo, useState } from "react";
 import { HEX_COLOR } from "@/lib/limits";
 import Image from "next/image";
+import { dashboardAvatarUrl } from "@/lib/avatars";
 
 function BotAvatar({ bot, className = "size-10" }) {
   const [failedSrc, setFailedSrc] = useState(null);
+  const avatarUrl = dashboardAvatarUrl(bot?.texts?.avatarUrl);
   const name = bot?.name || bot?.texts?.botName || "Bot";
   const initials =
     name
@@ -34,15 +36,15 @@ function BotAvatar({ bot, className = "size-10" }) {
       style={{ backgroundColor: color, color: onColor || "var(--primary-foreground)" }}
       aria-hidden="true"
     >
-      {bot?.texts?.avatarUrl?.startsWith("https://") && failedSrc !== bot.texts.avatarUrl ? (
+      {avatarUrl && failedSrc !== avatarUrl ? (
         <Image
-          src={bot.texts.avatarUrl}
+          src={avatarUrl}
           alt=""
           width={40}
           height={40}
           unoptimized
           className="size-full object-cover"
-          onError={() => setFailedSrc(bot.texts.avatarUrl)}
+          onError={() => setFailedSrc(avatarUrl)}
         />
       ) : (
         initials

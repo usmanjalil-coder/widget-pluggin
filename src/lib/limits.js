@@ -1,3 +1,5 @@
+import { getAvatarUrl } from "./avatars.js";
+
 export const TEXT_LIMITS = Object.freeze({
   botName: 40,
   launcherLabel: 24,
@@ -38,7 +40,7 @@ export function validateBotText(payload = {}) {
     )
       return `Each starter question must be text of at most ${TEXT_LIMITS.starterQuestion} characters.`;
   }
-  if (texts.avatarUrl && !/^https:\/\//i.test(texts.avatarUrl)) return "avatarUrl must use HTTPS.";
+  if (texts.avatarUrl && !getAvatarUrl(texts.avatarUrl)) return "avatarUrl must use HTTPS (local uploaded logos may use HTTP).";
   if (payload.theme?.primaryColor !== undefined && !HEX_COLOR.test(payload.theme.primaryColor))
     return "primaryColor must be a valid #RGB or #RRGGBB hex color.";
   return null;

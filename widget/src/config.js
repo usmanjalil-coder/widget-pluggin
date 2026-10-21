@@ -22,6 +22,7 @@ const DEFAULT_CONFIG = {
   zIndex: 2147483647,
 };
 import { HEX_COLOR, TEXT_LIMITS } from "../../src/lib/limits.js";
+import { getAvatarUrl } from "../../src/lib/avatars.js";
 const FONTS = {
   system:
     'Inter, var(--font-inter, system-ui), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -40,7 +41,7 @@ function deepMerge(base, value) {
   });
   return result;
 }
-function sanitizeConfig(raw) {
+function sanitizeConfig(raw, preview = false) {
   const config = deepMerge(DEFAULT_CONFIG, raw || {});
   config.theme.primaryColor = HEX_COLOR.test(config.theme.primaryColor)
     ? config.theme.primaryColor
@@ -67,9 +68,9 @@ function sanitizeConfig(raw) {
     if (key !== "starterQuestions")
       config.texts[key] = text(config.texts[key], DEFAULT_CONFIG.texts[key], TEXT_LIMITS[key]);
   });
-  config.texts.avatarUrl = /^https:\/\//i.test(config.texts.avatarUrl)
-    ? config.texts.avatarUrl
-    : "";
+  const localPreview = preview && typeof window !== "undefined"
+    && config.texts.avatarUrl.startsWith(`blob:${window.location.origin}/`);
+  config.texts.avatarUrl = localPreview ? config.texts.avatarUrl : getAvatarUrl(config.texts.avatarUrl);
   config.texts.starterQuestions = Array.isArray(config.texts.starterQuestions)
     ? config.texts.starterQuestions
         .filter((item) => typeof item === "string")
@@ -96,10 +97,14 @@ function scriptOverrides(script) {
   return { theme, texts };
 }
 async function loadConfig(apiBase, botId) {
+  const resolveLogo = (config) => ({
+    ...config,
+    texts: { ...config.texts, avatarUrl: getAvatarUrl(config.texts?.avatarUrl, apiBase) },
+  });
   const key = `cb-config-${botId}`;
   try {
     const cached = JSON.parse(sessionStorage.getItem(key) || "null");
-    if (cached && cached.expires > Date.now()) return cached.config;
+    if (cached && cached.expires > Date.now()) return resolveLogo(cached.config);
   } catch {}
   const response = await fetch(
     `${apiBase.replace(/\/$/, "")}/api/v1/widget/config/${encodeURIComponent(botId)}`,
@@ -111,6 +116,6 @@ async function loadConfig(apiBase, botId) {
   try {
     sessionStorage.setItem(key, JSON.stringify({ config, expires: Date.now() + 60000 }));
   } catch {}
-  return config;
+  return resolveLogo(config);
 }
 export { DEFAULT_CONFIG, deepMerge, loadConfig, sanitizeConfig, scriptOverrides };

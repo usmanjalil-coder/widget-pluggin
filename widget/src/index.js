@@ -1,5 +1,6 @@
 import { deepMerge, loadConfig, sanitizeConfig, scriptOverrides } from "./config.js";
 import { mountWidget } from "./ui.js";
+import { WIDGET_VERSION } from "./version.js";
 const instances = /* @__PURE__ */ new Map();
 function inferApiBase(script) {
   try {
@@ -27,10 +28,10 @@ async function init(options = {}) {
       return null;
     }
   }
-  let config = sanitizeConfig(deepMerge(raw, scriptOverrides(script)));
+  let config = sanitizeConfig(deepMerge(raw, scriptOverrides(script)), Boolean(options.preview));
   let mounted;
   const update = (partial) => {
-    config = sanitizeConfig(deepMerge(deepMerge(config, partial), scriptOverrides(script)));
+    config = sanitizeConfig(deepMerge(deepMerge(config, partial), scriptOverrides(script)), Boolean(options.preview));
     mounted?.update(config);
   };
   const instance = {
@@ -58,8 +59,11 @@ async function init(options = {}) {
 }
 window.__chatbot = window.__chatbot || {};
 window.ChatbotWidget = window.ChatbotWidget || {};
-if (!window.__chatbot.init) window.__chatbot.init = init;
+if (!window.__chatbot.init || window.ChatbotWidget.version !== WIDGET_VERSION) {
+  window.__chatbot.init = init;
+}
 window.ChatbotWidget.init = window.__chatbot.init;
+window.ChatbotWidget.version = WIDGET_VERSION;
 const current = document.currentScript;
 if (current && current.dataset.botId) {
   const start = () => {

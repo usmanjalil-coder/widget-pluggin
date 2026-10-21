@@ -446,7 +446,7 @@ export default function AppearancePanel({
         )}
       </fieldset>
 
-      <AppearancePreview botId={selectedBotId} config={draft} />
+      <AppearancePreview botId={selectedBotId} config={draft} logoFile={logoFile} />
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-border bg-card/95 p-3 shadow-sm backdrop-blur-sm lg:left-64">
         <span
           className={`flex items-center gap-2 text-sm ${dirty ? "text-foreground" : "text-muted-foreground"}`}

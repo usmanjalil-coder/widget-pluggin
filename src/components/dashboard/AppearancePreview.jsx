@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Moon, RotateCcw, Smartphone, Sun, Monitor } from "lucide-react";
 import { Button } from "@/components/ui";
+import { dashboardAvatarUrl } from "@/lib/avatars";
+import { WIDGET_VERSION } from "../../../widget/src/version.js";
 import { Switch } from "@/components/ui/switch";
 import {
   Sheet,
@@ -14,11 +16,11 @@ import {
 
 let widgetScriptPromise;
 function loadWidget() {
-  if (window.ChatbotWidget) return Promise.resolve();
+  if (window.ChatbotWidget?.version === WIDGET_VERSION) return Promise.resolve();
   if (!widgetScriptPromise)
     widgetScriptPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "/widget.js";
+      script.src = `/widget.js?v=${WIDGET_VERSION}`;
       script.onload = resolve;
       script.onerror = reject;
       document.head.append(script);
@@ -29,6 +31,7 @@ function loadWidget() {
 export default function AppearancePreview({
   botId,
   config,
+  logoFile = null,
   mobileInline = false,
   compact = false,
   previewMessages = [],
@@ -48,9 +51,24 @@ export default function AppearancePreview({
   const [device, setDevice] = useState("desktop");
   const [chatOpen, setChatOpen] = useState(true);
   const [updated, setUpdated] = useState(0);
+  const [logoPreview, setLogoPreview] = useState(null);
+  useEffect(() => {
+    if (!logoFile) return;
+    const url = URL.createObjectURL(logoFile);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Pair an external object URL with effect cleanup.
+    setLogoPreview({ file: logoFile, url });
+    return () => URL.revokeObjectURL(url);
+  }, [logoFile]);
+  const avatarUrl = logoFile && logoPreview?.file === logoFile
+    ? logoPreview.url
+    : dashboardAvatarUrl(config.texts?.avatarUrl);
   const effectiveConfig = useMemo(
-    () => ({ ...config, theme: { ...config.theme, mode: previewMode || config.theme.mode } }),
-    [config, previewMode],
+    () => ({
+      ...config,
+      texts: { ...config.texts, avatarUrl },
+      theme: { ...config.theme, mode: previewMode || config.theme.mode },
+    }),
+    [config, previewMode, avatarUrl],
   );
 
   useEffect(() => {
@@ -89,7 +107,10 @@ export default function AppearancePreview({
             onOpenChange: setChatOpen,
           });
           if (cancelled) instance.destroy();
-          else widget.current = instance;
+          else {
+            widget.current = instance;
+            instance?.update(latestConfig.current);
+          }
         })
         .catch(() => {
           widgetScriptPromise = undefined;
