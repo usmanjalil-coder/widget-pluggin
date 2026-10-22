@@ -12,6 +12,13 @@ import {
 
 const FIELD_TYPES = ["text", "phone", "email", "date"];
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const BOOKING_FIELDS = [
+  { id: "name", label: "Full name", type: "text", required: true },
+  { id: "email", label: "Email", type: "email", required: false },
+  { id: "phone", label: "Phone", type: "phone", required: false },
+  { id: "preferred_time", label: "Preferred time", type: "date", required: false },
+  { id: "interest", label: "Service or interest", type: "text", required: false },
+];
 
 export default function BookingSettingsEditor({ settings, updateDraftField }) {
   const fields = settings.bookingFields ?? [];
@@ -26,6 +33,9 @@ export default function BookingSettingsEditor({ settings, updateDraftField }) {
       [day]: { ...hours[day], ...patch },
     });
   };
+  const nextField = BOOKING_FIELDS.find(
+    ({ id }) => !fields.some((field) => field.id === id),
+  );
 
   return (
     <>
@@ -93,22 +103,12 @@ export default function BookingSettingsEditor({ settings, updateDraftField }) {
             <Button
               type="button"
               variant="secondary"
-              disabled={fields.length >= 10}
-              onClick={() =>
-                updateFields([
-                  ...fields,
-                  {
-                    id: crypto.randomUUID(),
-                    label: "",
-                    type: "text",
-                    required: false,
-                  },
-                ])
-              }
+              disabled={fields.length >= BOOKING_FIELDS.length || !nextField}
+              onClick={() => nextField && updateFields([...fields, nextField])}
             >
               <Plus className="size-4" /> Add field
             </Button>
-            <span className="text-xs text-muted-foreground">{fields.length}/10 fields</span>
+            <span className="text-xs text-muted-foreground">{fields.length}/5 fields</span>
           </div>
         </div>
       </Card>

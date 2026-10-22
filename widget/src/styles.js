@@ -466,6 +466,39 @@ button {
 }
 .cb-counter { flex: none; color: var(--cb-muted); font-size: 10px; padding-bottom: 7px; }
 .cb-counter-limit { color: var(--cb-danger); }
+.cb-usage {
+  flex: none;
+  padding: 8px 16px 0;
+  color: var(--cb-muted);
+  background: var(--cb-bg);
+  text-align: right;
+  font-size: 10px;
+}
+.cb-usage-limit { color: var(--cb-danger); font-weight: 600; }
+.cb-limit-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--cb-primary) 22%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cb-primary) 6%, var(--cb-surface));
+  color: var(--cb-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.cb-limit-action {
+  flex: none;
+  border: 0;
+  border-radius: 7px;
+  padding: 6px 9px;
+  color: var(--cb-on-primary);
+  background: var(--cb-primary);
+  font-size: 11px;
+  font-weight: 600;
+}
 .cb-compose {
   flex: none;
   display: flex;
@@ -571,6 +604,14 @@ button {
   font-size: 12px;
   font-weight: 500;
 }
+.cb-required,
+.cb-field-error {
+  color: var(--cb-danger);
+}
+.cb-field-error {
+  font-size: 11px;
+  font-weight: 400;
+}
 .cb-form input {
   width: 100%;
   padding: 9px 10px;
@@ -579,6 +620,9 @@ button {
   outline: 0;
   color: var(--cb-text);
   background: var(--cb-bg);
+}
+.cb-form input[aria-invalid="true"] {
+  border-color: var(--cb-danger);
 }
 .cb-form input:focus {
   border-color: var(--cb-primary);

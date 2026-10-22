@@ -73,3 +73,8 @@ export const getConversation = async (botId, conversationId, signal) =>
     cache: "no-store",
     signal,
   })).data;
+export const updateConversationStatus = async (botId, conversationId, status) =>
+  (await request(`${botPath(botId)}/conversations/${encodeURIComponent(conversationId)}`, {
+    method: "PATCH",
+    data: { status },
+  })).data;

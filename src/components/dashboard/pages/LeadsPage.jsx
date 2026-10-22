@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import LeadsPanel from "../LeadsPanel";
 import PageHeader from "@/components/shared/PageHeader";
@@ -27,6 +32,7 @@ function BotLeads({ botId }) {
     queryKey: ["leads", botId, page, search, status],
     queryFn: ({ signal }) => listLeads(botId, { page, search, status }, signal),
     enabled: Boolean(botId),
+    placeholderData: keepPreviousData,
     staleTime: 15000,
     retry: false,
   });
@@ -84,6 +90,7 @@ function BotLeads({ botId }) {
         counts={listQuery.data?.counts}
         pagination={listQuery.data}
         loading={Boolean(botId) && listQuery.isPending}
+        refreshing={listQuery.isFetching && !listQuery.isPending}
         error={listQuery.error?.message ?? ""}
         onRetry={listQuery.refetch}
         query={query}

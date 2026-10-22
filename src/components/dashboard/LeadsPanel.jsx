@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Download, MoreHorizontal, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Loader2,
+  MoreHorizontal,
+  Search,
+} from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
 import {
   Table,
@@ -82,6 +89,7 @@ export default function LeadsPanel({
   counts,
   pagination,
   loading,
+  refreshing,
   error,
   onRetry,
   query,
@@ -183,6 +191,15 @@ export default function LeadsPanel({
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {refreshing && (
+              <span
+                role="status"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+              >
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                Updating…
+              </span>
+            )}
             <div className="flex max-w-full gap-1 overflow-x-auto">
               {statuses.map((item) => (
                 <Button

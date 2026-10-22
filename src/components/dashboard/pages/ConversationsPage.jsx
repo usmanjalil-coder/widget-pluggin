@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 import ConversationsPanel from "../ConversationsPanel";
 import PageHeader from "@/components/shared/PageHeader";
-import { getConversation, listConversations } from "@/lib/api/bots.api";
+import { getConversation, listConversations, updateConversationStatus } from "@/lib/api/bots.api";
 import { useDashboard } from "../dashboard-context";
 
 const EMPTY = [];
 
 function BotConversations({ botId, linkedConversationId }) {
+  const client = useQueryClient();
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -27,6 +34,7 @@ function BotConversations({ botId, linkedConversationId }) {
     queryKey: ["conversations", botId, page, search, status, range],
     queryFn: ({ signal }) => listConversations(botId, { page, search, status, range }, signal),
     enabled: Boolean(botId),
+    placeholderData: keepPreviousData,
     staleTime: 15000,
     retry: false,
   });
@@ -39,6 +47,24 @@ function BotConversations({ botId, linkedConversationId }) {
     staleTime: 15000,
     retry: false,
   });
+  const statusMutation = useMutation({
+    mutationFn: (value) => updateConversationStatus(botId, activeId, value),
+    onSuccess: async (updated) => {
+      client.setQueryData(["conversation", botId, activeId], (current) =>
+        current ? { ...current, status: updated.status } : current,
+      );
+      await client.invalidateQueries({ queryKey: ["conversations", botId] });
+    },
+  });
+
+  const changeConversationStatus = async (value) => {
+    try {
+      await statusMutation.mutateAsync(value);
+      toast.success("Conversation status updated.");
+    } catch (error) {
+      toast.error(error.message || "Could not update conversation status.");
+    }
+  };
 
   const selectConversation = (id) => {
     setSelectedId(id);
@@ -64,7 +90,10 @@ function BotConversations({ botId, linkedConversationId }) {
         detailLoading={Boolean(activeId) && detailQuery.isPending}
         detailError={detailQuery.error?.message ?? ""}
         onDetailRetry={detailQuery.refetch}
+        onConversationStatusChange={changeConversationStatus}
+        statusSaving={statusMutation.isPending}
         loading={Boolean(botId) && listQuery.isPending}
+        refreshing={listQuery.isFetching && !listQuery.isPending}
         error={listQuery.error?.message ?? ""}
         onRetry={listQuery.refetch}
         botId={botId}

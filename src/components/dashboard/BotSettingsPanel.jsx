@@ -1,7 +1,8 @@
 "use client";
 
-import { Mail } from "lucide-react";
+import { CircleHelp, Mail } from "lucide-react";
 import { Badge, Button, Card, Input, Label, Skeleton, Switch } from "@/components/ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AssistantRulesField from "@/components/shared/AssistantRulesField";
 
 import BookingSettingsEditor from "./BookingSettingsEditor";
@@ -77,19 +78,51 @@ export default function BotSettingsPanel({
         </Card>
 
         <Card title="Allowed domains" subtitle="Optional hosts for embed and CORS validation.">
-          <Input
-            value={allowedDomains.join(", ")}
-            onChange={(event) =>
-              updateDraftField(
-                "settings",
-                "allowedDomains",
-                event.target.value
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              )
-            }
-          />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="allowed-domains">Domain hosts</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Allowed domains format"
+                      className="rounded-full text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <CircleHelp className="size-4" aria-hidden="true" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="max-w-72">
+                    Enter hostnames only, without http://, https://, paths or trailing slashes.
+                    Separate multiple hosts with commas. Add each subdomain separately because
+                    matching is exact.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input
+              id="allowed-domains"
+              value={allowedDomains.join(", ")}
+              placeholder="e.g. example.com, shop.example.com"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-describedby="allowed-domains-help"
+              onChange={(event) =>
+                updateDraftField(
+                  "settings",
+                  "allowedDomains",
+                  event.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                )
+              }
+            />
+            <p id="allowed-domains-help" className="text-xs text-muted-foreground">
+              Visitors can use this bot only from the listed website hosts.
+            </p>
+          </div>
         </Card>
         <BookingSettingsEditor
           settings={draft.settings ?? {}}

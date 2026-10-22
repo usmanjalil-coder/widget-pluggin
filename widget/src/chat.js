@@ -8,7 +8,7 @@ function parseEvent(block) {
   }
 }
 async function streamChat({
-  apiBase, botId, conversationId, message, onToken, onLeadForm,
+  apiBase, botId, conversationId, message, onToken, onLeadForm, onUsage,
   test = false, history = [], authToken = null, assistantRules, botName,
 }) {
   const response = await fetch(
@@ -33,7 +33,9 @@ async function streamChat({
       : test && response.status === 409
         ? "Test session limit reached. Reset chat to start a new session."
         : payload?.message || "Chat is temporarily unavailable.";
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
   if (!response.body) throw new Error("Chat is temporarily unavailable.");
   const reader = response.body.getReader();
@@ -52,6 +54,7 @@ async function streamChat({
       const item = parseEvent(block);
       if (item.event === "token") onToken(item.data.token || "");
       if (item.event === "lead_form") pendingLeadForm = item.data;
+      if (item.event === "usage") onUsage?.(item.data);
       if (item.event === "conversation") nextConversationId = item.data.conversationId;
       if (item.event === "done") {
         completed = true;

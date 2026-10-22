@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ContactRound, Search } from "lucide-react";
+import { ArrowLeft, ContactRound, Loader2, Search } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
 import {
   Select,
@@ -28,7 +28,14 @@ const statusLabel = {
 const statusTone = (status) =>
   status === "needs_followup" ? "warning" : status === "resolved" ? "success" : "info";
 
-function Transcript({ conversation, loading, error, onRetry }) {
+function Transcript({
+  conversation,
+  loading,
+  error,
+  onRetry,
+  onStatusChange,
+  statusSaving,
+}) {
   if (loading) return <Skeleton className="m-5 h-[440px] rounded-xl" />;
   if (error) {
     return (
@@ -47,13 +54,28 @@ function Transcript({ conversation, loading, error, onRetry }) {
       <div className="border-b border-border p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold text-foreground">{conversation.visitor || "Visitor"}</h2>
-          <Badge tone={statusTone(conversation.status)}>
-            {statusLabel[conversation.status] || "Open"}
-          </Badge>
+          <Select
+            value={conversation.status}
+            onValueChange={onStatusChange}
+            disabled={statusSaving}
+          >
+            <SelectTrigger aria-label="Update conversation status" className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="needs_followup">Needs follow-up</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           Started {new Date(conversation.createdAt).toLocaleString()} ·{" "}
-          {conversation.transcript?.length || 0} messages
+          {conversation.messageUsage?.used ?? conversation.transcript?.length ?? 0}
+          /{conversation.messageUsage?.limit ?? "—"} messages
+          {conversation.messageUsage?.reached && (
+            <span className="ml-2 font-medium text-destructive">Limit reached</span>
+          )}
         </p>
       </div>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
@@ -111,7 +133,10 @@ export default function ConversationsPanel({
   detailLoading,
   detailError,
   onDetailRetry,
+  onConversationStatusChange,
+  statusSaving,
   loading,
+  refreshing,
   error,
   onRetry,
   botId,
@@ -202,6 +227,15 @@ export default function ConversationsPanel({
                 </SelectContent>
               </Select>
             </div>
+            {refreshing && (
+              <span
+                role="status"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+              >
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                Updating…
+              </span>
+            )}
           </div>
           <div className="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
             {conversations.map((item, index) => (
@@ -230,6 +264,10 @@ export default function ConversationsPanel({
                   {item.hasLead && (
                     <ContactRound className="size-4 text-primary" aria-label="Lead captured" />
                   )}
+                  <span className={`ml-auto text-xs ${item.messageUsage?.reached ? "font-medium text-destructive" : "text-muted-foreground"}`}>
+                    {item.messageUsage?.used ?? 0}/{item.messageUsage?.limit ?? "—"}
+                    {item.messageUsage?.reached ? " reached" : " messages"}
+                  </span>
                 </div>
               </button>
             ))}
@@ -250,7 +288,14 @@ export default function ConversationsPanel({
           </div>
         </Card>
         <Card className="hidden min-h-0 min-w-0 overflow-hidden p-0 lg:block">
-          <Transcript conversation={conversation} loading={detailLoading} error={detailError} onRetry={onDetailRetry} />
+          <Transcript
+            conversation={conversation}
+            loading={detailLoading}
+            error={detailError}
+            onRetry={onDetailRetry}
+            onStatusChange={onConversationStatusChange}
+            statusSaving={statusSaving}
+          />
         </Card>
       </div>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -266,7 +311,14 @@ export default function ConversationsPanel({
             <ArrowLeft className="size-4" /> Back
           </Button>
           <div className="min-h-0 flex-1">
-            <Transcript conversation={conversation} loading={detailLoading} error={detailError} onRetry={onDetailRetry} />
+            <Transcript
+              conversation={conversation}
+              loading={detailLoading}
+              error={detailError}
+              onRetry={onDetailRetry}
+              onStatusChange={onConversationStatusChange}
+              statusSaving={statusSaving}
+            />
           </div>
         </SheetContent>
       </Sheet>

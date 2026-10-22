@@ -168,6 +168,8 @@ function mountWidget({
   typing.append(make("div", "cb-message-avatar", initials(config.texts.botName)), typeDots);
   const counter = make("span", "cb-counter");
   counter.hidden = true;
+  const usage = make("div", "cb-usage");
+  usage.hidden = preview;
   const compose = make("form", "cb-compose");
   const input = make("textarea", "cb-input");
   input.rows = 1;
@@ -180,7 +182,7 @@ function mountWidget({
   send.setAttribute("aria-label", "Send message");
   send.append(sendIcon());
   compose.append(input, counter, send);
-  win.append(header, messages, typing, chips, compose);
+  win.append(header, messages, typing, chips, usage, compose);
   const footer = make("footer", "cb-footer", `Powered by ${brand.name}`);
   footer.hidden = !config.branding.showBadge;
   win.append(footer);
@@ -197,6 +199,9 @@ function mountWidget({
   let lastSender = "";
   let lastMinute = "";
   let chipsUsed = false;
+  let promptsUsed = 0;
+  let promptLimit = config.limits.conversationPrompts;
+  let limitReached = false;
   const stateKey = `cb-state-${botId}`;
   const persist = () => {
     if (preview) return;
@@ -210,6 +215,7 @@ function mountWidget({
             crypto.randomUUID?.() ||
             String(Date.now()),
           messages: history,
+          usage: { used: promptsUsed, limit: promptLimit, reached: limitReached },
         }),
       );
     } catch {}
@@ -253,7 +259,7 @@ function mountWidget({
     lastSender = kind;
     lastMinute = stamp;
     scroll();
-    return { row, bubble };
+    return { row, bubble, stamp };
   };
   const addError = (message, retryMessage) => {
     const notice = make("div", "cb-error-notice");
@@ -274,6 +280,28 @@ function mountWidget({
       });
       notice.append(retry);
     }
+    messages.append(notice);
+    scroll();
+  };
+  const renderUsage = () => {
+    usage.textContent = limitReached
+      ? `${promptsUsed} / ${promptLimit} questions · Limit reached`
+      : `${promptsUsed} / ${promptLimit} questions`;
+    usage.classList.toggle("cb-usage-limit", limitReached);
+  };
+  const addLimitNotice = () => {
+    if (messages.querySelector(".cb-limit-notice")) return;
+    const notice = make("div", "cb-limit-notice");
+    notice.setAttribute("role", "status");
+    const text = make(
+      "span",
+      "",
+      "This conversation has reached its limit. Start a new chat to continue.",
+    );
+    const action = make("button", "cb-limit-action", "New chat");
+    action.type = "button";
+    action.addEventListener("click", () => resetChat());
+    notice.append(text, action);
     messages.append(notice);
     scroll();
   };
@@ -323,28 +351,77 @@ function mountWidget({
     form.append(make("p", "cb-form-title", "Request an appointment"));
     const error = make("p", "cb-form-error");
     error.hidden = true;
+    const controls = new Map();
     (payload.fields || []).forEach((field) => {
-      const label = make("label", "", field.label || field.name);
+      const name = field.name || field.id;
+      if (!name) return;
+      const label = make("label");
+      const labelText = make("span", "cb-form-label", field.label || name);
+      if (field.required !== false) {
+        labelText.append(make("span", "cb-required", " *"));
+      }
       const control = make("input");
-      control.name = field.name;
+      control.name = name;
       control.required = field.required !== false;
       control.type = ["email", "date", "tel"].includes(field.type) ? field.type : "text";
-      control.autocomplete = field.name === "phone" ? "tel" : field.name === "email" ? "email" : "name";
-      label.append(control);
+      control.autocomplete = name === "phone" ? "tel" : name === "email" ? "email" : "name";
+      control.maxLength = name === "phone" ? 40 : 255;
+      const fieldError = make("span", "cb-field-error");
+      fieldError.hidden = true;
+      control.setAttribute("aria-describedby", `cb-${name}-error`);
+      fieldError.id = `cb-${name}-error`;
+      control.addEventListener("input", () => {
+        control.removeAttribute("aria-invalid");
+        fieldError.hidden = true;
+        error.hidden = true;
+      });
+      label.append(labelText, control, fieldError);
       form.append(label);
+      controls.set(name, { control, error: fieldError, label: field.label || name });
     });
+    const showFieldError = (name, message) => {
+      const field = controls.get(name);
+      if (!field) return false;
+      field.control.setAttribute("aria-invalid", "true");
+      field.error.textContent = message;
+      field.error.hidden = false;
+      return true;
+    };
+    const validate = () => {
+      let valid = true;
+      controls.forEach(({ control, error: fieldError, label }) => {
+        control.removeAttribute("aria-invalid");
+        fieldError.hidden = true;
+        const value = control.value.trim();
+        if (control.required && !value) {
+          showFieldError(control.name, `${label} is required.`);
+          valid = false;
+        } else if (value && !control.validity.valid) {
+          showFieldError(
+            control.name,
+            control.validity.typeMismatch
+              ? `Enter a valid ${control.name === "email" ? "email address" : label.toLowerCase()}.`
+              : `${label} is invalid.`,
+          );
+          valid = false;
+        }
+      });
+      const email = controls.get("email")?.control.value.trim();
+      const phone = controls.get("phone")?.control.value.trim();
+      if (controls.has("email") && controls.has("phone") && !email && !phone) {
+        showFieldError("email", "Enter an email address or phone number.");
+        valid = false;
+      }
+      return valid;
+    };
     const submit = make("button", "", "Send request");
     submit.type = "submit";
     form.append(error, submit);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!form.reportValidity()) {
-        error.textContent = "Please complete the required fields.";
-        error.hidden = false;
-        return;
-      }
-      submit.disabled = true;
       error.hidden = true;
+      if (!validate()) return;
+      submit.disabled = true;
       try {
         const fields = Object.fromEntries(new FormData(form));
         const response = await fetch(
@@ -358,20 +435,34 @@ function mountWidget({
             }),
           },
         );
-        if (!response.ok) throw new Error();
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          const validationErrors = body?.errors && typeof body.errors === "object"
+            ? Object.entries(body.errors)
+            : [];
+          let displayed = false;
+          validationErrors.forEach(([key, messages]) => {
+            const name = key.replace(/^fields\./, "");
+            const message = Array.isArray(messages) ? messages[0] : messages;
+            if (typeof message === "string") displayed = showFieldError(name, message) || displayed;
+          });
+          if (displayed) return;
+          throw new Error(body?.message || "We could not send your request. Please try again.");
+        }
         form.replaceWith(make("p", "cb-form-success", "Thanks! We'll contact you soon."));
         scroll();
-      } catch {
-        submit.disabled = false;
-        error.textContent = "We could not send your request. Please try again.";
+      } catch (requestError) {
+        error.textContent = requestError.message || "We could not send your request. Please try again.";
         error.hidden = false;
+      } finally {
+        submit.disabled = false;
       }
     });
     messages.append(form);
     scroll();
   };
   const sendMessage = async (message) => {
-    if (!message.trim() || sending) return;
+    if (!message.trim() || sending || limitReached) return;
     if (preview && testHistory.length >= 30) {
       addError("Test session limit reached. Reset chat to start a new session.");
       return;
@@ -413,6 +504,13 @@ function mountWidget({
         onLeadForm: (payload) => {
           if (!destroyed && requestGeneration === generation) renderLeadForm(payload);
         },
+        onUsage: (nextUsage) => {
+          if (preview || destroyed || requestGeneration !== generation) return;
+          promptsUsed = Number(nextUsage.used) || promptsUsed;
+          promptLimit = Number(nextUsage.limit) || promptLimit;
+          limitReached = Boolean(nextUsage.reached);
+          renderUsage();
+        },
       });
       if (destroyed || requestGeneration !== generation) return;
       if (!answer) reply?.row.remove();
@@ -420,17 +518,28 @@ function mountWidget({
         { role: "user", text: lastMessage },
         { role: "assistant", text: answer.slice(0, 1000) },
       );
+      else {
+        history.push({ kind: "bot", content: answer, stamp: reply?.stamp || time() });
+        persist();
+      }
+      if (!preview && limitReached) addLimitNotice();
     } catch (err) {
       if (destroyed || requestGeneration !== generation) return;
       typing.hidden = true;
       reply?.row.remove();
-      addError(err.message || "Unable to send message.", lastMessage);
+      if (!preview && err.status === 409 && /message limit/i.test(err.message || "")) {
+        promptsUsed = promptLimit;
+        limitReached = true;
+        renderUsage();
+        persist();
+        addLimitNotice();
+      } else addError(err.message || "Unable to send message.", lastMessage);
     } finally {
       if (destroyed || requestGeneration !== generation) return;
       sending = false;
-      input.disabled = false;
-      input.focus();
-      send.disabled = !input.value.trim() || input.value.length > 500;
+      input.disabled = limitReached;
+      if (!limitReached) input.focus();
+      send.disabled = limitReached || !input.value.trim() || input.value.length > 500;
       typing.hidden = true;
     }
   };
@@ -451,6 +560,10 @@ function mountWidget({
       if (!greeting && item.kind === "bot") greeting = entry;
     });
     chipsUsed = restored.messages.some((item) => item.kind === "user");
+    promptsUsed = Number(restored.usage?.used)
+      || restored.messages.filter((item) => item.kind === "user").length;
+    promptLimit = Number(restored.usage?.limit) || promptLimit;
+    limitReached = Boolean(restored.usage?.reached) || promptsUsed >= promptLimit;
   } else
     greeting = addMessage(
       "bot",
@@ -461,6 +574,8 @@ function mountWidget({
   previewMessages.forEach(({ role, text }) => {
     if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
   });
+  renderUsage();
+  if (!preview && limitReached) addLimitNotice();
   renderChips();
   if (defaultOpen) setOpen(true);
   if (!localStorage.getItem(teaserKey))
@@ -496,6 +611,38 @@ function mountWidget({
     if (event.key === "Escape" && open) setOpen(false);
   };
   document.addEventListener("keydown", escape);
+  function resetChat() {
+    generation += 1;
+    sending = false;
+    chipsUsed = false;
+    lastSender = "";
+    lastMinute = "";
+    lastMessage = "";
+    messageCount = 0;
+    promptsUsed = 0;
+    limitReached = false;
+    if (!preview) {
+      localStorage.removeItem(`cb-conversation-${botId}`);
+      localStorage.removeItem(stateKey);
+    }
+    history.length = 0;
+    testHistory.length = 0;
+    messages.replaceChildren();
+    greeting = addMessage(
+      "bot",
+      failed && config.texts.offlineMessage
+        ? config.texts.offlineMessage
+        : config.texts.greetingMessage,
+    );
+    renderChips();
+    renderUsage();
+    input.disabled = false;
+    input.value = "";
+    send.disabled = true;
+    typing.hidden = true;
+    autoGrow();
+    input.focus();
+  }
   const widget = {
     destroy() {
       if (destroyed) return;
@@ -511,38 +658,16 @@ function mountWidget({
       setOpen(false);
     },
     resetChat() {
-      generation += 1;
-      sending = false;
-      chipsUsed = false;
-      lastSender = "";
-      lastMinute = "";
-      lastMessage = "";
-      messageCount = 0;
-      if (!preview) {
-        localStorage.removeItem(`cb-conversation-${botId}`);
-        localStorage.removeItem(stateKey);
-      }
-      history.length = 0;
-      testHistory.length = 0;
-      messages.replaceChildren();
-      greeting = addMessage(
-        "bot",
-        failed && config.texts.offlineMessage
-          ? config.texts.offlineMessage
-          : config.texts.greetingMessage,
-      );
-      renderChips();
-      input.disabled = false;
-      input.value = "";
-      send.disabled = true;
-      typing.hidden = true;
-      autoGrow();
+      resetChat();
     },
     update(nextConfig) {
       if (destroyed) return;
       const oldGreeting = config.texts.greetingMessage;
       const scrollTop = messages.scrollTop;
       config = nextConfig;
+      promptLimit = config.limits.conversationPrompts;
+      limitReached = promptsUsed >= promptLimit;
+      renderUsage();
       applyTheme(host, config);
       root.classList.toggle("cb-left", config.theme.position === "left");
       root.classList.toggle("cb-right", config.theme.position === "right");
