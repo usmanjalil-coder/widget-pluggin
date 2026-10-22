@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Label, RequiredIndicator } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export default function CharLimitInput({
@@ -27,7 +27,12 @@ export default function CharLimitInput({
   const Field = multiline ? Textarea : Input;
   return (
     <div className={cn("space-y-2", className)}>
-      {label && <Label htmlFor={id}>{label}</Label>}
+      {label && (
+        <Label htmlFor={id}>
+          {label}
+          {props.required && <RequiredIndicator />}
+        </Label>
+      )}
       <Field
         id={id}
         value={value}

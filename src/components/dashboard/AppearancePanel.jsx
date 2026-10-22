@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { ArrowDown, ArrowUp, Check } from "lucide-react";
+import { RequiredIndicator } from "@/components/ui/label";
 import { Button, Card, Input, Label, Skeleton, Switch } from "@/components/ui";
 import {
   Select,
@@ -61,6 +63,14 @@ export default function AppearancePanel({
   setLogoFile,
   appearanceErrors = {},
 }) {
+  const errorSummaryRef = useRef(null);
+
+  useEffect(() => {
+    if (Object.keys(appearanceErrors).length === 0) return;
+    errorSummaryRef.current?.focus({ preventScroll: true });
+    errorSummaryRef.current?.scrollIntoView({ block: "start" });
+  }, [appearanceErrors]);
+
   if (detailError && !draft && !loading) {
     return (
       <Card>
@@ -82,12 +92,31 @@ export default function AppearancePanel({
 
   return (
     <div className="grid items-start gap-6 pb-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+      {Object.keys(appearanceErrors).length > 0 && (
+        <div
+          ref={errorSummaryRef}
+          role="alert"
+          tabIndex={-1}
+          aria-labelledby="appearance-errors-title"
+          className="scroll-mt-24 space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive focus-visible:outline-2 focus-visible:outline-destructive lg:col-span-2"
+        >
+          <p id="appearance-errors-title" className="font-medium">
+            Please correct the following errors and save again.
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            {Object.entries(appearanceErrors).map(([field, messages]) => (
+              <li key={field}>{Array.isArray(messages) ? messages.join(" ") : messages}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <fieldset disabled={savingAppearance} className="flex min-w-0 flex-col gap-6">
         <Card title="Branding" subtitle="Your public widget identity." className="order-1">
           <div className="grid gap-4 md:grid-cols-2">
             <CharLimitInput
               id="appearance-bot-name"
               label="Bot name"
+              required
               maxLength={TEXT_LIMITS.botName}
               value={draft.texts.botName || ""}
               onChange={(event) => updateDraftField("texts", "botName", event.target.value)}
@@ -173,7 +202,7 @@ export default function AppearancePanel({
           </TooltipProvider>
           <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
             <Label className="space-y-2 text-sm text-foreground">
-              <span>Primary color</span>
+              <span>Primary color<RequiredIndicator /></span>
               <span className="flex items-center gap-2">
                 <span
                   className="size-9 shrink-0 rounded-lg border border-border"
@@ -181,6 +210,7 @@ export default function AppearancePanel({
                   style={{ backgroundColor: pickerColor(draft.theme.primaryColor) }}
                 />
                 <Input
+                  required
                   value={draft.theme.primaryColor || "#2563eb"}
                   aria-invalid={!HEX_COLOR.test(draft.theme.primaryColor || "")}
                   onChange={(event) =>
@@ -207,7 +237,7 @@ export default function AppearancePanel({
             {onColor(draft.theme.primaryColor) === "#18181b" ? "dark" : "light"}.
           </p>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm text-foreground">Light / dark mode</span>
+            <span className="text-sm text-foreground">Light / dark mode<RequiredIndicator /></span>
             <div className="inline-flex rounded-xl border border-border bg-background p-1">
               {["light", "dark"].map((mode) => (
                 <Button
@@ -229,6 +259,7 @@ export default function AppearancePanel({
             <CharLimitInput
               id="appearance-greeting"
               label="Greeting message"
+              required
               maxLength={TEXT_LIMITS.greetingMessage}
               multiline
               rows={4}
@@ -238,6 +269,7 @@ export default function AppearancePanel({
             <CharLimitInput
               id="appearance-placeholder"
               label="Input placeholder"
+              required
               maxLength={TEXT_LIMITS.inputPlaceholder}
               value={draft.texts.inputPlaceholder || ""}
               onChange={(event) =>
@@ -348,12 +380,13 @@ export default function AppearancePanel({
         >
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Position</Label>
+              <Label htmlFor="appearance-position">Position<RequiredIndicator /></Label>
               <Select
+                required
                 value={draft.theme.position || "right"}
                 onValueChange={(value) => updateDraftField("theme", "position", value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="appearance-position" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -363,7 +396,7 @@ export default function AppearancePanel({
               </Select>
             </div>
             <Label className="space-y-2 text-sm text-foreground">
-              <span>Border radius: {draft.theme.borderRadius ?? 16}px</span>
+              <span>Border radius: {draft.theme.borderRadius ?? 16}px<RequiredIndicator /></span>
               <Input
                 type="range"
                 min="0"
@@ -376,12 +409,13 @@ export default function AppearancePanel({
               />
             </Label>
             <div className="space-y-2">
-              <Label>Font family</Label>
+              <Label htmlFor="appearance-font-family">Font family<RequiredIndicator /></Label>
               <Select
+                required
                 value={draft.theme.fontFamily || "system"}
                 onValueChange={(value) => updateDraftField("theme", "fontFamily", value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="appearance-font-family" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -434,16 +468,6 @@ export default function AppearancePanel({
             </Button>
           </div>
         </Card>
-        {Object.keys(appearanceErrors).length > 0 && (
-          <div
-            role="alert"
-            className="order-6 space-y-1 rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
-          >
-            {Object.entries(appearanceErrors).map(([field, messages]) => (
-              <p key={field}>{Array.isArray(messages) ? messages.join(" ") : messages}</p>
-            ))}
-          </div>
-        )}
       </fieldset>
 
       <AppearancePreview botId={selectedBotId} config={draft} logoFile={logoFile} />

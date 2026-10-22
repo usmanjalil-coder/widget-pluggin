@@ -8,6 +8,59 @@ import { getBot, updateBot } from "@/lib/api/bots.api";
 import { useDashboard } from "./dashboard-context";
 import { HEX_COLOR } from "@/lib/limits";
 
+const textValue = (value) => (typeof value === "string" ? value : "");
+
+function appearancePayload(draft) {
+  const texts = draft.texts || {};
+  const theme = draft.theme || {};
+
+  return {
+    theme: {
+      primaryColor: textValue(theme.primaryColor),
+      mode: textValue(theme.mode) || "light",
+      position: textValue(theme.position) || "right",
+      borderRadius: Number.isInteger(theme.borderRadius) ? theme.borderRadius : 16,
+      fontFamily: textValue(theme.fontFamily) || "system",
+    },
+    texts: {
+      botName: textValue(texts.botName),
+      avatarUrl: textValue(texts.avatarUrl),
+      greetingMessage: textValue(texts.greetingMessage),
+      inputPlaceholder: textValue(texts.inputPlaceholder),
+      launcherLabel: textValue(texts.launcherLabel),
+      starterQuestions: Array.isArray(texts.starterQuestions)
+        ? texts.starterQuestions
+            .map(textValue)
+            .map((question) => question.trim())
+            .filter(Boolean)
+        : [],
+      offlineMessage: textValue(texts.offlineMessage),
+    },
+    branding: {
+      showBadge: Boolean(draft.branding?.showBadge),
+    },
+    settings: {
+      assistantRules: textValue(draft.settings?.assistantRules),
+    },
+  };
+}
+
+function requiredAppearanceErrors(payload) {
+  const errors = {};
+  if (!payload.texts.botName.trim()) errors["texts.botName"] = ["Bot name is required."];
+  if (!payload.texts.greetingMessage.trim()) {
+    errors["texts.greetingMessage"] = ["Greeting message is required."];
+  }
+  if (!payload.texts.inputPlaceholder.trim()) {
+    errors["texts.inputPlaceholder"] = ["Input placeholder is required."];
+  }
+  if (!HEX_COLOR.test(payload.theme.primaryColor)) {
+    errors["theme.primaryColor"] = ["Enter a valid #RGB or #RRGGBB color."];
+  }
+
+  return errors;
+}
+
 export default function useBotEditor({ selectedBotId, setBots }) {
   const { registerNavigationGuard } = useDashboard();
   const {
@@ -135,25 +188,18 @@ export default function useBotEditor({ selectedBotId, setBots }) {
 
   const saveAppearance = useCallback(async () => {
     if (!selectedBotId || !draft) return;
-    if (!HEX_COLOR.test(draft.theme.primaryColor)) {
-      notify("Enter a valid hex color before saving.");
+    const payload = appearancePayload(draft);
+    const validationErrors = requiredAppearanceErrors(payload);
+    if (Object.keys(validationErrors).length > 0) {
+      setAppearanceErrors(validationErrors);
+      notify("Please correct the highlighted appearance fields.");
       return;
     }
     setSavingAppearance(true);
     setAppearanceErrors({});
     try {
-      const texts = { ...draft.texts };
-      if (logoFile) delete texts.avatarUrl;
-      const saved = await updateBot(
-        selectedBotId,
-        {
-          theme: draft.theme,
-          texts,
-          branding: draft.branding,
-          settings: { assistantRules: draft.settings?.assistantRules || "" },
-        },
-        logoFile,
-      );
+      if (logoFile) delete payload.texts.avatarUrl;
+      const saved = await updateBot(selectedBotId, payload, logoFile);
       setDraft(saved);
       setLogoFile(null);
       setBots((current) =>
