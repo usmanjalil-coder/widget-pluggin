@@ -187,7 +187,7 @@ export default function AccountSettingsPanel({
         </Card>
       </section>
       <section id="notifications">
-        <Card title="Notifications" subtitle="These preferences apply across your workspace.">
+        <Card title="Notifications" subtitle="These preferences apply across your bots.">
           <div className="space-y-4">
             <Switch
               label="Email me when a new lead is captured"

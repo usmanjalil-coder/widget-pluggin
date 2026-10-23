@@ -26,20 +26,20 @@ import { brand } from "@/lib/brand";
 import { endAuthSession } from "@/lib/api/auth.api";
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, group: "Workspace" },
-  { label: "Bots", href: "/dashboard/bots", icon: Sparkles, group: "Workspace" },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, group: "Menu" },
+  { label: "Bots", href: "/dashboard/bots", icon: Sparkles, group: "Menu" },
   {
     label: "Conversations",
     href: "/dashboard/conversations",
     icon: MessageSquare,
-    group: "Workspace",
+    group: "Menu",
   },
-  { label: "Leads", href: "/dashboard/leads", icon: Users, group: "Workspace" },
+  { label: "Leads", href: "/dashboard/leads", icon: Users, group: "Menu" },
   {
     label: "Knowledge Base",
     href: "/dashboard/knowledge",
     icon: BookOpen,
-    group: "Workspace",
+    group: "Menu",
   },
   { label: "Usage & Billing", href: "/dashboard/billing", icon: CreditCard, group: "Manage" },
   { label: "Settings", href: "/dashboard/account", icon: Settings2, group: "Manage" },
@@ -77,7 +77,7 @@ function DashboardSidebar({
         />
       </div>
       <nav className="flex-1 space-y-7 px-3" aria-label="Main navigation">
-        {["Workspace", "Manage"].map((group) => (
+        {["Menu", "Manage"].map((group) => (
           <div key={group} className="space-y-1">
             <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {group}

@@ -43,7 +43,7 @@ export default function OverviewPanel({
     <div className="space-y-6">
       <PageHeader
         title="Good to see you"
-        description="Here is what happened across your workspace."
+        description="Here is what happened across your bots."
       />
 
       {error && (

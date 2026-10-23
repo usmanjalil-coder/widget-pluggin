@@ -16,7 +16,8 @@ import {
   ShoppingBag,
   CircleCheck,
 } from "lucide-react";
-import { FaqAccordion, PricingCards } from "@/components/marketing/MarketingUI";
+import { FaqAccordion } from "@/components/marketing/MarketingUI";
+import MarketingPlans from "@/components/marketing/MarketingPlans";
 import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
 import { brand } from "@/lib/brand";
 
@@ -416,7 +417,7 @@ export default function MarketingHome() {
             Simple plans for early use
           </h2>
         </div>
-        <PricingCards />
+        <MarketingPlans />
       </section>
 
       <section id="faq" className="bg-background py-20">

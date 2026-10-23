@@ -205,7 +205,7 @@ export default function DashboardApp({ children }) {
                     <p className="text-xs text-muted-foreground">
                       {isBotDetailPage
                         ? `Bots / ${selectedBot?.name || "Bot"} / ${currentPageLabel}`
-                        : `Workspace / ${currentPageLabel}`}
+                        : `Dashboard / ${currentPageLabel}`}
                     </p>
                     <p className="truncate text-sm font-semibold text-foreground">
                       {currentPageLabel}
