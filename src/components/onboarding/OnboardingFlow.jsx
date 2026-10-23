@@ -97,10 +97,10 @@ export default function OnboardingFlow() {
         starterQuestions: defaults[2],
         offlineMessage: "We are offline right now.",
       },
-      features: { leadCapture: true },
+      features: { leadCapture: state.purpose !== "support" },
       branding: { showBadge: true },
     }),
-    [state.primaryColor, state.position, assistant, greeting, defaults],
+    [state.primaryColor, state.position, state.purpose, assistant, greeting, defaults],
   );
 
   const validationError = validateStep(step, state, assistant);

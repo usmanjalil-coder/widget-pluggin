@@ -8,6 +8,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import Link from "next/link";
+import { Info } from "lucide-react";
+import { Button, Card } from "@/components/ui";
+import { getBot } from "@/lib/api/bots.api";
+import { botQueryKey } from "@/lib/query-client";
 import LeadsPanel from "../LeadsPanel";
 import PageHeader from "@/components/shared/PageHeader";
 import { getLead, listLeads, updateLeadStatus } from "@/lib/api/leads.api";
@@ -17,6 +22,16 @@ const EMPTY = [];
 
 function BotLeads({ botId }) {
   const client = useQueryClient();
+  const botQuery = useQuery({
+    queryKey: botQueryKey(botId),
+    queryFn: () => getBot(botId),
+    enabled: Boolean(botId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  });
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -85,7 +100,27 @@ function BotLeads({ botId }) {
       <div className="mb-6">
         <PageHeader title="Leads" description="Manage contacts and appointment requests." />
       </div>
+      {botQuery.data?.features?.leadCapture === false && (
+        <Card className="mb-6 border-warning/30 bg-warning-bg" role="status">
+          <div className="flex items-start gap-3">
+            <Info className="mt-0.5 size-5 shrink-0 text-warning-foreground" aria-hidden="true" />
+            <div className="space-y-3">
+              <h2 className="text-base font-semibold text-warning-foreground">This bot is set up for customer support</h2>
+              <p className="text-sm text-warning-foreground">
+                Lead capture is disabled. Enable it in Bot Settings to collect new contacts and
+                appointment requests. Any previously captured leads remain available below.
+              </p>
+              <Button asChild variant="secondary" size="sm">
+                <Link href={`/dashboard/bots/${encodeURIComponent(botId)}?tab=settings`}>
+                  Open Bot Settings
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
       <LeadsPanel
+        leadCaptureEnabled={botQuery.data?.features?.leadCapture !== false}
         leads={listQuery.data?.items ?? EMPTY}
         counts={listQuery.data?.counts}
         pagination={listQuery.data}

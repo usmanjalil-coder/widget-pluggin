@@ -13,12 +13,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import CharLimitInput from "@/components/shared/CharLimitInput";
+import BotPurposeField from "@/components/shared/BotPurposeField";
 import { TEXT_LIMITS } from "@/lib/limits";
 import { createBot, getBots } from "@/lib/api/bots.api";
 
 export default function CreateBotDialog({ createDialogOpen, setCreateDialogOpen, onCreated }) {
   const router = useRouter();
   const [newBotName, setNewBotName] = useState("");
+  const [purpose, setPurpose] = useState("support");
   const [createError, setCreateError] = useState("");
   const [creatingBot, setCreatingBot] = useState(false);
   const handleBotCreate = async (event) => {
@@ -31,10 +33,11 @@ export default function CreateBotDialog({ createDialogOpen, setCreateDialogOpen,
     setCreatingBot(true);
 
     try {
-      const created = await createBot({ name: newBotName.trim() });
+      const created = await createBot({ name: newBotName.trim(), purpose });
       const nextBots = await getBots();
       onCreated(created, nextBots);
       setNewBotName("");
+      setPurpose("support");
       setCreateDialogOpen(false);
       notify.success("Bot created.");
       router.push(`/dashboard/bots/${encodeURIComponent(created.public_id ?? created.id)}?tab=appearance`);
@@ -76,6 +79,7 @@ export default function CreateBotDialog({ createDialogOpen, setCreateDialogOpen,
             autoFocus
             disabled={creatingBot}
           />
+          <BotPurposeField value={purpose} onChange={setPurpose} disabled={creatingBot} />
           <DialogFooter>
             <Button
               type="button"

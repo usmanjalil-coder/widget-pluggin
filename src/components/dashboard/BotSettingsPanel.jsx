@@ -4,6 +4,7 @@ import { CircleHelp, Mail } from "lucide-react";
 import { Badge, Button, Card, Input, Label, Skeleton, Switch } from "@/components/ui";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AssistantRulesField from "@/components/shared/AssistantRulesField";
+import BotPurposeField, { botPurpose } from "@/components/shared/BotPurposeField";
 
 import BookingSettingsEditor from "./BookingSettingsEditor";
 
@@ -36,6 +37,30 @@ export default function BotSettingsPanel({
       }}
     >
       <fieldset disabled={savingSettings} className="min-w-0 space-y-6">
+        <Card title="Bot purpose & lead capture" subtitle="Choose how this assistant helps your visitors.">
+          <div className="space-y-4">
+            <BotPurposeField
+              value={botPurpose(draft)}
+              onChange={(value) => {
+                updateDraftField("settings", "purpose", value);
+                updateDraftField("features", "leadCapture", value !== "support");
+              }}
+            />
+            <Switch
+              label="Enable lead capture"
+              checked={Boolean(draft.features?.leadCapture)}
+              onChange={(enabled) => {
+                updateDraftField("features", "leadCapture", enabled);
+                updateDraftField("settings", "purpose", enabled
+                  ? (draft.settings?.purpose === "leads" ? "leads" : "both") : "support");
+              }}
+            />
+            <p className="text-xs text-muted-foreground">
+              When disabled, this bot provides support without offering lead forms. Existing leads
+              stay available in Leads. Conversations remain available for every purpose.
+            </p>
+          </div>
+        </Card>
         <Card title="Notifications" subtitle="Email alerts for leads and status changes.">
           <div className="space-y-4">
             <Label className="space-y-2 text-sm text-foreground">
@@ -124,10 +149,12 @@ export default function BotSettingsPanel({
             </p>
           </div>
         </Card>
-        <BookingSettingsEditor
-          settings={draft.settings ?? {}}
-          updateDraftField={updateDraftField}
-        />
+        {draft.features?.leadCapture && (
+          <BookingSettingsEditor
+            settings={draft.settings ?? {}}
+            updateDraftField={updateDraftField}
+          />
+        )}
         {Object.keys(settingsErrors).length > 0 && (
           <div
             role="alert"
@@ -142,7 +169,10 @@ export default function BotSettingsPanel({
           <Button
             type="submit"
             disabled={
-              savingSettings || JSON.stringify(draft.settings) === JSON.stringify(bot?.settings)
+              savingSettings || (
+                JSON.stringify(draft.settings) === JSON.stringify(bot?.settings)
+                && JSON.stringify(draft.features) === JSON.stringify(bot?.features)
+              )
             }
           >
             {savingSettings ? "Saving…" : "Save settings"}

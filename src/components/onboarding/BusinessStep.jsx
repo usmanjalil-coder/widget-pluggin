@@ -2,6 +2,7 @@ import { Card, Input, Label } from "@/components/ui";
 import AppearancePreview from "@/components/dashboard/AppearancePreview";
 import { INDUSTRIES } from "./constants";
 import { validUrl } from "./validation";
+import BotPurposeField from "@/components/shared/BotPurposeField";
 
 export default function BusinessStep({ state, config, update, setIndustry }) {
   return (
@@ -32,6 +33,7 @@ export default function BusinessStep({ state, config, update, setIndustry }) {
             <p className="text-xs text-destructive">Enter a complete http or https URL.</p>
           )}
         </div>
+        <BotPurposeField value={state.purpose} onChange={(purpose) => update({ purpose })} />
         <fieldset>
           <legend className="mb-3 text-sm font-medium text-foreground">Industry</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

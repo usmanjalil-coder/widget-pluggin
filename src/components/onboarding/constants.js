@@ -52,6 +52,7 @@ export const CONTENT = {
   ],
 };
 export const INITIAL = {
+  purpose: "support",
   step: 0,
   businessName: "",
   websiteUrl: "",

@@ -85,6 +85,7 @@ function StatusSelect({ lead, onChange, saving }) {
 }
 
 export default function LeadsPanel({
+  leadCaptureEnabled = true,
   leads,
   counts,
   pagination,
@@ -172,7 +173,9 @@ export default function LeadsPanel({
     return (
       <EmptyState
         title="No leads yet"
-        body="Contact details captured by your bot will appear here."
+        body={leadCaptureEnabled
+          ? "Contact details captured by your bot will appear here."
+          : "This bot has no previously captured leads. You can continue reviewing its conversations."}
       />
     );
 

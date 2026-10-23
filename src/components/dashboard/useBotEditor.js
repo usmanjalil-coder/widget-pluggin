@@ -130,12 +130,17 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     [bot, draft, logoFile],
   );
 
-  useEffect(() => {
-    return registerNavigationGuard(() => !dirty || window.confirm("Discard unsaved bot changes?"));
-  }, [dirty, registerNavigationGuard]);
+  const unsavedChanges = dirty || Boolean(bot && draft && (
+    JSON.stringify(draft.settings) !== JSON.stringify(bot.settings)
+    || JSON.stringify(draft.features) !== JSON.stringify(bot.features)
+  ));
 
   useEffect(() => {
-    if (!dirty) return;
+    return registerNavigationGuard(() => !unsavedChanges || window.confirm("Discard unsaved bot changes?"));
+  }, [unsavedChanges, registerNavigationGuard]);
+
+  useEffect(() => {
+    if (!unsavedChanges) return;
     const beforeUnload = (event) => {
       event.preventDefault();
       event.returnValue = "";
@@ -168,7 +173,7 @@ export default function useBotEditor({ selectedBotId, setBots }) {
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPopState);
     };
-  }, [dirty, bot, setDraft]);
+  }, [unsavedChanges, bot, setDraft]);
 
   const updateDraftField = useCallback(
     (group, key, value) => {
@@ -233,7 +238,10 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     setSettingsErrors({});
     setSavingSettings(true);
     try {
-      const saved = await updateBot(selectedBotId, { settings: draft.settings });
+      const saved = await updateBot(selectedBotId, {
+        settings: draft.settings,
+        features: { leadCapture: Boolean(draft.features?.leadCapture) },
+      });
       setDraft(saved);
       notify("Settings saved.");
     } catch (error) {
