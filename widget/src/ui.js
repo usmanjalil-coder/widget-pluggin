@@ -173,7 +173,7 @@ function mountWidget({
   const compose = make("form", "cb-compose");
   const input = make("textarea", "cb-input");
   input.rows = 1;
-  input.maxLength = 500;
+  input.maxLength = config.limits.messageCharacters;
   input.placeholder = config.texts.inputPlaceholder;
   input.setAttribute("aria-label", config.texts.inputPlaceholder);
   const send = make("button", "cb-send");
@@ -341,9 +341,9 @@ function mountWidget({
     input.style.height = "auto";
     input.style.height = `${Math.min(input.scrollHeight, 96)}px`;
     const length = input.value.length;
-    counter.hidden = length < 450;
-    counter.textContent = `${length}/500`;
-    counter.classList.toggle("cb-counter-limit", length >= 500);
+    counter.hidden = length < Math.floor(config.limits.messageCharacters * 0.9);
+    counter.textContent = `${length}/${config.limits.messageCharacters}`;
+    counter.classList.toggle("cb-counter-limit", length >= config.limits.messageCharacters);
   };
   const renderLeadForm = (payload) => {
     const form = make("form", "cb-form");
@@ -463,7 +463,11 @@ function mountWidget({
   };
   const sendMessage = async (message) => {
     if (!message.trim() || sending || limitReached) return;
-    if (preview && testHistory.length >= 30) {
+    if (message.length > config.limits.messageCharacters) {
+      addError(`Please keep your message within ${config.limits.messageCharacters} characters.`);
+      return;
+    }
+    if (preview && testHistory.length + 2 > promptLimit * 2) {
       addError("Test session limit reached. Reset chat to start a new session.");
       return;
     }
@@ -516,7 +520,7 @@ function mountWidget({
       if (!answer) reply?.row.remove();
       else if (preview) testHistory.push(
         { role: "user", text: lastMessage },
-        { role: "assistant", text: answer.slice(0, 1000) },
+        { role: "assistant", text: answer.slice(0, 100000) },
       );
       else {
         history.push({ kind: "bot", content: answer, stamp: reply?.stamp || time() });
@@ -539,7 +543,7 @@ function mountWidget({
       sending = false;
       input.disabled = limitReached;
       if (!limitReached) input.focus();
-      send.disabled = limitReached || !input.value.trim() || input.value.length > 500;
+      send.disabled = limitReached || !input.value.trim() || input.value.length > config.limits.messageCharacters;
       typing.hidden = true;
     }
   };
@@ -548,7 +552,7 @@ function mountWidget({
   if (!preview) {
     try {
       const saved = JSON.parse(localStorage.getItem(stateKey) || "null");
-      if (saved && Date.now() - saved.updatedAt < 86400000 && Array.isArray(saved.messages))
+      if (saved && Date.now() - saved.updatedAt < config.limits.conversationInactivityHours * 3600000 && Array.isArray(saved.messages))
         restored = saved;
     } catch {}
   }
@@ -562,8 +566,7 @@ function mountWidget({
     chipsUsed = restored.messages.some((item) => item.kind === "user");
     promptsUsed = Number(restored.usage?.used)
       || restored.messages.filter((item) => item.kind === "user").length;
-    promptLimit = Number(restored.usage?.limit) || promptLimit;
-    limitReached = Boolean(restored.usage?.reached) || promptsUsed >= promptLimit;
+    limitReached = promptsUsed >= promptLimit;
   } else
     greeting = addMessage(
       "bot",
@@ -665,6 +668,7 @@ function mountWidget({
       const oldGreeting = config.texts.greetingMessage;
       const scrollTop = messages.scrollTop;
       config = nextConfig;
+      input.maxLength = config.limits.messageCharacters;
       promptLimit = config.limits.conversationPrompts;
       limitReached = promptsUsed >= promptLimit;
       renderUsage();
@@ -691,6 +695,7 @@ function mountWidget({
         launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
       teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
       input.placeholder = config.texts.inputPlaceholder;
+      autoGrow();
       input.setAttribute("aria-label", config.texts.inputPlaceholder);
       footer.hidden = !config.branding.showBadge;
       if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage)

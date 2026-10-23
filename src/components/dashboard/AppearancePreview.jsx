@@ -150,7 +150,11 @@ export default function AppearancePreview({
           <RotateCcw className="size-3.5" /> Reset chat
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground">15 test prompts per bot/hour; excluded from monthly usage.</p>
+      <p className="text-xs text-muted-foreground">
+        {config.limits?.testPromptsPerHour
+          ? `${config.limits.testPromptsPerHour} test prompts per bot/hour; excluded from monthly usage.`
+          : "Test chats are rate limited and excluded from monthly usage."}
+      </p>
     </div>
   );
 

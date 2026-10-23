@@ -28,11 +28,9 @@ async function streamChat({
   );
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
-    const message = test && response.status === 429
-      ? "15 test prompts used for this bot. Try again in an hour."
-      : test && response.status === 409
+    const message = payload?.message || (test && response.status === 409
         ? "Test session limit reached. Reset chat to start a new session."
-        : payload?.message || "Chat is temporarily unavailable.";
+        : "Chat is temporarily unavailable.");
     const error = new Error(message);
     error.status = response.status;
     throw error;

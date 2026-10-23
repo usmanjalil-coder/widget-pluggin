@@ -17,7 +17,7 @@ const DEFAULT_CONFIG = {
   },
   features: { leadCapture: true, dentalNotice: false },
   branding: { showBadge: true, badgeText: "" },
-  limits: { conversationPrompts: 15 },
+  limits: { conversationPrompts: 15, messageCharacters: 500, testPromptsPerHour: 15, conversationInactivityHours: 24 },
   contactText: "the office",
   dir: "",
   zIndex: 2147483647,
@@ -86,6 +86,9 @@ function sanitizeConfig(raw, preview = false) {
     1,
     Math.min(100, Number(config.limits.conversationPrompts) || 15),
   );
+  config.limits.messageCharacters = Math.max(1, Math.min(10000, Number(config.limits.messageCharacters) || 500));
+  config.limits.testPromptsPerHour = Math.max(1, Math.min(1000, Number(config.limits.testPromptsPerHour) || 15));
+  config.limits.conversationInactivityHours = Math.max(1, Math.min(720, Number(config.limits.conversationInactivityHours) || 24));
   config.contactText = text(config.contactText, "the office", 120);
   config.dir = config.dir === "rtl" ? "rtl" : "";
   config.zIndex = Math.max(1, Math.min(2147483647, Number(config.zIndex) || 2147483647));
