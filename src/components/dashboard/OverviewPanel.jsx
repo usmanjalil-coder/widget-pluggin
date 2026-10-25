@@ -1,9 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { BarChart3, ChevronRight, MessageSquare, Users } from "lucide-react";
-import { Button, Card, Skeleton } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import PageHeader from "@/components/shared/PageHeader";
+import {
+  GetStartedChecklist,
+  OverviewSkeleton,
+  overviewMetrics,
+  StatCard,
+  UsageCard,
+  WorkspaceLinks,
+} from "./OverviewCards";
 
 export default function OverviewPanel({
   usage,
@@ -11,126 +17,61 @@ export default function OverviewPanel({
   loading,
   error,
   onRetry,
+  billing,
+  billingLoading,
+  billingError,
+  selectedBotId,
 }) {
-  const usagePercent = usage?.percent;
-  const metricValue = (value) => (loading || error ? "—" : (value ?? 0));
+  if (loading) return <OverviewSkeleton />;
 
-  const metrics = [
-    {
-      label: "Conversations",
-      value: metricValue(account?.total_conversations),
-      suffix: "total",
-      icon: MessageSquare,
-      trend: "Across your bots",
-    },
-    {
-      label: "Total bots",
-      value: metricValue(account?.total_bots),
-      suffix: "created",
-      icon: BarChart3,
-      trend: "Ready to answer",
-    },
-    {
-      label: "Leads captured",
-      value: metricValue(account?.total_leads),
-      suffix: "total",
-      icon: Users,
-      trend: "New contacts",
-    },
-  ];
+  const counts = overviewMetrics.map((metric) => ({
+    ...metric,
+    value: Number(account?.[metric.key] ?? 0),
+  }));
+  const firstRun = !error && counts[0].value === 0 && counts[2].value === 0;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Good to see you"
-        description="Here is what happened across your bots."
-      />
-
+    <section aria-label="Overview" className="space-y-8">
+      <PageHeader title="Welcome back" description="Your activity and usage across all bots." />
       {error && (
         <Card>
           <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
-          <Button className="mt-4" onClick={onRetry}>
+          <Button type="button" className="mt-4 min-h-10" onClick={onRetry}>
             Retry
           </Button>
         </Card>
       )}
-      <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3">
-        {metrics.map((metric) => (
-          <Card key={metric.label} className="min-w-0 p-4 shadow-sm sm:p-6">
-            <span className="mb-3 flex size-9 items-center justify-center rounded-xl bg-accent text-primary sm:mb-4 sm:size-10">
-              <metric.icon className="size-4 sm:size-5" />
-            </span>
-            <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              {metric.label}
-            </p>
-            <div className="mt-3 flex items-end justify-between gap-2">
-              <span className="text-2xl font-semibold text-foreground sm:text-3xl">
-                {metric.value}
-              </span>
-              <span className="text-xs text-muted-foreground">{metric.suffix}</span>
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">{metric.trend}</p>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6">
-        <Card title="Usage" subtitle="Current plan allowance" aria-busy={loading}>
-          {loading ? (
-            <div role="status" className="space-y-4">
-              <div className="flex items-end justify-between gap-4">
-                <Skeleton className="h-8 w-16 motion-reduce:animate-none" />
-                <span className="text-sm text-muted-foreground">Loading usage...</span>
-              </div>
-              <Skeleton className="h-2 w-full rounded-full motion-reduce:animate-none" />
-            </div>
-          ) : error ? (
-            <p className="text-sm text-muted-foreground">Usage unavailable. Please retry above.</p>
-          ) : (
-            <>
-          <div className="flex items-end justify-between">
-            <span className="text-2xl font-semibold text-foreground">
-              {Math.round(usagePercent)}%
-            </span>
-            <span className="text-sm text-muted-foreground">
-              of monthly conversations used
-            </span>
+      {!error && (
+        <>
+          <div className="grid gap-4 md:grid-cols-3" aria-label="Account statistics">
+            {counts.map((metric) => (
+              <StatCard
+                key={metric.key}
+                label={metric.label}
+                value={metric.value}
+                icon={metric.icon}
+                href={metric.href}
+                helper={metric.value === 0 ? metric.zero : metric.helper}
+              />
+            ))}
           </div>
-          <div
-            className="mt-4 h-2 overflow-hidden rounded-full bg-muted"
-            role="progressbar"
-            aria-label="Monthly conversation usage"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={usagePercent}
-          >
-            <div
-              className={`h-full rounded-full ${usagePercent >= 100 ? "bg-destructive" : usagePercent >= 80 ? "bg-warning" : "bg-primary"}`}
-              style={{
-                width: `${usagePercent}%`,
-              }}
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            <UsageCard
+              billing={billing}
+              billingLoading={billingLoading}
+              billingError={billingError}
+              usagePercent={usage?.percent}
             />
+            {firstRun ? (
+              <GetStartedChecklist botCount={counts[1].value} botId={selectedBotId} />
+            ) : (
+              <WorkspaceLinks />
+            )}
           </div>
-          {usagePercent >= 80 && (
-            <p
-              className={`mt-2 text-xs ${usagePercent >= 100 ? "text-destructive" : "text-warning-foreground"}`}
-            >
-              {usagePercent >= 100 ? "Plan limit reached" : "Approaching your plan limit"}
-            </p>
-          )}
-            </>
-          )}
-          <Link
-            prefetch={false}
-            href="/dashboard/billing"
-            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary"
-          >
-            View usage <ChevronRight className="size-4" />
-          </Link>
-        </Card>
-      </div>
-    </div>
+        </>
+      )}
+    </section>
   );
 }
