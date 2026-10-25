@@ -121,9 +121,11 @@ function DashboardFeatureRow({ feature }) {
   const { text, enabled } = featureDisplay(feature);
   return (
     <div className="flex items-start gap-2 text-sm">
-      {enabled
-        ? <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-        : <Minus className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+      {enabled ? (
+        <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+      ) : (
+        <Minus className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      )}
       <span className={enabled ? "text-foreground" : "text-muted-foreground"}>{text}</span>
     </div>
   );
@@ -138,11 +140,17 @@ function dashboardPrice(plan) {
   }).format(plan.priceCents / 100);
 }
 
-function AdditionalFeatures({ features }) {
+function AdditionalFeatures({ features, dashboard = false }) {
   return (
     <Accordion type="single" collapsible>
       <AccordionItem value="more">
-        <AccordionTrigger className="py-2 text-primary hover:no-underline">
+        <AccordionTrigger
+          className={
+            dashboard
+              ? "min-h-10 rounded-lg px-2 py-2 text-primary hover:bg-primary/5 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring"
+              : "py-2 text-primary hover:no-underline"
+          }
+        >
           View more ({features.length})
         </AccordionTrigger>
         <AccordionContent className="space-y-3 pt-2">
@@ -157,10 +165,9 @@ function AdditionalFeatures({ features }) {
 
 export function PricingComparison({ plans }) {
   const features = Array.from(
-    new Map(plans.flatMap((plan) => plan.features || []).map((feature) => [
-      feature.key,
-      feature,
-    ])).values(),
+    new Map(
+      plans.flatMap((plan) => plan.features || []).map((feature) => [feature.key, feature]),
+    ).values(),
   );
   if (features.length === 0) return null;
 
@@ -171,31 +178,50 @@ export function PricingComparison({ plans }) {
         <table className="w-full min-w-[620px] text-left text-sm">
           <thead className="border-b bg-muted/30">
             <tr>
-              <th scope="col" className="px-5 py-3">Feature</th>
+              <th scope="col" className="px-5 py-3">
+                Feature
+              </th>
               {plans.map((plan) => (
-                <th scope="col" key={plan.key} className="px-5 py-3">{plan.name}</th>
+                <th scope="col" key={plan.key} className="px-5 py-3">
+                  {plan.name}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {features.map((feature) => (
               <tr key={feature.key} className="border-b last:border-0">
-                <th scope="row" className="px-5 py-3 text-left font-medium normal-case tracking-normal text-foreground">
+                <th
+                  scope="row"
+                  className="px-5 py-3 text-left font-medium normal-case tracking-normal text-foreground"
+                >
                   {feature.key === "remove_branding" ? "Powered-by badge" : feature.name}
                 </th>
                 {plans.map((plan) => {
                   const entry = plan.features?.find((item) => item.key === feature.key);
                   return (
                     <td key={plan.key} className="px-5 py-3 text-muted-foreground">
-                      {entry?.key === "remove_branding"
-                        ? entry.value ? "Removed" : "Shown"
-                        : entry?.type === "boolean"
-                          ? entry.value
-                            ? <Check className="size-4 text-primary" aria-label="Available" />
-                            : <Minus className="size-4" aria-label="Unavailable" />
-                          : entry?.type === "number"
-                            ? entry.value === null ? "No set limit" : dashboardNumber.format(entry.value)
-                            : entry?.value || "Not configured"}
+                      {entry?.key === "remove_branding" ? (
+                        entry.value ? (
+                          "Removed"
+                        ) : (
+                          "Shown"
+                        )
+                      ) : entry?.type === "boolean" ? (
+                        entry.value ? (
+                          <Check className="size-4 text-primary" aria-label="Available" />
+                        ) : (
+                          <Minus className="size-4" aria-label="Unavailable" />
+                        )
+                      ) : entry?.type === "number" ? (
+                        entry.value === null ? (
+                          "No set limit"
+                        ) : (
+                          dashboardNumber.format(entry.value)
+                        )
+                      ) : (
+                        entry?.value || "Not configured"
+                      )}
                     </td>
                   );
                 })}
@@ -208,55 +234,82 @@ export function PricingComparison({ plans }) {
   );
 }
 
-function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending }) {
+function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPrice }) {
   const isCurrent = plan.key === currentPlan.key;
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
   const extra = features.slice(6);
   const price = dashboardPrice(plan);
-  const action = isCurrent ? "Current plan"
-    : plan.priceCents > currentPlan.priceCents ? "Upgrade"
-      : plan.priceCents < currentPlan.priceCents ? "Downgrade" : "Change plan";
+  const action = isCurrent
+    ? "Current plan"
+    : plan.priceCents > currentPlan.priceCents
+      ? "Upgrade"
+      : plan.priceCents < currentPlan.priceCents
+        ? "Downgrade"
+        : "Change plan";
 
   return (
-    <article className={`flex min-w-0 flex-col rounded-xl border bg-card p-6 shadow-sm ${isCurrent ? "border-primary ring-1 ring-primary/20" : "border-border"}`}>
+    <article
+      className={`flex min-w-0 flex-col rounded-xl border p-6 shadow-sm ${isCurrent ? "border-primary bg-primary/5 ring-2 ring-primary" : highestPrice ? "border-primary/30 bg-card" : "border-border bg-card"}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="text-lg font-semibold">{plan.name}</h3>
-        {isCurrent && <Badge tone="info">Current plan</Badge>}
+        {isCurrent && (
+          <Badge tone="info">
+            <Check aria-hidden="true" />
+            Current plan
+          </Badge>
+        )}
       </div>
-      {plan.description && <p className="mt-3 min-h-10 text-[13px] leading-relaxed text-muted-foreground">{plan.description}</p>}
+      {plan.description && (
+        <p className="mt-3 min-h-10 text-[13px] leading-relaxed text-muted-foreground">
+          {plan.description}
+        </p>
+      )}
       {price && (
         <p className="mt-5 text-3xl font-semibold tracking-tight">
-          {price}<span className="ml-1 text-sm font-normal text-muted-foreground">/ {plan.billingInterval}</span>
+          {price}
+          <span className="ml-1 text-sm font-normal text-muted-foreground">
+            / {plan.billingInterval}
+          </span>
         </p>
       )}
       <div className="mt-6 flex-1 space-y-3 border-t pt-5">
         {featured.map((feature) => (
           <DashboardFeatureRow key={feature.key} feature={feature} />
         ))}
-        {extra.length > 0 && <AdditionalFeatures features={extra} />}
+        {extra.length > 0 && <AdditionalFeatures features={extra} dashboard />}
       </div>
-      {isCurrent
-        ? <Button type="button" variant="secondary" disabled className="mt-7 w-full">{action}</Button>
-        : <Button
+      {isCurrent ? (
+        <p className="mt-7 flex min-h-10 items-center justify-center gap-2 text-sm font-medium text-primary">
+          <Check className="size-4" aria-hidden="true" />
+          Your current plan
+        </p>
+      ) : (
+        <Button
           type="button"
-          variant="secondary"
+          variant={action === "Upgrade" ? "primary" : "secondary"}
+          title={
+            !plan.canCheckout ? "Online checkout isn’t configured for this plan yet." : undefined
+          }
           disabled={pending || !plan.canCheckout}
           onClick={() => onSelectPlan?.(plan)}
-          className="mt-7 w-full"
+          className="mt-7 min-h-10 w-full"
         >
           {pending ? "Opening checkout…" : plan.canCheckout ? action : "Not configured"}
-        </Button>}
-      {!isCurrent && !plan.canCheckout && (
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          Online checkout isn’t configured for this plan yet.
-        </p>
+        </Button>
       )}
     </article>
   );
 }
 
-export const PricingCards = memo(function PricingCards({ mode, plans, currentPlan, onSelectPlan, pendingPlanKey }) {
+export const PricingCards = memo(function PricingCards({
+  mode,
+  plans,
+  currentPlan,
+  onSelectPlan,
+  pendingPlanKey,
+}) {
   if (mode === "dashboard") {
     return (
       <div className="grid gap-4 lg:grid-cols-3">
@@ -264,6 +317,7 @@ export const PricingCards = memo(function PricingCards({ mode, plans, currentPla
           <DashboardPlanCard
             key={plan.key}
             plan={plan}
+            highestPrice={plan.priceCents === Math.max(...plans.map((item) => item.priceCents))}
             currentPlan={currentPlan}
             onSelectPlan={onSelectPlan}
             pending={pendingPlanKey === plan.key}
