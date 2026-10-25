@@ -10,12 +10,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 const PlanCard = memo(function PlanCard({ plan }) {
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
@@ -144,21 +138,6 @@ function dashboardPrice(plan) {
   }).format(plan.priceCents / 100);
 }
 
-export function AvailableSoonButton({ label, className = "" }) {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span tabIndex={0} className={`inline-flex rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${className}`}>
-            <Button type="button" disabled className="w-full">{label}</Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>Available soon</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
 function AdditionalFeatures({ features }) {
   return (
     <Accordion type="single" collapsible>
@@ -229,7 +208,7 @@ export function PricingComparison({ plans }) {
   );
 }
 
-function DashboardPlanCard({ plan, currentPlan }) {
+function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending }) {
   const isCurrent = plan.key === currentPlan.key;
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
@@ -259,17 +238,36 @@ function DashboardPlanCard({ plan, currentPlan }) {
       </div>
       {isCurrent
         ? <Button type="button" variant="secondary" disabled className="mt-7 w-full">{action}</Button>
-        : <AvailableSoonButton label={action} className="mt-auto w-full pt-7" />}
+        : <Button
+          type="button"
+          variant="secondary"
+          disabled={pending || !plan.canCheckout}
+          onClick={() => onSelectPlan?.(plan)}
+          className="mt-7 w-full"
+        >
+          {pending ? "Opening checkout…" : plan.canCheckout ? action : "Not configured"}
+        </Button>}
+      {!isCurrent && !plan.canCheckout && (
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Online checkout isn’t configured for this plan yet.
+        </p>
+      )}
     </article>
   );
 }
 
-export const PricingCards = memo(function PricingCards({ mode, plans, currentPlan }) {
+export const PricingCards = memo(function PricingCards({ mode, plans, currentPlan, onSelectPlan, pendingPlanKey }) {
   if (mode === "dashboard") {
     return (
       <div className="grid gap-4 lg:grid-cols-3">
         {plans.map((plan) => (
-          <DashboardPlanCard key={plan.key} plan={plan} currentPlan={currentPlan} />
+          <DashboardPlanCard
+            key={plan.key}
+            plan={plan}
+            currentPlan={currentPlan}
+            onSelectPlan={onSelectPlan}
+            pending={pendingPlanKey === plan.key}
+          />
         ))}
       </div>
     );
