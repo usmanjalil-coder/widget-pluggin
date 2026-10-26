@@ -94,8 +94,8 @@ export function SubscriptionBanner({
             </Button>
           ) : (
             <Button
-              className="min-h-10 text-muted-foreground"
-              variant="ghost"
+              className="min-h-10 w-auto border-destructive/30 bg-background px-4 text-destructive shadow-sm hover:border-destructive/50 hover:bg-destructive-bg hover:text-destructive focus-visible:ring-destructive/30"
+              variant="secondary"
               onClick={onCancel}
               disabled={actionPending}
             >
@@ -153,7 +153,7 @@ export function ConfirmCancellation({ confirmation, plan, onClose, onConfirm }) 
 
 export function PaymentMethodCard({ canManage, pending, onManage }) {
   return (
-    <Card className="min-w-0 space-y-4 self-start">
+    <Card id="payment-method" className="min-w-0 space-y-4 self-start scroll-mt-6">
       <div className="flex items-center gap-3">
         <span className="rounded-lg bg-primary/10 p-2 text-primary">
           <CreditCard className="size-5" aria-hidden="true" />
@@ -240,3 +240,4 @@ export function InvoiceRow({ invoice, pending, onDownload }) {
     </li>
   );
 }
+

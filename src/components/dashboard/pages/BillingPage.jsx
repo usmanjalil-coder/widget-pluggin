@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Check, FileText } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Check, ExternalLink, FileText } from "lucide-react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { Badge, Button, Card, EmptyState, Skeleton } from "@/components/ui";
 import {
@@ -11,6 +11,9 @@ import {
   PaymentMethodCard,
   SubscriptionBanner,
 } from "../billing/BillingDetails";
+import CheckoutSyncStatus from "../billing/CheckoutSyncStatus";
+import PendingChangeBanner from "../billing/PendingChangeBanner";
+import PlanChangeDialog from "../billing/PlanChangeDialog";
 import PageHeader from "@/components/shared/PageHeader";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import {
@@ -18,6 +21,7 @@ import {
   changeBillingPlan,
   getBillingInvoices,
   getBillingOverview,
+  getBillingPortalUrl,
   getInvoicePdfUrl,
   getPaymentMethodUrl,
   resumeBillingPlan,
@@ -121,6 +125,9 @@ function UsageMeter({ item, onUpgrade, upgradeDisabled }) {
 function CurrentPlan({
   plan,
   period,
+  pendingTargetPlan,
+  pendingChange,
+  onKeepCurrent,
   onCancel,
   onResume,
   actionPending,
@@ -144,6 +151,12 @@ function CurrentPlan({
         onPayment={onPayment}
         actionPending={actionPending}
         paymentPending={paymentPending}
+      />
+      <PendingChangeBanner
+        currentPlan={plan}
+        targetPlan={pendingTargetPlan}
+        pending={pendingChange}
+        onKeepCurrent={onKeepCurrent}
       />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
@@ -227,6 +240,7 @@ export default function BillingPage() {
   const queryClient = useQueryClient();
   const [pendingAction, setPendingAction] = useState("");
   const [confirmation, setConfirmation] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [showAllInvoices, setShowAllInvoices] = useState(false);
   const query = useQuery({
     queryKey: ["billing", "overview"],
@@ -247,11 +261,14 @@ export default function BillingPage() {
         window.location.assign(result.checkoutUrl);
         return;
       }
+      setSelectedPlan(null);
       const message =
         {
-          updated: "Your plan change is being confirmed by Paddle.",
+          updated: "Your plan has been updated.",
           canceled_at_period_end: "Your subscription will end after the current billing period.",
           cancellation_pending: "Your subscription is already set to end this billing period.",
+          downgrade_scheduled: "Your plan change is scheduled for the end of this billing period.",
+          pending_change_canceled: "Your scheduled plan change has been canceled.",
           unchanged: "You are already on this plan.",
         }[result.action] || "Billing settings updated.";
       toast.success(message);
@@ -259,12 +276,18 @@ export default function BillingPage() {
     },
     onError: (error) => toast.error(error.message || "Could not update your plan."),
   });
-  const runBillingAction = async (name, action, successMessage) => {
+  const runBillingAction = async (name, action, successMessage, updateOverview) => {
     setPendingAction(name);
     try {
       await action();
+      if (updateOverview) {
+        queryClient.setQueryData(["billing", "overview"], updateOverview);
+      }
       toast.success(successMessage);
       await queryClient.invalidateQueries({ queryKey: ["billing"] });
+      if (updateOverview) {
+        queryClient.setQueryData(["billing", "overview"], updateOverview);
+      }
     } catch (error) {
       toast.error(error.message || "Could not update billing settings.");
     } finally {
@@ -284,6 +307,23 @@ export default function BillingPage() {
     } catch (error) {
       paymentTab?.close();
       toast.error(error.message || "Could not open payment settings.");
+    } finally {
+      setPendingAction("");
+    }
+  };
+
+  const manageBillingAccount = async () => {
+    setPendingAction("portal");
+    let portalTab;
+    try {
+      portalTab = window.open("about:blank", "_blank");
+      if (!portalTab) throw new Error("Please allow pop-ups to open your billing account.");
+      portalTab.opener = null;
+      const url = await getBillingPortalUrl();
+      portalTab.location.assign(url);
+    } catch (error) {
+      portalTab?.close();
+      toast.error(error.message || "Could not open your billing account.");
     } finally {
       setPendingAction("");
     }
@@ -326,27 +366,65 @@ export default function BillingPage() {
     );
   }
 
+  const pendingTargetPlan = currentPlan.pendingPlanChange
+    ? availablePlans.find((plan) => plan.key === currentPlan.pendingPlanChange.planKey)
+    : null;
+
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <PageHeader
         title="Usage & Billing"
         description="Your plan and conversation usage this billing cycle."
         actions={
-          query.isFetching ? (
-            <span role="status" className="text-[13px] text-muted-foreground">
-              Refreshing...
-            </span>
-          ) : null
+          <div className="flex flex-wrap items-center gap-3">
+            {query.isFetching && (
+              <span role="status" className="text-[13px] text-muted-foreground">
+                Refreshing...
+              </span>
+            )}
+            {currentPlan.canManageSubscription && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-10"
+                onClick={manageBillingAccount}
+                disabled={pendingAction === "portal"}
+              >
+                {pendingAction === "portal" ? "Opening..." : "Manage billing account"}
+                <ExternalLink className="size-4" aria-hidden="true" />
+              </Button>
+            )}
+          </div>
         }
       />
+      <Suspense fallback={null}>
+        <CheckoutSyncStatus currentPlan={currentPlan} />
+      </Suspense>
       <CurrentPlan
         plan={currentPlan}
         period={period}
+        pendingTargetPlan={pendingTargetPlan}
+        pendingChange={changePlan.isPending && changePlan.variables === currentPlan.key}
+        onKeepCurrent={() => changePlan.mutate(currentPlan.key)}
         onCancel={() => setConfirmation({ trigger: document.activeElement })}
         onPayment={managePayment}
         paymentPending={pendingAction === "payment"}
         onResume={() =>
-          runBillingAction("resume", resumeBillingPlan, "Your subscription will continue.")
+          runBillingAction(
+            "resume",
+            resumeBillingPlan,
+            "Your subscription will continue.",
+            (overview) =>
+              overview
+                ? {
+                    ...overview,
+                    currentPlan: {
+                      ...overview.currentPlan,
+                      cancelAtPeriodEnd: false,
+                    },
+                  }
+                : overview,
+          )
         }
         actionPending={pendingAction === "cancel" || pendingAction === "resume"}
         upgradeDisabled={
@@ -358,7 +436,7 @@ export default function BillingPage() {
           const plan = availablePlans.find(
             (candidate) => candidate.canCheckout && candidate.priceCents > currentPlan.priceCents,
           );
-          if (plan) changePlan.mutate(plan.key);
+          if (plan) setSelectedPlan({ ...plan, trigger: document.activeElement });
         }}
       />
 
@@ -368,8 +446,8 @@ export default function BillingPage() {
             Plans
           </h2>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            Choose the plan that fits your visitors. Paid plan changes are prorated immediately.
-            Switching to Free takes effect at period end.
+            Choose the plan that fits your visitors. Upgrades apply immediately; downgrades and
+            switching to Free take effect at period end.
           </p>
         </div>
         {availablePlans.length ? (
@@ -377,13 +455,9 @@ export default function BillingPage() {
             mode="dashboard"
             plans={availablePlans}
             currentPlan={currentPlan}
-            onSelectPlan={(plan) => {
-              if (plan.key === "free" && plan.priceCents < currentPlan.priceCents) {
-                setConfirmation({ plan, trigger: document.activeElement });
-              } else {
-                changePlan.mutate(plan.key);
-              }
-            }}
+            onSelectPlan={(plan) =>
+              setSelectedPlan({ ...plan, trigger: document.activeElement })
+            }
             pendingPlanKey={changePlan.isPending ? changePlan.variables : ""}
           />
         ) : (
@@ -467,6 +541,14 @@ export default function BillingPage() {
           </Card>
         </div>
       </section>
+      {selectedPlan && (
+        <PlanChangeDialog
+          plan={selectedPlan}
+          pending={changePlan.isPending}
+          onClose={() => setSelectedPlan(null)}
+          onConfirm={(plan) => changePlan.mutateAsync(plan.key)}
+        />
+      )}
       <ConfirmCancellation
         confirmation={confirmation}
         plan={currentPlan}
@@ -486,3 +568,5 @@ export default function BillingPage() {
     </div>
   );
 }
+
+

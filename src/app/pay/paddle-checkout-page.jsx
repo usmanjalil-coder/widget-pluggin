@@ -40,7 +40,7 @@ export default function PaddleCheckoutPage() {
         setState("completed");
       }
       if (event?.name === "checkout.closed" && !checkoutCompleted) {
-        router.replace("/dashboard/billing?checkout=cancelled");
+        router.replace("/dashboard/billing");
       }
     };
 
@@ -135,3 +135,4 @@ export default function PaddleCheckoutPage() {
     </main>
   );
 }
+

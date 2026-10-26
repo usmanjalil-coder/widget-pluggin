@@ -236,6 +236,12 @@ export function PricingComparison({ plans }) {
 
 function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPrice }) {
   const isCurrent = plan.key === currentPlan.key;
+  const isDowngrade = plan.priceCents < currentPlan.priceCents;
+  const isPaidDowngrade = isDowngrade && plan.priceCents > 0;
+  const scheduled = currentPlan.pendingPlanChange?.planKey === plan.key;
+  const paymentBlocked = ["past_due", "paused"].includes(currentPlan.subscriptionStatus);
+  const cancellationBlocksDowngrade =
+    currentPlan.cancelAtPeriodEnd && isPaidDowngrade;
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
   const extra = features.slice(6);
@@ -244,14 +250,19 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
     ? "Current plan"
     : plan.priceCents > currentPlan.priceCents
       ? "Upgrade"
-      : plan.priceCents < currentPlan.priceCents
+      : isDowngrade
         ? "Downgrade"
         : "Change plan";
+  const cardClassName =
+    "flex min-w-0 flex-col rounded-xl border p-6 shadow-sm " +
+    (isCurrent
+      ? "border-primary bg-primary/5 ring-2 ring-primary"
+      : highestPrice
+        ? "border-primary/30 bg-card"
+        : "border-border bg-card");
 
   return (
-    <article
-      className={`flex min-w-0 flex-col rounded-xl border p-6 shadow-sm ${isCurrent ? "border-primary bg-primary/5 ring-2 ring-primary" : highestPrice ? "border-primary/30 bg-card" : "border-border bg-card"}`}
-    >
+    <article className={cardClassName}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="text-lg font-semibold">{plan.name}</h3>
         {isCurrent && (
@@ -260,6 +271,7 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
             Current plan
           </Badge>
         )}
+        {scheduled && !isCurrent && <Badge tone="warning">Scheduled</Badge>}
       </div>
       {plan.description && (
         <p className="mt-3 min-h-10 text-[13px] leading-relaxed text-muted-foreground">
@@ -285,6 +297,29 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
           <Check className="size-4" aria-hidden="true" />
           Your current plan
         </p>
+      ) : scheduled ? (
+        <p className="mt-7 flex min-h-10 items-center justify-center text-sm font-medium text-warning-foreground">
+          Change scheduled
+        </p>
+      ) : paymentBlocked ? (
+        <div className="mt-7 space-y-2 text-center">
+          <Button type="button" className="min-h-10 w-full" disabled>
+            {action}
+          </Button>
+          <p className="text-[13px] text-muted-foreground">
+            Update your payment method to change plans.{" "}
+            <a
+              href="#payment-method"
+              className="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Payment settings
+            </a>
+          </p>
+        </div>
+      ) : cancellationBlocksDowngrade ? (
+        <p className="mt-7 flex min-h-10 items-center justify-center text-center text-[13px] text-muted-foreground">
+          Keep your subscription to change plans.
+        </p>
       ) : (
         <Button
           type="button"
@@ -296,13 +331,12 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
           onClick={() => onSelectPlan?.(plan)}
           className="mt-7 min-h-10 w-full"
         >
-          {pending ? "Opening checkout…" : plan.canCheckout ? action : "Not configured"}
+          {pending ? "Updating…" : plan.canCheckout ? action : "Not configured"}
         </Button>
       )}
     </article>
   );
 }
-
 export const PricingCards = memo(function PricingCards({
   mode,
   plans,
@@ -329,3 +363,4 @@ export const PricingCards = memo(function PricingCards({
 
   return <MarketingPricingCards plans={plans} />;
 });
+
