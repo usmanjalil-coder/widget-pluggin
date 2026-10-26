@@ -14,6 +14,10 @@ import AuthShowcase from "@/components/auth/AuthShowcase";
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
 import { establishAuthSession, getCurrentUser, login } from "@/lib/api/auth.api";
 
+function destinationForPlan(plan) {
+  return plan === "free" ? "/dashboard" : "/dashboard/billing?plan=" + encodeURIComponent(plan);
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [plan, setPlan] = useState("free");
@@ -37,7 +41,7 @@ export default function LoginPage() {
 
     getCurrentUser()
       .then(() => {
-        if (active) router.replace("/dashboard");
+        if (active) router.replace(destinationForPlan(nextPlan));
       })
       .catch(() => {
         window.localStorage.removeItem("token");
@@ -57,7 +61,7 @@ export default function LoginPage() {
     try {
       const authResult = await login({ email, password });
       establishAuthSession(authResult);
-      window.location.replace("/dashboard");
+      window.location.replace(destinationForPlan(plan));
     } catch (loginError) {
       setError(loginError.message || "Unable to sign in right now.");
     } finally {

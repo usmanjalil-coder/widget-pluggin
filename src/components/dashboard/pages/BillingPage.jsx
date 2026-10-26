@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Check, ExternalLink, FileText } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge, Button, Card, EmptyState, Skeleton } from "@/components/ui";
 import {
@@ -249,6 +249,23 @@ export default function BillingPage() {
     staleTime: 30_000,
     retry: false,
   });
+  useEffect(() => {
+    if (!query.data?.currentPlan) return;
+
+    const url = new URL(window.location.href);
+    const planKey = url.searchParams.get("plan");
+    if (!planKey) return;
+
+    const plan = query.data.availablePlans?.find((item) => item.key === planKey);
+    url.searchParams.delete("plan");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+
+    if (plan?.canCheckout && plan.key !== query.data.currentPlan.key) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Open the requested pricing plan after billing loads.
+      setSelectedPlan({ ...plan, trigger: document.activeElement });
+    }
+  }, [query.data]);
+
   const invoicesQuery = useQuery({
     queryKey: ["billing", "invoices"],
     queryFn: ({ signal }) => getBillingInvoices(signal),

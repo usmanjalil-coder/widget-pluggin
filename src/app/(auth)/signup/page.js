@@ -13,6 +13,7 @@ import {
   verifyRegistration,
   resendRegistrationCode,
   establishAuthSession,
+  getCurrentUser,
 } from "@/lib/api/auth.api";
 
 const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,7 +50,26 @@ export default function SignupPage() {
 
   /* eslint-disable react-hooks/set-state-in-effect -- Sync the selected plan from the browser URL after hydration. */
   useEffect(() => {
-    setPlan(new URLSearchParams(window.location.search).get("plan") || "free");
+    const selectedPlan = new URLSearchParams(window.location.search).get("plan") || "free";
+    setPlan(selectedPlan);
+
+    if (!window.localStorage.getItem("token")) return undefined;
+
+    let active = true;
+    getCurrentUser()
+      .then(() => {
+        if (!active) return;
+        window.location.replace(
+          selectedPlan === "free"
+            ? "/dashboard"
+            : "/dashboard/billing?plan=" + encodeURIComponent(selectedPlan),
+        );
+      })
+      .catch(() => window.localStorage.removeItem("token"));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -136,7 +156,12 @@ export default function SignupPage() {
 
     try {
       establishAuthSession(result);
-      window.location.replace("/onboarding");
+      const selectedPlanKey = result.data?.selectedPlanKey;
+      window.location.replace(
+        selectedPlanKey
+          ? "/dashboard/billing?plan=" + encodeURIComponent(selectedPlanKey)
+          : "/onboarding",
+      );
     } catch (err) {
       setError(
         err.message || "Your email was verified, but the session could not start. Please sign in.",
@@ -198,7 +223,7 @@ export default function SignupPage() {
         >
           <header className="mb-6 flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Start free</p>
+              <p className="text-sm font-medium text-muted-foreground">Get started</p>
               <h1 id="signup-title" className="text-2xl font-semibold">
                 {step === 1 ? "Create account" : "Verify your email"}
               </h1>
