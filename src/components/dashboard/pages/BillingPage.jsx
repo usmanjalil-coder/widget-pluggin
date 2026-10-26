@@ -14,6 +14,7 @@ import {
 import CheckoutSyncStatus from "../billing/CheckoutSyncStatus";
 import PendingChangeBanner from "../billing/PendingChangeBanner";
 import PlanChangeDialog from "../billing/PlanChangeDialog";
+import UsageByBot from "../billing/UsageByBot";
 import PageHeader from "@/components/shared/PageHeader";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import {
@@ -350,7 +351,7 @@ export default function BillingPage() {
     );
   }
 
-  const { currentPlan, availablePlans = [], period } = query.data || {};
+  const { currentPlan, availablePlans = [], period, usageByBot } = query.data || {};
   if (!currentPlan) {
     return (
       <div className="mx-auto max-w-6xl space-y-8">
@@ -438,6 +439,11 @@ export default function BillingPage() {
           );
           if (plan) setSelectedPlan({ ...plan, trigger: document.activeElement });
         }}
+      />
+
+      <UsageByBot
+        items={usageByBot}
+        conversationTotal={numericFeature(currentPlan, "conversations")?.used}
       />
 
       <section aria-labelledby="plans-heading" className="space-y-4">
