@@ -1,10 +1,10 @@
 export const brand = {
-  name: "YourBrand",
+  name: "Tellvira",
   tagline: "AI assistant for websites that answers questions and captures leads.",
   domain: "yourbrand.example",
   supportEmail: "support@yourbrand.example",
-  legalName: "YourBrand LLC",
-  defaultTitle: "YourBrand | AI assistant for your website",
+  legalName: "Tellvira LLC",
+  defaultTitle: "Tellvira | AI assistant for your website",
   description:
     "Add an AI assistant to your website to answer visitor questions, capture leads, and book appointments without code.",
 };

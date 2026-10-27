@@ -2,7 +2,7 @@ import { brand } from "@/lib/brand";
 
 export const metadata = {
   title: "Privacy Policy",
-  description: "Draft privacy policy placeholder for YourBrand.",
+  description: "Draft privacy policy placeholder for Tellvira.",
 };
 
 export default function PrivacyPage() {

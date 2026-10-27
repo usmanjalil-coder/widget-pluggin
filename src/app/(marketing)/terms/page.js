@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Terms of Service",
-  description: "Draft terms placeholder for YourBrand.",
+  description: "Draft terms placeholder for Tellvira.",
 };
 
 export default function TermsPage() {
