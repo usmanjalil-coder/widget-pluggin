@@ -91,7 +91,6 @@ export default function BotsPage() {
         toast.success(nextStatus === "active" ? "Bot resumed." : "Bot paused.");
       } catch (error) {
         toast.error(error.message || "Bot status could not be updated.");
-        throw error;
       }
     },
     [setBots, setDashboardBots],
