@@ -60,7 +60,7 @@ function DashboardSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-center pt-6 pb-7">
-        <BrandWordmark />
+        <BrandWordmark className="ms-8"/>
       </div>
       <div className="px-3 pb-7">
         <BotSwitcher
