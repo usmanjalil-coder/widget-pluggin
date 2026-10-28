@@ -565,8 +565,18 @@ button {
   padding: 0 8px 10px;
   color: var(--cb-muted);
   background: var(--cb-bg);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   font-size: 11px;
+}
+.cb-brand-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #fff;
+  object-fit: contain;
 }
 .cb-scroll-bottom {
   position: absolute;

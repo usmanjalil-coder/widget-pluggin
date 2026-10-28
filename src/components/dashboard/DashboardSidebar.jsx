@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BookOpen,
   ChevronRight,
@@ -60,9 +61,7 @@ function DashboardSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-3 px-5 pt-6 pb-7">
-        <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-          <MessageSquare className="size-5" />
-        </span>
+        <Image src={brand.iconPath} alt="" width={36} height={36} className="size-9 rounded-xl bg-white object-contain" />
         <span className="truncate text-lg font-semibold tracking-tight text-foreground">
           {brand.name}
         </span>

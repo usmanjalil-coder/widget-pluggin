@@ -14,13 +14,13 @@ const faqItems = [
   ["Can I change colors and messages?", "Yes. The dashboard includes a live preview so you can update brand colors, greeting text, launch label, and placement before saving."],
   ["What counts as a conversation?", "A conversation is one visitor chat session, however many messages it has."],
   ["What happens when I reach my plan limit?", "Visitors see a friendly unavailable message. You get an email at 80% and 100%, and can upgrade anytime."],
-  ["Can I cancel anytime?", "Yes. There is no long-term contract required. You can pause or cancel at the end of a billing cycle."],
+  ["Can I cancel anytime?", "Yes. Cancel anytime; paid access continues until the end of the current billing period."],
 ];
 
-export function FaqAccordion() {
+export function FaqAccordion({ items = faqItems }) {
   return (
     <Accordion type="single" collapsible defaultValue="faq-0" className="rounded-xl border border-border bg-card px-5 shadow-sm">
-      {faqItems.map(([question, answer], index) => (
+      {items.map(([question, answer], index) => (
         <AccordionItem key={question} value={`faq-${index}`}>
           <AccordionTrigger className="text-base">{question}</AccordionTrigger>
           <AccordionContent className="text-sm leading-6 text-muted-foreground">

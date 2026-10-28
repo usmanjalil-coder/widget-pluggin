@@ -11,7 +11,7 @@ const inter = localFont({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://yourbrand.example"),
+  metadataBase: new URL(`https://${brand.domain}`),
   title: {
     default: brand.name,
     template: `%s | ${brand.name}`,
@@ -20,7 +20,7 @@ export const metadata = {
   openGraph: {
     title: brand.name,
     description: brand.description,
-    url: "https://yourbrand.example",
+    url: `https://${brand.domain}`,
     siteName: brand.name,
     type: "website",
   },

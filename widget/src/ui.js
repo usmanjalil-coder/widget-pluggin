@@ -183,7 +183,11 @@ function mountWidget({
   send.append(sendIcon());
   compose.append(input, counter, send);
   win.append(header, messages, typing, chips, usage, compose);
-  const footer = make("footer", "cb-footer", `Powered by ${brand.name}`);
+  const footer = make("footer", "cb-footer");
+  const footerIcon = make("img", "cb-brand-icon");
+  footerIcon.src = new URL(brand.iconPath, apiBase).href;
+  footerIcon.alt = "";
+  footer.append(footerIcon, document.createTextNode(`Powered by ${brand.name}`));
   footer.hidden = !config.branding.showBadge;
   win.append(footer);
   root.append(launchArea, win);

@@ -29,6 +29,12 @@ export default function sitemap() {
       priority: 0.4,
     },
     {
+      url: `${baseUrl}/refunds`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: "monthly",

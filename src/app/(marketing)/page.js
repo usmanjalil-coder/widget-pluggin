@@ -349,7 +349,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
             How it works
@@ -375,7 +375,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      <section id="features" className="border-y border-border bg-muted/30 py-20 lg:py-24">
+      <section id="features" className="scroll-mt-20 border-y border-border bg-muted/30 py-20 lg:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -420,7 +420,7 @@ export default function MarketingHome() {
         <MarketingPlans />
       </section>
 
-      <section id="faq" className="bg-background py-20">
+      <section id="faq" className="scroll-mt-20 bg-background py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">

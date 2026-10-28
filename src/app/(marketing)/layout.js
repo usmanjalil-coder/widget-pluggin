@@ -60,7 +60,10 @@ export default function MarketingLayout({ children }) {
                 <Link href="/contact">Contact</Link>
               </li>
               <li>
-                <a href={`mailto:${brand.supportEmail}`}>Support</a>
+                <Link href="/solutions">Solutions</Link>
+              </li>
+              <li>
+                <a href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a>
               </li>
             </ul>
           </div>
@@ -74,6 +77,9 @@ export default function MarketingLayout({ children }) {
               </li>
               <li>
                 <Link href="/terms">Terms</Link>
+              </li>
+              <li>
+                <Link href="/refunds">Refund Policy</Link>
               </li>
             </ul>
           </div>

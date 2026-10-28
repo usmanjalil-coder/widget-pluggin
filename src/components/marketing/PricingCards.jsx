@@ -164,16 +164,17 @@ function AdditionalFeatures({ features, dashboard = false }) {
 }
 
 export function PricingComparison({ plans }) {
+  const comparisonKeys = ["bots", "conversations", "messages_per_conversation"];
   const features = Array.from(
     new Map(
       plans.flatMap((plan) => plan.features || []).map((feature) => [feature.key, feature]),
     ).values(),
-  );
+  ).filter((feature) => comparisonKeys.includes(feature.key));
   if (features.length === 0) return null;
 
   return (
     <section className="mt-20">
-      <h2 className="text-2xl font-semibold text-foreground">Compare plans</h2>
+      <h2 className="text-2xl font-semibold text-foreground">Compare plan limits</h2>
       <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full min-w-[620px] text-left text-sm">
           <thead className="border-b bg-muted/30">
