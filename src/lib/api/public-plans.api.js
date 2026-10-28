@@ -1,7 +1,7 @@
 import callApi from "@/lib/api";
 
-export async function getPublicPlans() {
-  const response = await callApi({ url: "plans", cache: "no-store", toastr: false });
+export async function getPublicPlans({ cache = "no-store", next } = {}) {
+  const response = await callApi({ url: "plans", cache, next, toastr: false });
   if (!Array.isArray(response?.data)) {
     throw new Error("Pricing information is unavailable.");
   }

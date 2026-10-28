@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Label, Textarea } from "@/components/ui";
-import { submitContactMessage } from "@/lib/api/contact.api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const initialValues = { name: "", email: "", message: "" };
 const CONTACT_COOLDOWN_KEY = "contact:last-success-at";
@@ -56,6 +58,7 @@ export function ContactForm() {
     setRequestError("");
 
     try {
+      const { submitContactMessage } = await import("@/lib/api/contact.api");
       await submitContactMessage({
         name: values.name.trim(),
         email: values.email.trim(),
@@ -84,11 +87,11 @@ export function ContactForm() {
     <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
       {submitted ? (
         <div className="space-y-2" role="status">
-          <h3 className="text-xl font-semibold text-foreground">Thanks for reaching out</h3>
+          <h2 className="text-xl font-semibold text-foreground">Thanks for reaching out</h2>
           <p className="text-sm text-muted-foreground">Your message was received. A member of the team will reply soon.</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {requestError && (
             <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive-bg p-3 text-sm text-destructive">
               {requestError}

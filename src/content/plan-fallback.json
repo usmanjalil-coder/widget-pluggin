@@ -1,0 +1,89 @@
+{
+  "source": "config/plans.php",
+  "plans": [
+    {
+      "key": "free",
+      "name": "Free",
+      "description": null,
+      "priceCents": 0,
+      "currency": "USD",
+      "billingInterval": "month",
+      "features": [
+        {
+          "key": "conversations",
+          "name": "Monthly conversations",
+          "type": "number",
+          "value": 50
+        },
+        {
+          "key": "bots",
+          "name": "Chatbots",
+          "type": "number",
+          "value": 1
+        },
+        {
+          "key": "remove_branding",
+          "name": "Remove branding",
+          "type": "boolean",
+          "value": false
+        }
+      ]
+    },
+    {
+      "key": "starter",
+      "name": "Starter",
+      "description": null,
+      "priceCents": 2900,
+      "currency": "USD",
+      "billingInterval": "month",
+      "features": [
+        {
+          "key": "conversations",
+          "name": "Monthly conversations",
+          "type": "number",
+          "value": 500
+        },
+        {
+          "key": "bots",
+          "name": "Chatbots",
+          "type": "number",
+          "value": 1
+        },
+        {
+          "key": "remove_branding",
+          "name": "Remove branding",
+          "type": "boolean",
+          "value": true
+        }
+      ]
+    },
+    {
+      "key": "pro",
+      "name": "Pro",
+      "description": null,
+      "priceCents": 7900,
+      "currency": "USD",
+      "billingInterval": "month",
+      "features": [
+        {
+          "key": "conversations",
+          "name": "Monthly conversations",
+          "type": "number",
+          "value": 2000
+        },
+        {
+          "key": "bots",
+          "name": "Chatbots",
+          "type": "number",
+          "value": 3
+        },
+        {
+          "key": "remove_branding",
+          "name": "Remove branding",
+          "type": "boolean",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

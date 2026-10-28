@@ -1,10 +1,13 @@
+import { buildMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Refund Policy",
-  description: `${brand.name}'s 30-day money-back policy for paid subscriptions.`,
-};
+  description:
+    "Read Tellvira's 30-day money-back guarantee for paid plans, how to request a refund through Paddle or support, and how cancellation works.",
+  path: "/refunds",
+});
 
 export default function RefundsPage() {
   return (
@@ -23,23 +26,27 @@ export default function RefundsPage() {
           <p className="mt-3">
             If you are unhappy with a paid {brand.name} subscription, request a refund within 30
             calendar days of the charge. This applies to paid subscription charges, including
-            renewals. Tell us which charge you want refunded and the email used at checkout.
-            Nothing here limits any refund or withdrawal rights you have under applicable law.
+            renewals. Tell us which charge you want refunded and the email used at checkout. Nothing
+            here limits any refund or withdrawal rights you have under applicable law.
           </p>
         </section>
         <section>
           <h2 className="text-xl font-semibold">How to request a refund</h2>
           <p className="mt-3">
             Paddle is the merchant of record for paid purchases and processes refunds. Submit a
-            request through <a className="text-primary underline" href="https://paddle.net">Paddle buyer support</a>,
-            use the support link in your receipt, or email{" "}
+            request through{" "}
+            <a className="text-primary underline" href="https://paddle.net">
+              Paddle buyer support
+            </a>
+            , use the support link in your receipt, or email{" "}
             <a className="text-primary underline" href="mailto:support@tellvira.com">
               support@tellvira.com
             </a>{" "}
             and we will help route the request. For billing questions, email{" "}
             <a className="text-primary underline" href="mailto:billing@tellvira.com">
               billing@tellvira.com
-            </a>.
+            </a>
+            .
           </p>
           <p className="mt-3">
             Approved refunds are issued by Paddle to the original payment method where possible.
@@ -57,8 +64,10 @@ export default function RefundsPage() {
             future renewals and takes effect at the end of the current paid period. Access continues
             until then. Canceling does not itself submit a refund request; please use one of the
             methods above if you want a refund. See the{" "}
-            <Link className="text-primary underline" href="/terms">Terms of Service</Link> for more
-            about subscriptions.
+            <Link className="text-primary underline" href="/terms">
+              Terms of Service
+            </Link>{" "}
+            for more about subscriptions.
           </p>
         </section>
       </div>

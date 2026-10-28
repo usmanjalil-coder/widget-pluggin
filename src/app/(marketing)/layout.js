@@ -1,25 +1,11 @@
 import Link from "next/link";
-import { MarketingNav, BrandWordmark } from "@/components/marketing/MarketingUI";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import { brand } from "@/lib/brand";
+import { publishedNiches } from "@/content/niches";
 
-export const metadata = {
-  title: {
-    default: brand.name,
-    template: `%s | ${brand.name}`,
-  },
-  description: brand.description,
-  openGraph: {
-    title: brand.name,
-    description: brand.description,
-    siteName: brand.name,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: brand.name,
-    description: brand.description,
-  },
-};
+export const dynamic = "error";
+export const revalidate = 300;
 
 export default function MarketingLayout({ children }) {
   return (
@@ -29,13 +15,15 @@ export default function MarketingLayout({ children }) {
       <footer className="border-t border-border bg-background">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
           <div>
-            <BrandWordmark size="footer" />
+            <Link href="/" aria-label="Tellvira homepage" className="inline-flex">
+              <BrandWordmark size="footer" />
+            </Link>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">{brand.tagline}</p>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Product
-            </h3>
+            </h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/#features">Features</Link>
@@ -52,9 +40,9 @@ export default function MarketingLayout({ children }) {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Company
-            </h3>
+            </h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/contact">Contact</Link>
@@ -62,15 +50,20 @@ export default function MarketingLayout({ children }) {
               <li>
                 <Link href="/solutions">Solutions</Link>
               </li>
+              {publishedNiches.map((niche) => (
+                <li key={niche.slug}>
+                  <Link href={`/solutions/${niche.slug}`}>{niche.name}</Link>
+                </li>
+              ))}
               <li>
                 <a href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Legal
-            </h3>
+            </h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/privacy">Privacy</Link>

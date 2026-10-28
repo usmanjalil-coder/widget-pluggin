@@ -1,10 +1,13 @@
-import { ContactForm } from "@/components/marketing/MarketingUI";
+import { buildMetadata } from "@/lib/seo";
+import { ContactForm } from "@/components/marketing/ContactForm";
 import { brand } from "@/lib/brand";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Contact",
-  description: `Contact ${brand.name} about onboarding and website assistant support.`,
-};
+  description:
+    "Get in touch with Tellvira for support, billing or legal questions. Email support@tellvira.com or send us a message using the contact form.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
@@ -20,7 +23,19 @@ export default function ContactPage() {
           </p>
           <div className="mt-6 space-y-3 text-sm text-foreground">
             <p>
-              Email:{" "}
+              Billing:{" "}
+              <a href="mailto:billing@tellvira.com" className="text-primary">
+                billing@tellvira.com
+              </a>
+            </p>
+            <p>
+              Legal/privacy:{" "}
+              <a href="mailto:legal@tellvira.com" className="text-primary">
+                legal@tellvira.com
+              </a>
+            </p>
+            <p>
+              Support:{" "}
               <a href={`mailto:${brand.supportEmail}`} className="text-primary">
                 {brand.supportEmail}
               </a>

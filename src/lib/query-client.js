@@ -1,10 +1,16 @@
 import { QueryClient } from "@tanstack/react-query";
 
 let browserClient;
+let browserToken;
 
 export function getQueryClient() {
   if (typeof window === "undefined") return new QueryClient();
   browserClient ??= new QueryClient();
+  const token = window.localStorage.getItem("token");
+  if (token !== browserToken) {
+    browserClient.clear();
+    browserToken = token;
+  }
   return browserClient;
 }
 

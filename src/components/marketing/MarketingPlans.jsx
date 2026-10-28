@@ -1,27 +1,15 @@
-import { EmptyState } from "@/components/ui";
-import { PricingCards, PricingComparison } from "@/components/marketing/PricingCards";
-import { getPublicPlans } from "@/lib/api/public-plans.api";
+import { MarketingPricingCards, PricingComparison } from "./MarketingPricingCards";
+import { getMarketingPlans } from "@/lib/marketing-plans";
+import { softwareSchema } from "@/lib/seo";
+import { JsonLd } from "./JsonLd";
 
 export default async function MarketingPlans({ compare = false }) {
-  let plans;
-  try {
-    plans = await getPublicPlans();
-  } catch {
-    return (
-      <EmptyState
-        title="Pricing is temporarily unavailable"
-        body="Please try again shortly."
-      />
-    );
-  }
-
-  if (plans.length === 0) {
-    return <EmptyState title="No plans available" body="Please check back soon." />;
-  }
+  const plans = await getMarketingPlans();
 
   return (
     <>
-      <PricingCards mode="marketing" plans={plans} />
+      <JsonLd data={softwareSchema(plans)} />
+      <MarketingPricingCards plans={plans} />
       {compare && <PricingComparison plans={plans} />}
     </>
   );

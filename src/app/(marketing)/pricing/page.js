@@ -1,35 +1,28 @@
 import Link from "next/link";
-import { FaqAccordion } from "@/components/marketing/MarketingUI";
+import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
-import { brand } from "@/lib/brand";
+import { buildMetadata, faqSchema } from "@/lib/seo";
+import { billingFaq } from "@/content/faqs";
+import { JsonLd } from "@/components/marketing/JsonLd";
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 
-const billingFaq = [
-  [
-    "How does billing work?",
-    "Paid plans are billed monthly. Paddle handles payments and taxes as Merchant of Record; applicable taxes may be added at checkout depending on your location.",
-  ],
-  [
-    "Can I cancel anytime?",
-    "Yes. Cancel anytime from the dashboard or Paddle portal. Your paid access continues until the end of the current billing period.",
-  ],
-  [
-    "What happens when I change plans?",
-    "Upgrades take effect immediately with a prorated charge. Downgrades are scheduled for the end of the current billing period.",
-  ],
-  [
-    "Is there a money-back guarantee?",
-    "Yes. Request a refund within 30 days of a paid subscription charge. See the Refund Policy for how to contact Paddle or our support team.",
-  ],
-];
-
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Pricing",
-  description: `Simple pricing for ${brand.name}. Choose a plan for your website assistant.`,
-};
+  description:
+    "Simple monthly plans for the Tellvira AI chatbot. Start free and upgrade as you grow. 30-day money-back guarantee on paid plans.",
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <JsonLd data={faqSchema(billingFaq)} />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Pricing", path: "/pricing" },
+        ]}
+      />
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
           Pricing
@@ -42,13 +35,32 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="mt-10">
+      <section className="mt-10" aria-labelledby="plans-heading">
+        <h2 id="plans-heading" className="text-2xl font-semibold">
+          Monthly plans
+        </h2>
         <MarketingPlans compare />
-      </div>
+      </section>
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        Review our <Link className="font-medium text-primary underline-offset-4 hover:underline" href="/terms">Terms</Link>,{" "}
-        <Link className="font-medium text-primary underline-offset-4 hover:underline" href="/privacy">Privacy Notice</Link>, and{" "}
-        <Link className="font-medium text-primary underline-offset-4 hover:underline" href="/refunds">Refund Policy</Link>.
+        Review our{" "}
+        <Link className="font-medium text-primary underline-offset-4 hover:underline" href="/terms">
+          Terms
+        </Link>
+        ,{" "}
+        <Link
+          className="font-medium text-primary underline-offset-4 hover:underline"
+          href="/privacy"
+        >
+          Privacy Notice
+        </Link>
+        , and{" "}
+        <Link
+          className="font-medium text-primary underline-offset-4 hover:underline"
+          href="/refunds"
+        >
+          Refund Policy
+        </Link>
+        .
       </p>
       <section className="mx-auto mt-20 max-w-4xl">
         <h2 className="text-center text-2xl font-semibold text-foreground">

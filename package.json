@@ -1,14 +1,19 @@
 {
   "name": "widget-plugin",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "node scripts/sync-plan-fallback.cjs --if-available",
+    "sync:plans": "node scripts/sync-plan-fallback.cjs",
+    "audit:marketing": "node scripts/audit-marketing-bundles.cjs",
     "start": "next start",
     "build:widget": "esbuild widget/src/index.js --bundle --minify --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js",
     "dev:widget": "esbuild widget/src/index.js --bundle --format=iife --global-name=ChatbotWidgetBundle --outfile=public/widget.js --watch",
     "lint": "eslint src widget --max-warnings=0",
+    "test:seo": "node scripts/verify-seo.js",
     "format": "prettier --write src widget/src next.config.mjs eslint.config.mjs jsconfig.json package.json"
   },
   "dependencies": {

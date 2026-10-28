@@ -16,27 +16,18 @@ import {
   ShoppingBag,
   CircleCheck,
 } from "lucide-react";
-import { FaqAccordion } from "@/components/marketing/MarketingUI";
+import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
 import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
 import { brand } from "@/lib/brand";
+import { buildMetadata, absoluteUrl, siteConfig, faqSchema } from "@/lib/seo";
+import { homeFaq } from "@/content/faqs";
+import { JsonLd } from "@/components/marketing/JsonLd";
 
-export const metadata = {
-  title: "AI assistant for your website",
-  description:
-    "Answer visitor questions, capture leads, and book more appointments with a simple AI assistant for your website.",
-  openGraph: {
-    title: `${brand.name} | AI assistant for your website`,
-    description:
-      "Answer visitor questions, capture leads, and book more appointments with a simple AI assistant for your website.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${brand.name} | AI assistant for your website`,
-    description:
-      "Answer visitor questions, capture leads, and book more appointments with a simple AI assistant for your website.",
-  },
-};
+export const metadata = buildMetadata({
+  title: { absolute: "Tellvira: AI Chatbot for Small Business Websites" },
+  path: "/",
+});
 
 const steps = [
   {
@@ -289,30 +280,26 @@ function UseCaseCards() {
 }
 
 export default function MarketingHome() {
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      ["How long does setup take?", "Most businesses are live in under 15 minutes."],
-      [
-        "What counts as a conversation?",
-        "A conversation is one visitor chat session, however many messages it has.",
-      ],
-      [
-        "What happens when I reach my plan limit?",
-        "Visitors see a friendly unavailable message and you can upgrade anytime.",
-      ],
-    ].map(([name, text]) => ({
-      "@type": "Question",
-      name,
-      acceptedAnswer: { "@type": "Answer", text },
-    })),
-  };
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+    <main>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: siteConfig.name,
+            url: absoluteUrl(),
+            logo: absoluteUrl(siteConfig.logo),
+            email: siteConfig.supportEmail,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: siteConfig.name,
+            url: absoluteUrl(),
+          },
+          faqSchema(homeFaq),
+        ]}
       />
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:pb-20 lg:pt-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -321,13 +308,11 @@ export default function MarketingHome() {
               Website AI assistant
             </p>
             <h1 className="max-w-xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
-              Answer visitor questions. Capture leads. From your own website.
+              AI chatbot for small business websites
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">{brand.tagline}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <MarketingAuthCta
-                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              />
+              <MarketingAuthCta className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" />
               <a
                 href="#features"
                 className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-background"
@@ -375,7 +360,10 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      <section id="features" className="scroll-mt-20 border-y border-border bg-muted/30 py-20 lg:py-24">
+      <section
+        id="features"
+        className="scroll-mt-20 border-y border-border bg-muted/30 py-20 lg:py-24"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -406,6 +394,10 @@ export default function MarketingHome() {
           </h2>
         </div>
         <UseCaseCards />
+        <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm font-semibold text-primary">
+          <Link href="/solutions">Explore AI chatbot solutions by industry</Link>
+          <Link href="/solutions/dental-practices">AI chatbot for dental practices</Link>
+        </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
@@ -418,6 +410,11 @@ export default function MarketingHome() {
           </h2>
         </div>
         <MarketingPlans />
+        <p className="mt-6 text-center">
+          <Link href="/pricing" className="font-semibold text-primary">
+            Compare Tellvira pricing and plans
+          </Link>
+        </p>
       </section>
 
       <section id="faq" className="scroll-mt-20 bg-background py-20">
@@ -444,9 +441,7 @@ export default function MarketingHome() {
               <h2 className="mt-2 text-3xl font-semibold">Start your website assistant today.</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <MarketingAuthCta
-                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              />
+              <MarketingAuthCta className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" />
               <Link
                 href="/contact"
                 className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-muted"
@@ -457,6 +452,6 @@ export default function MarketingHome() {
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

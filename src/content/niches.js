@@ -1,6 +1,11 @@
 export const niches = [
   {
     slug: "dental-practices",
+    published: true,
+    updatedAt: "2026-10-28",
+    metaTitle: "AI Chatbot for Dental Practices",
+    metaDescription:
+      "Answer patient questions after hours, capture new patient inquiries and appointment requests, and send leads to your front desk. Install in minutes.",
     name: "Dental practices",
     h1: "AI chatbot for dental practices",
     intro:
@@ -55,21 +60,27 @@ export const niches = [
     faq: [
       {
         question: "Can it answer questions after office hours?",
-        answer: "Yes. It can answer common questions from the practice information you provide and collect an inquiry for your team to handle when available.",
+        answer:
+          "Yes. It can answer common questions from the practice information you provide and collect an inquiry for your team to handle when available.",
       },
       {
         question: "Can visitors request appointments?",
-        answer: "They can submit an appointment request. Your team receives the details by email and confirms availability directly; the chatbot does not book a calendar slot.",
+        answer:
+          "They can submit an appointment request. Your team receives the details by email and confirms availability directly; the chatbot does not book a calendar slot.",
       },
       {
         question: "Should patients enter symptoms or records?",
-        answer: "No. The chatbot is not meant to collect patient health information or records. Ask visitors to contact the practice directly about clinical concerns or emergencies.",
+        answer:
+          "No. The chatbot is not meant to collect patient health information or records. Ask visitors to contact the practice directly about clinical concerns or emergencies.",
       },
       {
         question: "Do we need a developer to install it?",
-        answer: "No. Paste the script tag into your site. A WordPress footer-scripts plugin can place it without changing theme code.",
+        answer:
+          "No. Paste the script tag into your site. A WordPress footer-scripts plugin can place it without changing theme code.",
       },
     ],
     relatedSlugs: [],
   },
 ];
+
+export const publishedNiches = niches.filter((niche) => niche.published !== false);

@@ -1,10 +1,13 @@
+import { buildMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Terms of Service",
-  description: `Terms for using ${brand.name}, including subscriptions and cancellation.`,
-};
+  description:
+    "Read the terms for using Tellvira, including account responsibilities, content ownership, monthly billing, cancellation and liability.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (
@@ -20,10 +23,11 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold">Operator and service</h2>
           <p className="mt-3">
-            [YOUR FULL LEGAL NAME], a sole proprietor in Pakistan operating as {brand.name}, provides
-            an embeddable AI assistant for websites. Customers configure bots, supply knowledge
-            content, receive conversations and leads, and manage usage through a dashboard. You must
-            have authority to use the content, domains, and contact information you provide.
+            [YOUR FULL LEGAL NAME], a sole proprietor in Pakistan operating as {brand.name},
+            provides an embeddable AI assistant for websites. Customers configure bots, supply
+            knowledge content, receive conversations and leads, and manage usage through a
+            dashboard. You must have authority to use the content, domains, and contact information
+            you provide.
           </p>
         </section>
         <section>
@@ -49,17 +53,19 @@ export default function TermsPage() {
           <p className="mt-3">
             AI responses may be incomplete or inaccurate. Review bot content and do not rely on it
             for professional, medical, emergency, or legal decisions. The service is not intended to
-            receive protected health information or patient records. We do not offer a HIPAA Business
-            Associate Agreement. Configure your bot so visitors do not submit health details.
+            receive protected health information or patient records. We do not offer a HIPAA
+            Business Associate Agreement. Configure your bot so visitors do not submit health
+            details.
           </p>
         </section>
         <section>
           <h2 className="text-xl font-semibold">Plans, payments, and cancellation</h2>
           <p className="mt-3">
             The plan and price shown at checkout govern your purchase. Paid subscriptions renew for
-            the selected billing period until canceled. <strong>Paddle is the merchant of record</strong>{" "}
-            for paid purchases and handles checkout, payment processing, taxes, receipts, and
-            eligible refunds. Paddle&apos;s buyer terms also apply to the transaction.
+            the selected billing period until canceled.{" "}
+            <strong>Paddle is the merchant of record</strong> for paid purchases and handles
+            checkout, payment processing, taxes, receipts, and eligible refunds. Paddle&apos;s buyer
+            terms also apply to the transaction.
           </p>
           <p className="mt-3">
             Our order process is conducted by our online reseller Paddle.com. Paddle.com is the
@@ -73,8 +79,11 @@ export default function TermsPage() {
             before you confirm a plan change.
           </p>
           <p className="mt-3">
-            See our <Link className="text-primary underline" href="/refunds">Refund Policy</Link> for
-            the 30-day money-back guarantee and request process.
+            See our{" "}
+            <Link className="text-primary underline" href="/refunds">
+              Refund Policy
+            </Link>{" "}
+            for the 30-day money-back guarantee and request process.
           </p>
         </section>
         <section>
@@ -101,9 +110,9 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold">Law and contact</h2>
           <p className="mt-3">
             These terms are governed by the laws of Pakistan, subject to any mandatory rights that
-            apply where you live. Disputes concerning our service are subject to the courts of
-            [YOUR CITY], Pakistan. Paddle&apos;s buyer terms govern payment transactions with Paddle.
-            For support email{" "}
+            apply where you live. Disputes concerning our service are subject to the courts of [YOUR
+            CITY], Pakistan. Paddle&apos;s buyer terms govern payment transactions with Paddle. For
+            support email{" "}
             <a className="text-primary underline" href={`mailto:${brand.supportEmail}`}>
               {brand.supportEmail}
             </a>

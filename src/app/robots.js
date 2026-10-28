@@ -1,11 +1,15 @@
-import { brand } from "@/lib/brand";
+import { absoluteUrl, isProductionSite } from "@/lib/seo";
 
 export default function robots() {
+  if (!isProductionSite) {
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
   return {
     rules: {
       userAgent: "*",
       allow: "/",
+      disallow: ["/dashboard", "/api/"],
     },
-    sitemap: `https://${brand.domain}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

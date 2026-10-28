@@ -1,7 +1,8 @@
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import localFont from "next/font/local";
-import DesignProviders from "@/components/DesignProviders";
+import ThemeProvider from "@/components/ThemeProvider";
+import { buildMetadata, siteConfig, SITE_URL } from "@/lib/seo";
 
 const inter = localFont({
   src: "../assets/inter-latin.woff2",
@@ -11,35 +12,30 @@ const inter = localFont({
 });
 
 export const metadata = {
-  metadataBase: new URL(`https://${brand.domain}`),
+  ...buildMetadata(),
+  metadataBase: new URL(SITE_URL),
+  applicationName: siteConfig.name,
   manifest: "/manifest.json",
   appleWebApp: {
     title: brand.name,
   },
   title: {
-    default: brand.name,
-    template: `%s | ${brand.name}`,
+    default: "Tellvira: AI Chatbot for Small Business Websites",
+    template: "%s | Tellvira",
   },
-  description: brand.description,
-  openGraph: {
-    title: brand.name,
-    description: brand.description,
-    url: `https://${brand.domain}`,
-    siteName: brand.name,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: brand.name,
-    description: brand.description,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0F766E",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full bg-background text-foreground">
-        <DesignProviders>{children}</DesignProviders>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

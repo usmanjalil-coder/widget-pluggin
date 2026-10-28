@@ -12,7 +12,7 @@ export function BrandWordmark({ className = "", size = "header" }) {
         width={320}
         height={76}
         loading={footer ? "lazy" : "eager"}
-        className="block h-[60px] w-auto"
+        className="block h-[40px] w-auto"
       />
     </span>
   );
