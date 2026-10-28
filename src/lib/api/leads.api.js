@@ -16,5 +16,3 @@ export const updateLeadStatus = async (botId, leadId, status) =>
     method: "PATCH",
     data: { status },
   })).data;
-export const submitLead = (botId, data) =>
-  request(`leads/${encodeURIComponent(botId)}`, { method: "POST", data });

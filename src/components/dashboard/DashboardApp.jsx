@@ -4,8 +4,8 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Menu, Search } from "lucide-react";
-import { Button, Input } from "@/components/ui";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getDashboard } from "@/lib/api/dashboard.api";
@@ -215,15 +215,6 @@ export default function DashboardApp({ children }) {
 
                 <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <ThemeToggle />
-                  <div className="relative hidden xl:block">
-                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      aria-label="Search coming soon"
-                      placeholder="Search…"
-                      disabled
-                      className="w-48 pl-9"
-                    />
-                  </div>
                   <Avatar className="hidden sm:flex">
                     <AvatarFallback className="bg-accent text-primary">U</AvatarFallback>
                   </Avatar>

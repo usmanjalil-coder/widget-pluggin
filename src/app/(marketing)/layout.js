@@ -62,9 +62,6 @@ export default function MarketingLayout({ children }) {
               <li>
                 <a href={`mailto:${brand.supportEmail}`}>Support</a>
               </li>
-              <li>
-                <Link href="/contact">Support</Link>
-              </li>
             </ul>
           </div>
           <div>
