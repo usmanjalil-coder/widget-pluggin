@@ -12,6 +12,10 @@ const inter = localFont({
 
 export const metadata = {
   metadataBase: new URL(`https://${brand.domain}`),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: brand.name,
+  },
   title: {
     default: brand.name,
     template: `%s | ${brand.name}`,

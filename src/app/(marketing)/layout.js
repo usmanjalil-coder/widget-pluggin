@@ -29,7 +29,7 @@ export default function MarketingLayout({ children }) {
       <footer className="border-t border-border bg-background">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
           <div>
-            <BrandWordmark />
+            <BrandWordmark size="footer" />
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">{brand.tagline}</p>
           </div>
           <div>

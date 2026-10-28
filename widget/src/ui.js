@@ -32,6 +32,15 @@ const chatIcon = () =>
     ],
     "cb-icon cb-icon-chat",
   );
+const botIcon = () =>
+  svg(
+    [
+      { tag: "rect", x: 3, y: 7, width: 18, height: 14, rx: 4 },
+      { d: "M12 7V4M10 3h4" },
+      { d: "M8 13h.01M16 13h.01M9 17h6" },
+    ],
+    "cb-bot-icon",
+  );
 const xIcon = (className = "cb-icon cb-icon-close") =>
   svg([{ d: "m7 7 10 10M17 7 7 17" }], className);
 const sendIcon = () => svg([{ d: "M12 19V5M6.5 10.5 12 5l5.5 5.5" }]);
@@ -39,14 +48,6 @@ const retryIcon = () => svg([
   { d: "M3 12a9 9 0 1 0 2.6-6.4L3 8" },
   { d: "M3 3v5h5" },
 ]);
-const initials = (name) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase() || "AI";
 const time = () =>
   new Intl.DateTimeFormat(void 0, {
     hour: "numeric",
@@ -92,6 +93,7 @@ function mountWidget({
   container,
   botId,
   apiBase,
+  brandBadgeIconUrl,
   getAuthToken = () => null,
   config: initialConfig,
   failed,
@@ -133,13 +135,21 @@ function mountWidget({
   win.setAttribute("aria-label", `${config.texts.botName} chat`);
   win.setAttribute("aria-modal", "true");
   const header = make("header", "cb-header");
-  let avatar = config.texts.avatarUrl
-    ? make("img", "cb-avatar")
-    : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
-  if (config.texts.avatarUrl) {
-    avatar.src = config.texts.avatarUrl;
-    avatar.alt = "";
-  }
+  const avatarImage = (source, className = "cb-avatar", variant = "header") => {
+    if (!source) {
+      const avatar = make("span", `${className} cb-default-avatar`);
+      avatar.append(botIcon());
+      return avatar;
+    }
+
+    const image = make("img", className);
+    image.src = source;
+    image.alt = "";
+    image.width = variant === "header" ? 36 : 28;
+    image.height = image.width;
+    return image;
+  };
+  let avatar = avatarImage(config.texts.avatarUrl);
   const copy = make("div", "cb-head-copy");
   const title = make("div", "cb-title", config.texts.botName);
   copy.append(title);
@@ -165,7 +175,9 @@ function mountWidget({
   typing.hidden = true;
   const typeDots = make("div", "cb-typing-bubble");
   typeDots.append(make("span", "cb-dot"), make("span", "cb-dot"), make("span", "cb-dot"));
-  typing.append(make("div", "cb-message-avatar", initials(config.texts.botName)), typeDots);
+  const typingAvatar = make("div", "cb-message-avatar");
+  typingAvatar.append(avatarImage(config.texts.avatarUrl, "", "reply"));
+  typing.append(typingAvatar, typeDots);
   const counter = make("span", "cb-counter");
   counter.hidden = true;
   const usage = make("div", "cb-usage");
@@ -185,8 +197,10 @@ function mountWidget({
   win.append(header, messages, typing, chips, usage, compose);
   const footer = make("footer", "cb-footer");
   const footerIcon = make("img", "cb-brand-icon");
-  footerIcon.src = new URL(brand.iconPath, apiBase).href;
+  footerIcon.src = brandBadgeIconUrl;
   footerIcon.alt = "";
+  footerIcon.width = 15;
+  footerIcon.height = 15;
   footer.append(footerIcon, document.createTextNode(`Powered by ${brand.name}`));
   footer.hidden = !config.branding.showBadge;
   win.append(footer);
@@ -233,12 +247,7 @@ function mountWidget({
   const nearBottom = () => messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
   const botAvatar = () => {
     const node = make("div", "cb-message-avatar");
-    if (config.texts.avatarUrl) {
-      const image = make("img");
-      image.src = config.texts.avatarUrl;
-      image.alt = "";
-      node.append(image);
-    } else node.textContent = initials(config.texts.botName);
+    node.append(avatarImage(config.texts.avatarUrl, "", "reply"));
     return node;
   };
   const addMessage = (kind, content) => {
@@ -682,13 +691,7 @@ function mountWidget({
       launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
       win.setAttribute("aria-label", `${config.texts.botName} chat`);
       title.textContent = config.texts.botName;
-      const nextAvatar = config.texts.avatarUrl
-        ? make("img", "cb-avatar")
-        : make("div", "cb-avatar cb-avatar-initials", initials(config.texts.botName));
-      if (config.texts.avatarUrl) {
-        nextAvatar.src = config.texts.avatarUrl;
-        nextAvatar.alt = "";
-      }
+      const nextAvatar = avatarImage(config.texts.avatarUrl);
       avatar.replaceWith(nextAvatar);
       avatar = nextAvatar;
       root.querySelectorAll(".cb-message-avatar").forEach((node) => {

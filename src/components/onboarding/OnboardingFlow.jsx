@@ -5,10 +5,10 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ChevronLeft, MessageSquare } from "lucide-react";
+import { AlertCircle, ChevronLeft } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { getOnboarding } from "@/lib/api/onboarding.api";
-import { brand } from "@/lib/brand";
+import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import AppearanceStep from "./AppearanceStep";
 import BusinessStep from "./BusinessStep";
 import DoneStep from "./DoneStep";
@@ -227,11 +227,8 @@ export default function OnboardingFlow() {
     <main className="min-h-screen bg-background" onKeyDown={handleKeyDown}>
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
-            <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <MessageSquare className="size-4" />
-            </span>
-            {brand.name}
+          <Link href="/" className="flex items-center" aria-label="Tellvira home">
+            <BrandWordmark />
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />

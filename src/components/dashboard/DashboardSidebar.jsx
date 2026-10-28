@@ -2,7 +2,6 @@
 
 import { memo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   BookOpen,
   ChevronRight,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import BotSwitcher from "@/components/bots/BotSwitcher";
-import { brand } from "@/lib/brand";
+import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import { endAuthSession } from "@/lib/api/auth.api";
 
 const navItems = [
@@ -60,11 +59,8 @@ function DashboardSidebar({
   const router = useRouter();
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-3 px-5 pt-6 pb-7">
-        <Image src={brand.iconPath} alt="" width={36} height={36} className="size-9 rounded-xl bg-white object-contain" />
-        <span className="truncate text-lg font-semibold tracking-tight text-foreground">
-          {brand.name}
-        </span>
+      <div className="flex items-center px-5 pt-6 pb-7">
+        <BrandWordmark />
       </div>
       <div className="px-3 pb-7">
         <BotSwitcher

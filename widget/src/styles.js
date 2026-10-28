@@ -232,6 +232,21 @@ button {
   background: rgba(255, 255, 255, .22);
   border: 1px solid rgba(255, 255, 255, .26);
 }
+.cb-default-avatar {
+  display: grid;
+  place-items: center;
+  background: var(--cb-primary);
+  color: var(--cb-on-primary);
+}
+.cb-bot-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .cb-avatar-initials {
   display: grid;
   place-items: center;
@@ -334,6 +349,14 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.cb-message-avatar .cb-default-avatar {
+  width: 100%;
+  height: 100%;
+}
+.cb-message-avatar .cb-bot-icon {
+  width: 17px;
+  height: 17px;
 }
 .cb-message-wrap {
   max-width: 80%;
@@ -572,8 +595,8 @@ button {
   font-size: 11px;
 }
 .cb-brand-icon {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border-radius: 4px;
   background: #fff;
   object-fit: contain;

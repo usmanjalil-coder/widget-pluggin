@@ -1,6 +1,7 @@
 import { deepMerge, loadConfig, sanitizeConfig, scriptOverrides } from "./config.js";
 import { mountWidget } from "./ui.js";
 import { WIDGET_VERSION } from "./version.js";
+import { brand } from "../../src/lib/brand.js";
 const instances = /* @__PURE__ */ new Map();
 function inferApiBase(script) {
   try {
@@ -18,6 +19,10 @@ async function init(options = {}) {
   const key = options.container || botId;
   if (instances.has(key)) return instances.get(key);
   const apiBase = options.apiBase || (script && script.dataset.apiBase) || inferApiBase(script);
+  const brandBadgeIconUrl = new URL(
+    brand.widgetBadgeIconPath,
+    script?.src || window.location.href,
+  ).href;
   let raw = options.config;
   let failed = false;
   if (!raw) {
@@ -48,6 +53,7 @@ async function init(options = {}) {
     container: options.container,
     botId,
     apiBase,
+    brandBadgeIconUrl,
     getAuthToken: options.getAuthToken,
     config,
     defaultOpen: options.open ?? options.defaultOpen ?? false,

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Check, MessageSquare, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Check, Sparkles } from "lucide-react";
 import { brand } from "@/lib/brand";
 
 export default function AuthShowcase({ title, description, items }) {
@@ -7,11 +8,8 @@ export default function AuthShowcase({ title, description, items }) {
     <aside className="relative order-2 hidden min-h-[620px] overflow-hidden rounded-3xl bg-linear-to-br from-primary via-primary to-primary/80 p-8 text-primary-foreground shadow-sm lg:flex lg:flex-col lg:justify-between">
       <div className="pointer-events-none absolute -top-24 -right-20 size-80 rounded-full bg-primary-foreground/10 blur-3xl" />
       <div className="relative">
-        <Link href="/" className="inline-flex items-center gap-3 text-lg font-semibold">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground text-primary">
-            <MessageSquare className="size-5" />
-          </span>
-          {brand.name}
+        <Link href="/" aria-label={brand.name} className="inline-flex items-center">
+          <Image src={brand.iconPath} alt="Tellvira" width={40} height={40} className="size-10" />
         </Link>
         <h1 className="mt-14 max-w-md text-4xl font-semibold leading-tight tracking-tight">
           {title}
