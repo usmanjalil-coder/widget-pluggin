@@ -9,7 +9,7 @@ export default function AuthShowcase({ title, description, items }) {
       <div className="pointer-events-none absolute -top-24 -right-20 size-80 rounded-full bg-primary-foreground/10 blur-3xl" />
       <div className="relative">
         <Link href="/" aria-label={brand.name} className="inline-flex items-center">
-          <Image src={brand.iconPath} alt="Tellvira" width={40} height={40} className="size-10" />
+          <Image src={brand.iconPath} alt="Tellvira" width={500} height={500} className="h-10 w-auto" />
         </Link>
         <h1 className="mt-14 max-w-md text-4xl font-semibold leading-tight tracking-tight">
           {title}

@@ -59,7 +59,7 @@ function DashboardSidebar({
   const router = useRouter();
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center px-5 pt-6 pb-7">
+      <div className="flex items-center justify-center pt-6 pb-7">
         <BrandWordmark />
       </div>
       <div className="px-3 pb-7">
