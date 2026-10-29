@@ -53,7 +53,9 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
   const isCurrent = plan.key === currentPlan.key;
   const isDowngrade = plan.priceCents < currentPlan.priceCents;
   const isPaidDowngrade = isDowngrade && plan.priceCents > 0;
-  const scheduled = currentPlan.pendingPlanChange?.planKey === plan.key;
+  const scheduled =
+    currentPlan.pendingPlanChange?.planKey === plan.key ||
+    (plan.key === "free" && currentPlan.cancelAtPeriodEnd);
   const paymentBlocked = ["past_due", "paused"].includes(currentPlan.subscriptionStatus);
   const cancellationBlocksDowngrade = currentPlan.cancelAtPeriodEnd && isPaidDowngrade;
   const features = dashboardFeatures(plan);
