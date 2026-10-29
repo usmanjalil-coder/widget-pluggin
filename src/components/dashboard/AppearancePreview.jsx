@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 import { dashboardAvatarUrl } from "@/lib/avatars";
 import { getToken } from "@/lib/api";
 import { WIDGET_VERSION } from "../../../widget/src/version.js";
+import { getWidgetScriptUrl } from "@/lib/widget-script-url";
 import { Switch } from "@/components/ui/switch";
 import {
   Sheet,
@@ -21,7 +22,7 @@ function loadWidget() {
   if (!widgetScriptPromise)
     widgetScriptPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/widget.js?v=${WIDGET_VERSION}`;
+      script.src = getWidgetScriptUrl(WIDGET_VERSION);
       script.onload = resolve;
       script.onerror = reject;
       document.head.append(script);

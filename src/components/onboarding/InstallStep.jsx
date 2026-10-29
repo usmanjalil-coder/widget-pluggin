@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Clipboard } from "lucide-react";
 import { Button, Card } from "@/components/ui";
+import { getWidgetScriptUrl } from "@/lib/widget-script-url";
 
 const INSTRUCTIONS = {
   HTML: [
@@ -28,15 +29,7 @@ const INSTRUCTIONS = {
 
 export default function InstallStep({ state, update }) {
   const [platform, setPlatform] = useState("HTML");
-  const [snippet, setSnippet] = useState("");
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSnippet(
-        `<script src="${window.location.origin}/widget.js" data-bot-id="${state.botId}"></script>`,
-      );
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [state.botId]);
+  const snippet = `<script src="${getWidgetScriptUrl()}" data-bot-id="${state.botId}"></script>`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(snippet);

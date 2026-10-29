@@ -1,22 +1,16 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { toast as notify } from "sonner";
 import { Copy } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const subscribeToOrigin = () => () => {};
-const getOrigin = () => window.location.origin;
-const getServerOrigin = () => "";
+import { getWidgetScriptUrl } from "@/lib/widget-script-url";
 
 export default function InstallPanel({ selectedBotId }) {
-  const appOrigin = useSyncExternalStore(subscribeToOrigin, getOrigin, getServerOrigin);
-
   const safeBotId = selectedBotId.replace(/[^a-zA-Z0-9_-]/g, "");
   const script =
-    appOrigin && safeBotId
-      ? `<script src="${appOrigin}/widget.js" data-bot-id="${safeBotId}" data-api-base="${process.env.NEXT_PUBLIC_API_BASE_URL || ""}"></script>`
+    safeBotId
+      ? `<script src="${getWidgetScriptUrl()}" data-bot-id="${safeBotId}" data-api-base="${process.env.NEXT_PUBLIC_API_BASE_URL || ""}"></script>`
       : "Loading install snippet…";
 
   return (
