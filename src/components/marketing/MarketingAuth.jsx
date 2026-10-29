@@ -27,13 +27,14 @@ export function useAuthToken() {
 export function MarketingAuthCta({
   className,
   loggedOutHref = "/signup",
+  loggedInHref = "/dashboard",
   loggedOutLabel = "Get started free",
   loggedInLabel = "Go to dashboard",
 }) {
   const authenticated = useAuthToken();
 
   return (
-    <Link href={authenticated ? "/dashboard" : loggedOutHref} className={className}>
+    <Link href={authenticated ? loggedInHref : loggedOutHref} className={className}>
       {authenticated ? loggedInLabel : loggedOutLabel}
     </Link>
   );

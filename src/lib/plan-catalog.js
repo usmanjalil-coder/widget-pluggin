@@ -4,7 +4,7 @@ function isFeature(feature) {
   if (feature.type === "number") {
     return feature.value === null || (Number.isFinite(feature.value) && feature.value >= 0);
   }
-  return feature.type === "string" && (feature.value === null || typeof feature.value === "string");
+  return feature.type === "text" && (feature.value === null || typeof feature.value === "string");
 }
 
 export function isPlanCatalog(plans) {

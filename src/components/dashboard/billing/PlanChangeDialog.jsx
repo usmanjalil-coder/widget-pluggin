@@ -73,6 +73,7 @@ function confirmLabel(action, planName) {
 
 export default function PlanChangeDialog({
   plan,
+  currentPlan,
   pending,
   onClose,
   onConfirm,
@@ -83,8 +84,12 @@ export default function PlanChangeDialog({
   const triggerRef = useRef(null);
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
-  const preview = result.planKey === plan?.key ? result.preview : null;
-  const error = result.planKey === plan?.key ? result.error : "";
+  const alreadyScheduled = currentPlan?.pendingPlanChange?.planKey === plan?.key
+    || (plan?.key === "free" && currentPlan?.cancelAtPeriodEnd);
+  const alreadyCurrent = currentPlan?.key === plan?.key;
+  const informational = alreadyScheduled || alreadyCurrent;
+  const preview = informational ? { action: "unchanged" } : result.planKey === plan?.key ? result.preview : null;
+  const error = !informational && result.planKey === plan?.key ? result.error : "";
 
   useEffect(() => {
     if (plan?.trigger) triggerRef.current = plan.trigger;
@@ -103,7 +108,7 @@ export default function PlanChangeDialog({
   }, [plan?.key]);
 
   useEffect(() => {
-    if (!plan?.key) return undefined;
+    if (!plan?.key || informational) return undefined;
 
     const controller = new AbortController();
 
@@ -122,11 +127,20 @@ export default function PlanChangeDialog({
       });
 
     return () => controller.abort();
-  }, [plan?.key, attempt]);
+  }, [plan?.key, attempt, informational]);
 
-  const message = previewCopy(preview);
+  const scheduledDate = billingDate(currentPlan?.pendingPlanChange?.effectiveAt || currentPlan?.currentPeriodEnd);
+  const message = alreadyScheduled
+    ? `You have already scheduled a change to ${plan.name}${scheduledDate ? " on " + scheduledDate : " at the end of this billing period"}. You keep your current plan until then.`
+    : alreadyCurrent
+      ? `You are already on ${plan.name}.${currentPlan?.pendingPlanChange || currentPlan?.cancelAtPeriodEnd ? " Your scheduled change remains in place. Use Keep current plan on the billing page to cancel it." : ""}`
+      : previewCopy(preview);
 
   const confirm = async () => {
+    if (informational || preview?.action === "unchanged") {
+      onClose();
+      return;
+    }
     if (!preview || pending || submittingRef.current) return;
 
     submittingRef.current = true;
@@ -149,7 +163,7 @@ export default function PlanChangeDialog({
         }}
       >
         <DialogHeader>
-          <DialogTitle>{plan ? "Change to " + plan.name + "?" : "Change plan"}</DialogTitle>
+          <DialogTitle>{alreadyScheduled ? "Plan change already scheduled" : alreadyCurrent ? "Your current plan" : plan ? "Change to " + plan.name + "?" : "Change plan"}</DialogTitle>
           <DialogDescription>
             Review the billing impact before confirming your plan change.
           </DialogDescription>
@@ -206,7 +220,7 @@ export default function PlanChangeDialog({
             disabled={!preview || Boolean(error) || pending || submitting}
             onClick={confirm}
           >
-            {pending ? "Updating…" : confirmLabel(preview?.action, plan?.name)}
+            {informational || preview?.action === "unchanged" ? "Got it" : pending ? "Updating…" : confirmLabel(preview?.action, plan?.name)}
           </Button>
         </DialogFooter>
       </DialogContent>

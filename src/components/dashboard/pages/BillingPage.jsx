@@ -250,7 +250,7 @@ export default function BillingPage() {
     retry: false,
   });
   useEffect(() => {
-    if (!query.data?.currentPlan) return;
+    if (!query.data?.currentPlan || query.isFetching) return;
 
     const url = new URL(window.location.href);
     const planKey = url.searchParams.get("plan");
@@ -260,11 +260,11 @@ export default function BillingPage() {
     url.searchParams.delete("plan");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
 
-    if (plan?.canCheckout && plan.key !== query.data.currentPlan.key) {
+    if (plan) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Open the requested pricing plan after billing loads.
       setSelectedPlan({ ...plan, trigger: document.activeElement });
     }
-  }, [query.data]);
+  }, [query.data, query.isFetching]);
 
   const invoicesQuery = useQuery({
     queryKey: ["billing", "invoices"],
@@ -567,6 +567,7 @@ export default function BillingPage() {
       {selectedPlan && (
         <PlanChangeDialog
           plan={selectedPlan}
+          currentPlan={currentPlan}
           pending={changePlan.isPending}
           onClose={() => setSelectedPlan(null)}
           onConfirm={(plan) => changePlan.mutateAsync(plan.key)}

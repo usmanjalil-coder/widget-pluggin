@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { MarketingAuthCta } from "./MarketingAuth";
 import { Check, Minus } from "lucide-react";
 import { dashboardFeatures, dashboardPrice, dashboardNumber, featureDisplay } from "@/lib/plan-display";
 import { PlanFeatureDisclosure } from "./PlanFeatureDisclosure";
@@ -33,12 +33,13 @@ function PlanCard({ plan }) {
         ))}
         {extra.length > 0 && <PlanFeatureDisclosure count={extra.length}>{extra.map((feature) => <DashboardFeatureRow key={feature.key} feature={feature} />)}</PlanFeatureDisclosure>}
       </div>
-      <Link
-        href={`/signup?plan=${encodeURIComponent(plan.key)}`}
+      <MarketingAuthCta
+        loggedOutHref={`/signup?plan=${encodeURIComponent(plan.key)}`}
+        loggedInHref={`/dashboard/billing?plan=${encodeURIComponent(plan.key)}`}
+        loggedOutLabel="Get started"
+        loggedInLabel="Select plan"
         className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        Get started
-      </Link>
+      />
     </article>
   );
 }
