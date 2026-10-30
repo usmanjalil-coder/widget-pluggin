@@ -3,9 +3,9 @@ import { ContactForm } from "@/components/marketing/ContactForm";
 import { brand } from "@/lib/brand";
 
 export const metadata = buildMetadata({
-  title: "Contact",
+  title: "AI Chatbot Support, Billing & Contact Details",
   description:
-    "Get in touch with Tellvira for support, billing or legal questions. Email support@tellvira.com or send us a message using the contact form.",
+    "Contact Tellvira for AI chatbot support, billing or legal questions. Email support@tellvira.com or send our team a message through the website contact form.",
   path: "/contact",
 });
 

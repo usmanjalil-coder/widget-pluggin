@@ -3,13 +3,13 @@ import { absoluteUrl, isProductionSite } from "@/lib/seo";
 
 // Content review dates, updated only when the corresponding page changes.
 const pageDates = {
-  "/": "2026-10-28",
-  "/pricing": "2026-10-28",
-  "/solutions": "2026-10-28",
-  "/terms": "2026-10-28",
-  "/privacy": "2026-10-28",
-  "/refunds": "2026-10-28",
-  "/contact": "2026-10-28",
+  "/": "2026-10-30",
+  "/pricing": "2026-10-30",
+  "/solutions": "2026-10-30",
+  "/terms": "2026-10-30",
+  "/privacy": "2026-10-30",
+  "/refunds": "2026-10-30",
+  "/contact": "2026-10-30",
 };
 
 export default function sitemap() {

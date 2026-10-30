@@ -1,26 +1,9 @@
 export const isProductionSite = process.env.SITE_ENV === "production";
 
-const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL;
-if (isProductionSite && !configuredUrl) {
-  throw new Error("NEXT_PUBLIC_SITE_URL is required when SITE_ENV=production.");
-}
+// Canonical URLs always identify the public site; staging remains noindex.
+export const SITE_URL = "https://tellvira.com";
 
-const siteUrl = new URL(configuredUrl || "http://localhost:3000");
-if (
-  !["http:", "https:"].includes(siteUrl.protocol) ||
-  siteUrl.username ||
-  siteUrl.password ||
-  siteUrl.search ||
-  siteUrl.hash ||
-  siteUrl.pathname !== "/"
-) {
-  throw new Error("NEXT_PUBLIC_SITE_URL must be an HTTP(S) origin without a path or credentials.");
-}
-if (isProductionSite && (siteUrl.protocol !== "https:" || siteUrl.hostname.startsWith("www."))) {
-  throw new Error("Production NEXT_PUBLIC_SITE_URL must use HTTPS and the non-www host.");
-}
-
-export const SITE_URL = siteUrl.origin;
+export const ORGANIZATION_PROFILES = [];
 
 export const siteConfig = {
   name: "Tellvira",

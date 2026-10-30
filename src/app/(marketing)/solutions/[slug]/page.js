@@ -144,7 +144,8 @@ export default async function NichePage({ params }) {
         <div className="rounded-2xl border border-border bg-muted/30 p-8">
           <h2 className="text-2xl font-semibold text-foreground">Ready to try Tellvira?</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            Start free and set up your assistant from the dashboard.
+            Start free and set up your assistant from the dashboard. Need help?{" "}
+            <Link href="/contact" className="text-primary">Contact Tellvira</Link>.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />

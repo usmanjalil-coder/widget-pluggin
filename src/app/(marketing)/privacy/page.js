@@ -2,9 +2,9 @@ import { buildMetadata } from "@/lib/seo";
 import { brand } from "@/lib/brand";
 
 export const metadata = buildMetadata({
-  title: "Privacy Notice",
+  title: "AI Chatbot Privacy Notice & Data Practices",
   description:
-    "Learn how Tellvira handles account, visitor and billing data, who processes it, and how to contact us about privacy and deletion requests.",
+    "Learn how Tellvira handles AI chatbot account, visitor and billing data. Review data processing, retention and how to contact us about privacy or deletion.",
   path: "/privacy",
 });
 

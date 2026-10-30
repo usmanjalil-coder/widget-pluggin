@@ -3,9 +3,9 @@ import Link from "next/link";
 import { brand } from "@/lib/brand";
 
 export const metadata = buildMetadata({
-  title: "Refund Policy",
+  title: "AI Chatbot Refund Policy & Cancellations",
   description:
-    "Read Tellvira's 30-day money-back guarantee for paid plans, how to request a refund through Paddle or support, and how cancellation works.",
+    "Read Tellvira's AI chatbot refund policy and 30-day money-back guarantee for paid plans. Learn how to request a refund and cancel your monthly subscription.",
   path: "/refunds",
 });
 

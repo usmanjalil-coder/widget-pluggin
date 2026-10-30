@@ -2,10 +2,10 @@ export const niches = [
   {
     slug: "dental-practices",
     published: true,
-    updatedAt: "2026-10-28",
-    metaTitle: "AI Chatbot for Dental Practices",
+    updatedAt: "2026-10-30",
+    metaTitle: "AI Chatbot for Dental Practices & Patient FAQs",
     metaDescription:
-      "Answer patient questions after hours, capture new patient inquiries and appointment requests, and send leads to your front desk. Install in minutes.",
+      "Use an AI chatbot for dental practices to answer office FAQs, capture new patient inquiries and collect appointment requests for your front desk to follow up.",
     name: "Dental practices",
     h1: "AI chatbot for dental practices",
     intro:

@@ -20,12 +20,14 @@ import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
 import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
 import { brand } from "@/lib/brand";
-import { buildMetadata, absoluteUrl, siteConfig, faqSchema } from "@/lib/seo";
+import { buildMetadata, absoluteUrl, siteConfig, faqSchema, ORGANIZATION_PROFILES } from "@/lib/seo";
 import { homeFaq } from "@/content/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 
 export const metadata = buildMetadata({
-  title: { absolute: "Tellvira: AI Chatbot for Small Business Websites" },
+  title: { absolute: "AI Chatbot for Small Business Websites & Leads | Tellvira" },
+  description:
+    "Add an AI chatbot to your small business website. Answer visitor questions, capture leads and appointment requests around the clock. Start free with Tellvira.",
   path: "/",
 });
 
@@ -291,6 +293,12 @@ export default function MarketingHome() {
             url: absoluteUrl(),
             logo: absoluteUrl(siteConfig.logo),
             email: siteConfig.supportEmail,
+            contactPoint: {
+              "@type": "ContactPoint",
+              contactType: "customer support",
+              email: "hello@tellvira.com",
+            },
+            sameAs: ORGANIZATION_PROFILES,
           },
           {
             "@context": "https://schema.org",

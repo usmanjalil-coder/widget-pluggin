@@ -4,9 +4,9 @@ import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 
 export const metadata = buildMetadata({
-  title: "AI Chatbot Solutions by Industry",
+  title: "AI Chatbot Solutions for Business by Industry",
   description:
-    "See how Tellvira's AI chatbot helps businesses answer questions and capture leads. Industry-specific setups for faster launch.",
+    "Explore AI chatbot solutions for business websites. See how Tellvira answers routine questions, captures leads and collects appointment requests for your team.",
   path: "/solutions",
 });
 
@@ -26,6 +26,8 @@ export default function SolutionsPage() {
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
           See how a website assistant can answer routine questions and pass inquiries to your team.
+          {" "}Explore <Link href="/pricing" className="text-primary">AI chatbot pricing</Link>
+          {" "}or <Link href="/contact" className="text-primary">contact Tellvira</Link> for help.
         </p>
       </div>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -3,9 +3,9 @@ import Link from "next/link";
 import { brand } from "@/lib/brand";
 
 export const metadata = buildMetadata({
-  title: "Terms of Service",
+  title: "AI Chatbot Terms of Service & Account Rules",
   description:
-    "Read the terms for using Tellvira, including account responsibilities, content ownership, monthly billing, cancellation and liability.",
+    "Read Tellvira's AI chatbot terms of service covering account responsibilities, content ownership, billing, cancellation and use of the website assistant.",
   path: "/terms",
 });
 
