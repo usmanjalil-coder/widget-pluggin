@@ -13,7 +13,7 @@ import {
 } from "../billing/BillingDetails";
 import CheckoutSyncStatus from "../billing/CheckoutSyncStatus";
 import PendingChangeBanner from "../billing/PendingChangeBanner";
-import PlanChangeDialog from "../billing/PlanChangeDialog";
+import dynamic from "next/dynamic";
 import UsageByBot from "../billing/UsageByBot";
 import PageHeader from "@/components/shared/PageHeader";
 import { PricingCards } from "@/components/marketing/PricingCards";
@@ -29,6 +29,10 @@ import {
 } from "@/lib/api/billing.api";
 
 const number = new Intl.NumberFormat("en-US");
+const PlanChangeDialog = dynamic(() => import("../billing/PlanChangeDialog"), {
+  ssr: false,
+  loading: () => <p role="status" className="sr-only">Loading plan preview…</p>,
+});
 
 function feature(plan, key) {
   return plan?.features?.find((item) => item.key === key);

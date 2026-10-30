@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Link as LinkIcon, Upload } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
 import CharLimitInput from "@/components/shared/CharLimitInput";
@@ -15,7 +16,7 @@ function LocalLogoPreview({ file }) {
     return () => URL.revokeObjectURL(url);
   }, [file]);
   // eslint-disable-next-line @next/next/no-img-element -- Local file thumbnail before upload.
-  return <img ref={image} alt="Selected logo preview" className="size-full object-contain" />;
+  return <img ref={image} width={48} height={48} alt="Selected logo preview" className="size-full object-contain" />;
 }
 
 export default function LogoPicker({ value = "", file, onFileChange, onUrlChange }) {
@@ -104,9 +105,7 @@ export default function LogoPicker({ value = "", file, onFileChange, onUrlChange
             {file ? (
               <LocalLogoPreview file={file} />
             ) : (
-              // Uploaded local logos may use HTTP; external links require HTTPS.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={source} alt="Logo preview" className="size-full object-contain" />
+              <Image src={source} width={48} height={48} unoptimized alt="Logo preview" className="size-full object-contain" />
             )}
           </div>
           <span className="flex-1 text-xs text-muted-foreground">

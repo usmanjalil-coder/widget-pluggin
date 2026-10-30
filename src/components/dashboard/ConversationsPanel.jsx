@@ -180,7 +180,7 @@ export default function ConversationsPanel({
         body="Install your bot to start receiving chats."
         action={
           <Button asChild>
-            <Link prefetch={false} href={`/dashboard/bots/${botId}?tab=install`}>
+            <Link href={`/dashboard/bots/${botId}?tab=install`}>
               Open Install tab
             </Link>
           </Button>

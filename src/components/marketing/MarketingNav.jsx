@@ -57,6 +57,7 @@ export function MarketingNav() {
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground md:hidden"
             onClick={toggleMenu}
             aria-label="Toggle navigation"
+            aria-expanded={open}
           >
             <Menu className="size-5" aria-hidden="true" />
           </Button>

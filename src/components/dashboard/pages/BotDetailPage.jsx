@@ -47,8 +47,8 @@ export default function BotDetailPage({ botId }) {
       <div className="flex gap-2 overflow-x-auto pb-1">
         {botTabs.map((item) => (
           <Link
-            prefetch={false}
             key={item.value}
+            aria-current={tab === item.value ? "page" : undefined}
             href={"/dashboard/bots/" + botId + "?tab=" + item.value}
             className={
               "shrink-0 rounded-full px-3 py-2 text-sm font-medium " +

@@ -6,8 +6,17 @@ const nextConfig = {
   allowedDevOrigins: ["rigid-drainpipe-uphill.ngrok-free.dev"],
   reactCompiler: true,
   reactStrictMode: false,
+  experimental: {
+    optimizePackageImports: ["lucide-react", "radix-ui"],
+  },
   async headers() {
     return [
+      {
+        source: "/widget.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=86400" },
+        ],
+      },
       {
         source: "/:path*",
         headers: [

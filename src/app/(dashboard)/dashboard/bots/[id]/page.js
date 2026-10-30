@@ -1,5 +1,9 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import BotDetailPage from "@/components/dashboard/pages/BotDetailPage";
-export default async function Page({ params }) {
-  const { id } = await params;
+
+export default function Page() {
+  const { id } = useParams();
   return <BotDetailPage botId={id} />;
 }

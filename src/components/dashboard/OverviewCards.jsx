@@ -19,7 +19,6 @@ const number = new Intl.NumberFormat("en-US");
 export function StatCard({ label, value, icon: Icon, href, helper }) {
   return (
     <Link
-      prefetch={false}
       href={href}
       aria-label={`${label}: ${number.format(value)}. ${helper}`}
       className="group block min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -155,7 +154,7 @@ export function UsageCard({ billing, billingLoading, billingError, usagePercent 
               variant={high ? "primary" : "ghost"}
               className={`min-h-10 ${!high ? "-ml-3 text-primary" : ""}`}
             >
-              <Link prefetch={false} href="/dashboard/billing">
+              <Link href="/dashboard/billing">
                 {high ? "Upgrade" : "Manage plan"}
                 <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
@@ -200,7 +199,6 @@ export function GetStartedChecklist({ botCount, botId }) {
         {steps.map(({ label, href, done, icon: Icon }) => (
           <li key={label}>
             <Link
-              prefetch={false}
               href={href}
               className="group flex min-h-14 items-center gap-3 rounded-lg py-2 outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -241,7 +239,6 @@ export function WorkspaceLinks() {
         {items.map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
-            prefetch={false}
             href={href}
             className="group flex min-h-14 items-center gap-3 rounded-lg border px-4 text-sm font-medium outline-none transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
           >

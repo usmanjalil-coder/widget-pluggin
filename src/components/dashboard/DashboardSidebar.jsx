@@ -12,7 +12,6 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
 import {
   DropdownMenu,
@@ -56,7 +55,6 @@ function DashboardSidebar({
   account,
   onNavigate,
 }) {
-  const router = useRouter();
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-center pt-6 pb-7">
@@ -90,9 +88,9 @@ function DashboardSidebar({
                 const href = item.href;
                 return (
                   <Link
-                    prefetch={false}
                     key={item.label}
                     href={href}
+                    aria-current={active ? "page" : undefined}
                     onClick={() => onNavigate()}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
                   >
@@ -125,8 +123,8 @@ function DashboardSidebar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onSelect={() => router.push("/dashboard/account")}>
-              Account settings
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/account">Account settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={async () => {
