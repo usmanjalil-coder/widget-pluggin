@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -10,10 +10,15 @@ import { deleteBot, getBots } from "@/lib/api/bots.api";
 import { useDashboard } from "../dashboard-context";
 import { botTabs } from "../dashboard-navigation";
 
-const AppearancePage = lazy(() => import("./AppearancePage"));
-const BotSettingsPage = lazy(() => import("./BotSettingsPage"));
-const KnowledgePage = lazy(() => import("./KnowledgePage"));
-const InstallPanel = lazy(() => import("../InstallPanel"));
+const loadAppearancePage = () => import("./AppearancePage");
+const loadBotSettingsPage = () => import("./BotSettingsPage");
+const loadKnowledgePage = () => import("./KnowledgePage");
+const loadInstallPanel = () => import("../InstallPanel");
+
+const AppearancePage = lazy(loadAppearancePage);
+const BotSettingsPage = lazy(loadBotSettingsPage);
+const KnowledgePage = lazy(loadKnowledgePage);
+const InstallPanel = lazy(loadInstallPanel);
 
 export default function BotDetailPage({ botId }) {
   const { selectedBot, setBots, setSelectedBotId } = useDashboard();
@@ -21,6 +26,29 @@ export default function BotDetailPage({ botId }) {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "appearance";
   const currentPageLabel = botTabs.find((item) => item.value === tab)?.label || "Appearance";
+  useEffect(() => {
+    void Promise.all([
+      loadAppearancePage(),
+      loadBotSettingsPage(),
+      loadKnowledgePage(),
+      loadInstallPanel(),
+    ]);
+  }, []);
+  const handleTabClick = (event, href) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.history.pushState(null, "", href);
+  };
   const handleDeleteBot = async () => {
     try {
       await deleteBot(botId);
@@ -45,21 +73,26 @@ export default function BotDetailPage({ botId }) {
         }
       />
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {botTabs.map((item) => (
-          <Link
-            key={item.value}
-            aria-current={tab === item.value ? "page" : undefined}
-            href={"/dashboard/bots/" + botId + "?tab=" + item.value}
-            className={
-              "shrink-0 rounded-full px-3 py-2 text-sm font-medium " +
-              (tab === item.value
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-foreground ring-1 ring-border")
-            }
-          >
-            {item.label}
-          </Link>
-        ))}
+        {botTabs.map((item) => {
+          const href = "/dashboard/bots/" + botId + "?tab=" + item.value;
+
+          return (
+            <Link
+              key={item.value}
+              aria-current={tab === item.value ? "page" : undefined}
+              href={href}
+              onClick={(event) => handleTabClick(event, href)}
+              className={
+                "shrink-0 rounded-full px-3 py-2 text-sm font-medium " +
+                (tab === item.value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-foreground ring-1 ring-border")
+              }
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
       <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>
         {tab === "knowledge" ? (
