@@ -27,6 +27,14 @@ export const homeFaq = [
     "Can I cancel anytime?",
     "Yes. Cancel anytime; paid access continues until the end of the current billing period.",
   ],
+  [
+    "Is my visitors' data safe, and do you train AI on my data?",
+    "We process visitor messages and your content to provide the service, including through an AI provider. The bot owner can view conversations and submitted contact details. Our Privacy Notice does not yet confirm the provider's model-training practices, so we cannot promise that data is excluded from training.",
+  ],
+  [
+    "Is Tellvira HIPAA compliant?",
+    "No. Tellvira is not designed for protected health information, and we do not sign a HIPAA BAA. Use it for general questions about hours, services, pricing and booking requests. Do not ask visitors to share medical records or health details in chat.",
+  ],
 ].map(([question, answer]) => ({ question, answer }));
 
 export const billingFaq = [

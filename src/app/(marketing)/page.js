@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   BookOpen,
   CalendarCheck,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
-import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
+import { MarketingAuthCta, MarketingLoginLink } from "@/components/marketing/MarketingAuth";
 import { brand } from "@/lib/brand";
 import { buildMetadata, absoluteUrl, siteConfig, faqSchema, ORGANIZATION_PROFILES } from "@/lib/seo";
 import { homeFaq } from "@/content/faqs";
@@ -163,7 +164,7 @@ function OutcomeVisual() {
     ["Nora Patel", "Checkup", "New", "1h ago"],
   ];
   return (
-    <div className="relative">
+    <div className="relative min-w-0 lg:pb-20">
       <div
         className="absolute inset-8 -z-10 rounded-full bg-primary/15 blur-3xl"
         aria-hidden="true"
@@ -244,9 +245,36 @@ function OutcomeVisual() {
           </div>
         </div>
       </div>
-      <div className="absolute -right-5 -top-4 hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm motion-safe:animate-pulse lg:flex">
+      <div className="absolute right-0 -top-4 hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm motion-safe:animate-pulse lg:flex">
         <CircleCheck className="size-4 text-success" aria-hidden="true" />
         New lead captured
+      </div>
+      <div className="relative mt-4 w-full max-w-sm rounded-xl border border-border bg-card shadow-lg lg:absolute lg:bottom-0 lg:left-0 lg:mt-0 lg:w-80">
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+          <Image src={brand.iconPath} alt="Tellvira" width={32} height={32} unoptimized />
+          <div>
+            <p className="text-sm font-semibold text-foreground">Tellvira assistant</p>
+            <p className="text-xs text-muted-foreground">Sample conversation</p>
+          </div>
+        </div>
+        <div className="space-y-3 p-4 text-sm leading-5">
+          <p className="ml-6 rounded-xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground">
+            <span className="sr-only">Visitor: </span>
+            Do you have evening appointments?
+          </p>
+          <p className="mr-6 rounded-xl rounded-bl-sm bg-muted px-3 py-2 text-foreground">
+            <span className="sr-only">Bot: </span>
+            Yes, we are open until 7 PM on Tuesdays and Thursdays. Would you like me to book a visit?
+          </p>
+          <p className="ml-auto w-fit rounded-xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground">
+            <span className="sr-only">Visitor: </span>
+            Yes please.
+          </p>
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+            <CircleCheck className="size-3.5" aria-hidden="true" />
+            Lead captured
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -309,27 +337,26 @@ export default function MarketingHome() {
           faqSchema(homeFaq),
         ]}
       />
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:pb-20 lg:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
+      <section className="mx-auto flex min-h-0 max-w-7xl items-center px-4 pb-8 pt-16 sm:px-6 lg:min-h-[min(calc(100svh-5rem),880px)] lg:py-8">
+        <div className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="min-w-0">
             <p className="mb-4 inline-flex rounded-full border border-primary/20 bg-accent px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
               Website AI assistant
             </p>
-            <h1 className="max-w-xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+            <h1 className="max-w-xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
               AI chatbot for small business websites
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-muted-foreground">{brand.tagline}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <MarketingAuthCta className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
-              <a
-                href="#features"
-                className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-background"
-              >
-                See it in action
-              </a>
+            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+              Answers visitor questions 24/7 from your own content, and turns them into leads. Set up in minutes with one script tag.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <MarketingAuthCta loggedOutLabel="Start free" reserveLabelSpace className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground hover:bg-primary-hover sm:w-auto" />
+              <MarketingLoginLink
+                className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border bg-card px-7 text-sm font-semibold text-foreground hover:bg-background sm:w-auto"
+              />
             </div>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-              {["Free plan, no credit card", "Set up in minutes", "One script tag"].map((item) => (
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+              {["Free plan, no credit card", "Your brand, your look", "Cancel anytime"].map((item) => (
                 <span key={item} className="inline-flex items-center gap-1.5">
                   <Check className="size-4 text-primary" aria-hidden="true" />
                   {item}
@@ -338,11 +365,13 @@ export default function MarketingHome() {
             </div>
           </div>
 
-          <OutcomeVisual />
+          <div className="min-w-0 lg:-m-4 lg:max-h-[calc(100svh-9rem)] lg:overflow-y-auto lg:p-4">
+            <OutcomeVisual />
+          </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-20 pt-8 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
             How it works
@@ -418,6 +447,9 @@ export default function MarketingHome() {
           </h2>
         </div>
         <MarketingPlans />
+        <p className="mt-3 text-center text-sm text-muted-foreground">
+          No credit card · Cancel anytime · 30-day money-back guarantee
+        </p>
         <p className="mt-6 text-center">
           <Link href="/pricing" className="font-semibold text-primary">
             Compare Tellvira pricing and plans
@@ -449,7 +481,7 @@ export default function MarketingHome() {
               <h2 className="mt-2 text-3xl font-semibold">Start your website assistant today.</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <MarketingAuthCta className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
+              <MarketingAuthCta loggedOutLabel="Start free" reserveLabelSpace className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
               <Link
                 href="/contact"
                 className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-card hover:bg-muted hover:text-foreground"
