@@ -1,6 +1,7 @@
+import { brandColors } from "../../src/config/brand.js";
 const DEFAULT_CONFIG = {
   theme: {
-    primaryColor: "#4F46E5",
+    primaryColor: brandColors.lightPrimary,
     mode: "light",
     position: "right",
     borderRadius: 16,

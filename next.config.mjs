@@ -5,7 +5,7 @@ const nextConfig = {
   /* config options here */
   allowedDevOrigins: ["rigid-drainpipe-uphill.ngrok-free.dev"],
   reactCompiler: true,
-  reactStrictMode: false,
+  // reactStrictMode: false,
   experimental: {
     optimizePackageImports: ["lucide-react", "radix-ui"],
   },

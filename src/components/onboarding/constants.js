@@ -1,8 +1,9 @@
+import { brandColors } from "@/config/brand";
 import { Home, Scissors, ShoppingBag, Smile, Sparkles, UtensilsCrossed } from "lucide-react";
 
 export const STEPS = ["About your business", "Add knowledge", "Make it yours", "Install", "Done"];
 export const COLORS = [
-  "#2563eb",
+  brandColors.lightPrimary,
   "#0f172a",
   "#0891b2",
   "#10b981",
@@ -61,7 +62,7 @@ export const INITIAL = {
   botName: "",
   greeting: "",
   position: "right",
-  primaryColor: "#2563eb",
+  primaryColor: brandColors.lightPrimary,
   knowledgeMethod: "website",
   sources: [],
   snippetCopied: false,

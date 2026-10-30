@@ -1,3 +1,5 @@
+import { onPrimary } from "../../../widget/src/theme.js";
+import { brandColors } from "@/config/brand";
 import { Check } from "lucide-react";
 import { Button, Card, Input, Label } from "@/components/ui";
 import CharLimitInput from "@/components/shared/CharLimitInput";
@@ -58,10 +60,10 @@ export default function AppearanceStep({ state, config, assistant, greeting, upd
                     ? "border-foreground"
                     : "border-transparent")
                 }
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: color, color: onPrimary(color) }}
               >
                 {state.primaryColor.toLowerCase() === color && (
-                  <Check className="size-4 text-white" />
+                  <Check className="size-4" />
                 )}
               </button>
             ))}
@@ -75,7 +77,7 @@ export default function AppearanceStep({ state, config, assistant, greeting, upd
             />
             <input
               type="color"
-              value={HEX_COLOR.test(state.primaryColor) ? state.primaryColor : "#2563eb"}
+              value={HEX_COLOR.test(state.primaryColor) ? state.primaryColor : brandColors.lightPrimary}
               onChange={(event) => update({ primaryColor: event.target.value })}
               className="size-9 rounded-lg border border-border bg-card p-1"
               aria-label="Choose primary color"

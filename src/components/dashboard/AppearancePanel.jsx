@@ -1,5 +1,7 @@
 "use client";
 
+import { brandColors } from "@/config/brand";
+
 import { useEffect, useRef } from "react";
 import { ArrowDown, ArrowUp, Check } from "lucide-react";
 import { RequiredIndicator } from "@/components/ui/label";
@@ -45,7 +47,7 @@ const pickerColor = (hex) =>
     ? hex.length === 4
       ? `#${[1, 2, 3].map((i) => hex[i] + hex[i]).join("")}`
       : hex
-    : "#2563eb";
+    : brandColors.lightPrimary;
 
 export default function AppearancePanel({
   detailError,
@@ -211,7 +213,7 @@ export default function AppearancePanel({
                 />
                 <Input
                   required
-                  value={draft.theme.primaryColor || "#2563eb"}
+                  value={draft.theme.primaryColor || brandColors.lightPrimary}
                   aria-invalid={!HEX_COLOR.test(draft.theme.primaryColor || "")}
                   onChange={(event) =>
                     updateDraftField("theme", "primaryColor", event.target.value)

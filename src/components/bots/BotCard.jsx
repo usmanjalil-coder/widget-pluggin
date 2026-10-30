@@ -178,7 +178,7 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
             <TooltipTrigger asChild>
               <button
                 type="button"
-                className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/40"
+                className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
                 aria-label="What happens when a bot is paused?"
                 onClick={(event) => event.stopPropagation()}
               >

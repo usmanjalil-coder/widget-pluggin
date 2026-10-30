@@ -92,7 +92,7 @@ function DashboardSidebar({
                     href={href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => onNavigate()}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
                   >
                     <Icon className="size-4 shrink-0" />
                     {item.label}

@@ -47,7 +47,7 @@ export function AuthActions({ mobile = false }) {
     return (
       <Link
         href="/dashboard"
-        className={`${mobile ? "mt-4 text-center" : ""} rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+        className={`${mobile ? "mt-4 text-center" : ""} rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
       >
         Go to dashboard
       </Link>
@@ -64,7 +64,7 @@ export function AuthActions({ mobile = false }) {
       </Link>
       <Link
         href="/signup"
-        className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         Get started free
       </Link>

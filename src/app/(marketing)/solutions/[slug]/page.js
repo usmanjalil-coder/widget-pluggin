@@ -52,7 +52,7 @@ export default async function NichePage({ params }) {
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">{niche.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" />
+            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
             <Link
               href="/pricing"
               className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted"
@@ -147,7 +147,7 @@ export default async function NichePage({ params }) {
             Start free and set up your assistant from the dashboard.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" />
+            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
             <Link
               href="/pricing"
               className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-card"

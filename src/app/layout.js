@@ -1,3 +1,4 @@
+import { brandColors } from "@/config/brand";
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import localFont from "next/font/local";
@@ -15,7 +16,7 @@ export const metadata = {
   ...buildMetadata(),
   metadataBase: new URL(SITE_URL),
   applicationName: siteConfig.name,
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     title: brand.name,
   },
@@ -28,7 +29,10 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0F766E",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: brandColors.lightPrimary },
+    { media: "(prefers-color-scheme: dark)", color: brandColors.darkBackground },
+  ],
 };
 
 export default function RootLayout({ children }) {

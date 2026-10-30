@@ -93,7 +93,7 @@ function Transcript({
             >
               <p>{message.text}</p>
               <p
-                className={`mt-1 text-[11px] ${message.role === "user" ? "text-primary-foreground/75" : "text-muted-foreground"}`}
+                className={`mt-1 text-[11px] ${message.role === "user" ? "text-primary-foreground" : "text-muted-foreground"}`}
               >
                 {new Date(message.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
@@ -246,7 +246,7 @@ export default function ConversationsPanel({
                   onSelect(item.id);
                   if (window.matchMedia("(max-width: 1023px)").matches) setMobileOpen(true);
                 }}
-                className={`block w-full p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === item.id ? "bg-accent/60" : ""}`}
+                className={`block w-full p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedId === item.id ? "bg-primary/10 shadow-[inset_3px_0_0_var(--primary)] hover:bg-primary/15" : ""}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-sm font-semibold text-foreground">

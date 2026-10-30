@@ -55,7 +55,7 @@ export default function InstallStep({ state, update }) {
         ))}
       </div>
       <Card className="p-6">
-        <div className="flex items-start justify-between gap-3 rounded-lg bg-foreground p-4 text-primary-foreground">
+        <div className="flex items-start justify-between gap-3 rounded-lg bg-foreground p-4 text-background">
           <code className="min-w-0 break-all text-xs leading-5">{snippet}</code>
           <Button type="button" size="sm" variant="secondary" onClick={copy}>
             {state.snippetCopied ? (

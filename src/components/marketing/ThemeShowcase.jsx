@@ -1,11 +1,15 @@
 "use client";
 
+import { onPrimary } from "../../../widget/src/theme.js";
+
+import { brandColors } from "@/config/brand";
+
 import { memo, useCallback, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 import AppearancePreview from "@/components/dashboard/AppearancePreview";
 
-const colors = ["#4F46E5", "#0F766E", "#2563EB", "#9333EA", "#C2410C", "#BE123C", "#0369A1", "#475569"];
+const colors = ["#4F46E5", brandColors.lightPrimary, "#2563EB", "#9333EA", "#C2410C", "#BE123C", "#0369A1", "#475569"];
 
 const ColorSwatch = memo(function ColorSwatch({ color, selected, onSelect }) {
   const handleClick = useCallback(() => onSelect(color), [color, onSelect]);
@@ -16,16 +20,16 @@ const ColorSwatch = memo(function ColorSwatch({ color, selected, onSelect }) {
       onClick={handleClick}
       aria-label={`Use ${color}`}
       aria-pressed={selected}
-      className={`flex size-8 items-center justify-center rounded-full border-2 ${selected ? "border-foreground ring-2 ring-ring/40" : "border-transparent"}`}
-      style={{ backgroundColor: color }}
+      className={`flex size-8 items-center justify-center rounded-full border-2 ${selected ? "border-foreground ring-2 ring-ring" : "border-transparent"}`}
+      style={{ backgroundColor: color, color: onPrimary(color) }}
     >
-      {selected && <Check className="size-4 text-primary-foreground" />}
+      {selected && <Check className="size-4" />}
     </button>
   );
 });
 
 export const ThemeShowcase = memo(function ThemeShowcase() {
-  const [primaryColor, setPrimaryColor] = useState("#4F46E5");
+  const [primaryColor, setPrimaryColor] = useState(brandColors.lightPrimary);
   const [position, setPosition] = useState("right");
   const [greeting, setGreeting] = useState("Hi! Can I help with your visit today?");
   const validColor = /^#[0-9a-fA-F]{6}$/.test(primaryColor);
@@ -37,7 +41,7 @@ export const ThemeShowcase = memo(function ThemeShowcase() {
   const selectRight = useCallback(() => setPosition("right"), []);
   const previewConfig = useMemo(
     () => ({
-      theme: { primaryColor: validColor ? primaryColor : "#4F46E5", mode: "light", position, borderRadius: 16, fontFamily: "system" },
+      theme: { primaryColor: validColor ? primaryColor : brandColors.lightPrimary, mode: "light", position, borderRadius: 16, fontFamily: "system" },
       texts: { botName: "Assistant", greetingMessage: greeting, inputPlaceholder: "Type your message", starterQuestions: [] },
       branding: { showBadge: true },
     }),
@@ -59,7 +63,7 @@ export const ThemeShowcase = memo(function ThemeShowcase() {
           ))}
         </div>
         <div className="mt-3 flex items-center gap-3">
-          <Input type="color" value={validColor ? primaryColor : "#4F46E5"} onChange={handleColorChange} className="h-12 w-16 cursor-pointer rounded-xl border border-border bg-card p-1" />
+          <Input type="color" value={validColor ? primaryColor : brandColors.lightPrimary} onChange={handleColorChange} className="h-12 w-16 cursor-pointer rounded-xl border border-border bg-card p-1" />
           <Input type="text" value={primaryColor} onChange={handleColorChange} maxLength={7} aria-invalid={!validColor} className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground" aria-label="Primary color" />
         </div>
         {!validColor && <p className="mt-2 text-xs text-destructive">Enter a six-digit hex color, such as #4F46E5.</p>}

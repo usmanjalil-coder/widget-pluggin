@@ -1,3 +1,4 @@
+import { brandColors } from "@/config/brand";
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/seo";
 
@@ -11,7 +12,7 @@ export function createSocialImage() {
         width: "100%",
         height: "100%",
         padding: "80px",
-        background: "#0F766E",
+        background: brandColors.lightPrimary,
         color: "white",
         fontFamily: "sans-serif",
       }}
