@@ -9,8 +9,9 @@ export function BrandWordmark({ className = "", size = "header" }) {
       <Image
         src={brand.wordmarkPath}
         alt="Tellvira"
-        width={320}
-        height={76}
+        width={168}
+        height={40}
+        sizes="168px"
         loading={footer ? "lazy" : "eager"}
         className="block h-[40px] w-auto"
       />
