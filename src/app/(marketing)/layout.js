@@ -50,6 +50,9 @@ export default function MarketingLayout({ children }) {
               <li>
                 <Link href="/solutions">Solutions</Link>
               </li>
+              <li>
+                <Link href="/blog">Blog</Link>
+              </li>
               {publishedNiches.map((niche) => (
                 <li key={niche.slug}>
                   <Link href={`/solutions/${niche.slug}`}>{niche.name}</Link>

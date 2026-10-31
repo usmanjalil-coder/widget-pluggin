@@ -122,30 +122,35 @@ function FeatureCard({ feature }) {
 const useCases = [
   {
     label: "Clinics",
+    href: "/solutions/dental-practices",
     icon: <Smile className="size-5" aria-hidden="true" />,
     description: "Help patients find services and book their next visit.",
     questions: ["Can I book a consultation?", "Do you have evening appointments?"],
   },
   {
     label: "Salons",
+    href: "/solutions/salons",
     icon: <Scissors className="size-5" aria-hidden="true" />,
     description: "Turn service questions into straightforward bookings.",
     questions: ["Do you offer bridal packages?", "Can I book a color treatment?"],
   },
   {
     label: "Real estate",
+    href: "/solutions/real-estate",
     icon: <Home className="size-5" aria-hidden="true" />,
     description: "Qualify interested visitors before a viewing.",
     questions: ["What properties are available this week?", "Can I book a viewing?"],
   },
   {
     label: "Restaurants",
+    href: "/solutions/restaurants",
     icon: <UtensilsCrossed className="size-5" aria-hidden="true" />,
     description: "Answer menu and reservation questions in seconds.",
     questions: ["Do you offer vegetarian options?", "Can I reserve a table for Friday?"],
   },
   {
     label: "Online stores",
+    href: "/solutions/online-stores",
     icon: <ShoppingBag className="size-5" aria-hidden="true" />,
     description: "Guide shoppers through shipping and returns.",
     questions: ["Do you ship to my city?", "What is the returns policy?"],
@@ -284,8 +289,10 @@ function UseCaseCards() {
   return (
     <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {useCases.map((item) => (
-        <article
+        <Link
           key={item.label}
+          href={item.href}
+          aria-label={`Explore ${item.label} chatbot solutions`}
           className="flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm"
         >
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -303,7 +310,7 @@ function UseCaseCards() {
               </span>
             ))}
           </div>
-        </article>
+        </Link>
       ))}
     </div>
   );

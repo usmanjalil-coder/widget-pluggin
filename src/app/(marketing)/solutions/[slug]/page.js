@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   const niche = niches.find((item) => item.slug === slug);
   if (!niche) notFound();
   return buildMetadata({
-    title: niche.metaTitle,
+    title: { absolute: niche.metaTitle },
     description: niche.metaDescription,
     path: `/solutions/${slug}`,
   });
@@ -52,12 +52,12 @@ export default async function NichePage({ params }) {
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">{niche.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
+            <MarketingAuthCta loggedOutLabel="Start free" className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
             <Link
               href="/pricing"
               className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted"
             >
-              View pricing
+              See pricing
             </Link>
           </div>
         </div>
@@ -119,6 +119,43 @@ export default async function NichePage({ params }) {
         </div>
       </section>
 
+      {niche.sampleConversation?.length > 0 && (
+        <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+          <h2 className="text-3xl font-semibold text-foreground">Sample conversation</h2>
+          <div className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
+            {niche.sampleConversation.map((message, index) => (
+              <p key={index} className="text-sm leading-7 text-foreground">
+                <strong className="mr-2">{message.from === "visitor" ? "Visitor:" : "Assistant:"}</strong>
+                {message.text}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {niche.sections?.map((section) => (
+        <section key={section.heading} className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+          <h2 className="text-3xl font-semibold text-foreground">{section.heading}</h2>
+          {section.paragraphs.map((paragraph) => (
+            <p key={paragraph} className="mt-5 leading-8 text-muted-foreground">{paragraph}</p>
+          ))}
+          {section.bullets?.length > 0 && (
+            <ul className="mt-5 list-disc space-y-2 pl-6 text-muted-foreground">
+              {section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+            </ul>
+          )}
+        </section>
+      ))}
+
+      {niche.knowledgeChecklist?.length > 0 && (
+        <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+          <h2 className="text-3xl font-semibold text-foreground">What to add to your knowledge base</h2>
+          <ul className="mt-6 list-disc space-y-3 pl-6 text-muted-foreground">
+            {niche.knowledgeChecklist.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
+      )}
+
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
         <h2 className="text-3xl font-semibold text-foreground">Frequently asked questions</h2>
         <div className="mt-8 divide-y divide-border rounded-xl border border-border bg-card px-6">
@@ -148,17 +185,17 @@ export default async function NichePage({ params }) {
             <Link href="/contact" className="text-primary">Contact Tellvira</Link>.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <MarketingAuthCta className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
+            <MarketingAuthCta loggedOutLabel="Start free" className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
             <Link
               href="/pricing"
               className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-card"
             >
-              Compare plans
+              See pricing
             </Link>
           </div>
         </div>
         <div className="mt-8 text-sm text-muted-foreground">
-          <h2 className="font-semibold text-foreground">Related solutions</h2>
+          <h2 className="font-semibold text-foreground">Related industries</h2>
           <div className="mt-2 flex flex-wrap gap-4">
             {related.map((item) => (
               <Link

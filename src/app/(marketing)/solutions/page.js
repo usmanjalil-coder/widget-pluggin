@@ -37,7 +37,7 @@ export default function SolutionsPage() {
             className="rounded-xl border border-border bg-card p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold text-foreground">{niche.name}</h2>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">{niche.intro}</p>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">{niche.summary || niche.intro}</p>
             <Link
               href={`/solutions/${niche.slug}`}
               className="mt-6 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
