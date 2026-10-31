@@ -16,14 +16,13 @@ export default function TermsPage() {
       <h1 className="mt-3 text-4xl font-semibold text-foreground">Terms of Service</h1>
       <p className="mt-4 text-sm text-muted-foreground">Last updated: October 28, 2026</p>
       <div className="mt-8 rounded-2xl border border-warning/20 bg-warning-bg p-5 text-sm leading-6 text-warning-foreground">
-        <strong>Review required before launch.</strong> Replace the legal name and court city
-        placeholders, and have these terms reviewed before commercial use.
+        For privacy questions or data requests, contact legal@tellvira.com.
       </div>
       <div className="mt-10 space-y-10 text-sm leading-7 text-foreground">
         <section>
           <h2 className="text-xl font-semibold">Operator and service</h2>
           <p className="mt-3">
-            [YOUR FULL LEGAL NAME], a sole proprietor in Pakistan operating as {brand.name},
+            Usman Jaleel, a sole proprietor in Pakistan operating as {brand.name},
             provides an embeddable AI assistant for websites. Customers configure bots, supply
             knowledge content, receive conversations and leads, and manage usage through a
             dashboard. You must have authority to use the content, domains, and contact information
@@ -36,7 +35,8 @@ export default function TermsPage() {
             Keep account credentials secure and use the service lawfully. Do not submit unlawful
             content, attempt unauthorized access, abuse service limits, or use a bot to mislead
             visitors. You are responsible for your bot configuration, the information you upload,
-            and notices or consent required on your website.
+            and notices or consent required on your website. Tellvira is intended for business
+            websites and is not directed at children under 18.
           </p>
         </section>
         <section>
@@ -83,7 +83,7 @@ export default function TermsPage() {
             <Link className="text-primary underline" href="/refunds">
               Refund Policy
             </Link>{" "}
-            for the 30-day money-back guarantee and request process.
+            for the 15-day money-back guarantee and request process.
           </p>
         </section>
         <section>
@@ -110,8 +110,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold">Law and contact</h2>
           <p className="mt-3">
             These terms are governed by the laws of Pakistan, subject to any mandatory rights that
-            apply where you live. Disputes concerning our service are subject to the courts of [YOUR
-            CITY], Pakistan. Paddle&apos;s buyer terms govern payment transactions with Paddle. For
+            apply where you live. Disputes concerning our service are subject to the courts, Pakistan. Paddle&apos;s buyer terms govern payment transactions with Paddle. For
             support email{" "}
             <a className="text-primary underline" href={`mailto:${brand.supportEmail}`}>
               {brand.supportEmail}

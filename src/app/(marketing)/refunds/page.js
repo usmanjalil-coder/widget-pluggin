@@ -5,7 +5,7 @@ import { brand } from "@/lib/brand";
 export const metadata = buildMetadata({
   title: "AI Chatbot Refund Policy & Cancellations",
   description:
-    "Read Tellvira's AI chatbot refund policy and 30-day money-back guarantee for paid plans. Learn how to request a refund and cancel your monthly subscription.",
+    "Read Tellvira's AI chatbot refund policy and 15-day money-back guarantee for paid plans. Learn how to request a refund and cancel your monthly subscription.",
   path: "/refunds",
 });
 
@@ -16,17 +16,16 @@ export default function RefundsPage() {
       <h1 className="mt-3 text-4xl font-semibold text-foreground">Refund Policy</h1>
       <p className="mt-4 text-sm text-muted-foreground">Last updated: October 28, 2026</p>
       <div className="mt-8 rounded-2xl border border-warning/20 bg-warning-bg p-5 text-sm leading-6 text-warning-foreground">
-        <strong>Review required before launch.</strong> Confirm this policy and its 30-day guarantee
-        with Paddle before accepting live payments.
+        For privacy questions or data requests, contact legal@tellvira.com.
       </div>
 
       <div className="mt-10 space-y-10 text-sm leading-7 text-foreground">
         <section>
-          <h2 className="text-xl font-semibold">30-day money-back guarantee</h2>
+          <h2 className="text-xl font-semibold">15-day money-back guarantee</h2>
           <p className="mt-3">
-            If you are unhappy with a paid {brand.name} subscription, request a refund within 30
-            calendar days of the charge. This applies to paid subscription charges, including
-            renewals. Tell us which charge you want refunded and the email used at checkout. Nothing
+            If you are unhappy with a paid {brand.name} subscription, request a refund within 15
+            calendar days of the date of each new paid subscription charge, including renewals. Tell
+            us which charge you want refunded and the email used at checkout. Nothing
             here limits any refund or withdrawal rights you have under applicable law.
           </p>
         </section>

@@ -15,15 +15,14 @@ export default function PrivacyPage() {
       <h1 className="mt-3 text-4xl font-semibold text-foreground">Privacy Notice</h1>
       <p className="mt-4 text-sm text-muted-foreground">Last updated: October 28, 2026</p>
       <div className="mt-8 rounded-2xl border border-warning/20 bg-warning-bg p-5 text-sm leading-6 text-warning-foreground">
-        <strong>Review required before launch.</strong> Replace the legal name and provider
-        placeholders, confirm hosting details, and implement the deletion schedule described below.
+        For privacy questions or data requests, contact legal@tellvira.com.
       </div>
 
       <div className="mt-10 space-y-10 text-sm leading-7 text-foreground">
         <section>
           <h2 className="text-xl font-semibold">Who we are</h2>
           <p className="mt-3">
-            [YOUR FULL LEGAL NAME], a sole proprietor in Pakistan, operates {brand.name}. For
+            Usman Jaleel, a sole proprietor in Pakistan, operates {brand.name}. For
             privacy questions or data requests, email{" "}
             <a className="text-primary underline" href="mailto:legal@tellvira.com">
               legal@tellvira.com
@@ -88,42 +87,53 @@ export default function PrivacyPage() {
               <strong>Zoho Mail</strong> hosts our support and business mailboxes.
             </li>
             <li>
-              <strong>Our hosting provider</strong> stores and processes application data. [HOSTING
-              PROVIDER AND LOCATION TO CONFIRM]
+              <strong>xAI</strong> processes visitor messages and bot-owner content to generate chat
+              responses.
             </li>
             <li>
-              <strong>[LLM AND EMBEDDING PROVIDER TO CONFIRM]</strong> processes prompts, selected
-              knowledge content, and visitor messages needed to generate answers.
+              <strong>Google</strong> processes bot-owner content to generate embeddings for searching
+              that content.
+            </li>
+            <li>
+              <strong>Our hosting provider</strong> stores and processes application data. Amazon Web Services (AWS), where our application servers.
             </li>
           </ul>
+          <p className="mt-3">
+            Visitor messages and bot-owner content are sent to xAI and Google to generate answers
+            and search your content. Under their API terms, this data is not used to train their
+            models. These providers may retain API requests for a limited period (up to 30 days)
+            for abuse monitoring, and processing may take place in the United States.
+          </p>
           <p className="mt-3">
             A bot owner receives visitor conversations and submitted contact details for that bot.
             We may also disclose information when required by law or to protect the service.
           </p>
           <p className="mt-3">
             These providers may process data in countries outside your own, where privacy laws may
-            differ. We will confirm hosting and AI processing locations before launch.
+            differ.
           </p>
         </section>
         <section>
           <h2 className="text-xl font-semibold">Retention and deletion</h2>
           <p className="mt-3">
-            We keep account and bot data while the account is active and as needed to provide the
-            service. Our intended account deletion process removes the account, bots, knowledge
-            sources, conversations, and leads within 30 days of a verified deletion request. Backup
-            copies may remain for up to 30 additional days. Billing and invoice records may be kept
-            longer where law requires.{" "}
-            <strong>
-              This deletion schedule is pending implementation and must be confirmed before launch.
-            </strong>
+            You can ask us to delete your account and associated data at any time by emailing
+            legal@tellvira.com from your account email address. We will delete your account data
+            within 30 days of a verified request. Copies in encrypted backups may remain for up to
+            30 additional days before they are overwritten. Where we are required to keep certain
+            records (for example billing and tax records), we keep them for the period the law
+            requires. Billing records held by Paddle are governed by Paddle&apos;s own privacy notice.
           </p>
           <p className="mt-3">
-            To request access, correction, or deletion, email{" "}
+            If you are a visitor who chatted with a bot on a customer&apos;s website, please contact
+            that website owner about your data. We process that data on the owner&apos;s behalf and will
+            help them respond to your request.
+          </p>
+          <p className="mt-3">
+            To request access or correction, email{" "}
             <a className="text-primary underline" href="mailto:legal@tellvira.com">
               legal@tellvira.com
             </a>
-            . Visitors should contact the business whose website hosts the bot first; we will help
-            that business handle requests concerning its bot.
+            .
           </p>
         </section>
         <section>

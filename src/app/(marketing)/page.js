@@ -448,7 +448,7 @@ export default function MarketingHome() {
         </div>
         <MarketingPlans />
         <p className="mt-3 text-center text-sm text-muted-foreground">
-          No credit card · Cancel anytime · 30-day money-back guarantee
+          No credit card · Cancel anytime · 15-day money-back guarantee
         </p>
         <p className="mt-6 text-center">
           <Link href="/pricing" className="font-semibold text-primary">

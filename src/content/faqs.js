@@ -28,12 +28,16 @@ export const homeFaq = [
     "Yes. Cancel anytime; paid access continues until the end of the current billing period.",
   ],
   [
-    "Is my visitors' data safe, and do you train AI on my data?",
-    "We process visitor messages and your content to provide the service, including through an AI provider. The bot owner can view conversations and submitted contact details. Our Privacy Notice does not yet confirm the provider's model-training practices, so we cannot promise that data is excluded from training.",
+    "How is my visitors' data handled?",
+    "Visitor messages and your content are processed to provide the service, including by our AI provider. The bot owner can view conversations and any contact details visitors submit. See our Privacy Policy for details on data handling and retention.",
+  ],
+  [
+    "Do you train AI on my data?",
+    "No. Visitor messages and your content are sent to our AI providers (xAI and Google) only to generate answers and search your content. Under their API terms, this data is not used to train their models. Providers may keep API requests for a limited period for security and abuse monitoring.",
   ],
   [
     "Is Tellvira HIPAA compliant?",
-    "No. Tellvira is not designed for protected health information, and we do not sign a HIPAA BAA. Use it for general questions about hours, services, pricing and booking requests. Do not ask visitors to share medical records or health details in chat.",
+    "No. Tellvira is not designed for protected health information, and we do not sign a HIPAA BAA. It is meant for general questions about hours, services, pricing and booking requests, so please do not ask visitors to share medical records or health details in chat.",
   ],
 ].map(([question, answer]) => ({ question, answer }));
 
@@ -52,6 +56,6 @@ export const billingFaq = [
   ],
   [
     "Is there a money-back guarantee?",
-    "Yes. Request a refund within 30 days of a paid subscription charge. See the Refund Policy for how to contact Paddle or our support team.",
+    "Yes. Request a refund within 15 days of a paid subscription charge. See the Refund Policy for how to request it through Paddle or our support team.",
   ],
 ].map(([question, answer]) => ({ question, answer }));
