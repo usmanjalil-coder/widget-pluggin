@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import { brand } from "@/lib/brand";
@@ -88,6 +89,12 @@ export default function MarketingLayout({ children }) {
           </div>
         </div>
       </footer>
+      <Script
+        src="https://cdn.tellvira.com/widget.js"
+        strategy="afterInteractive"
+        defer
+        data-bot-id="01M639AT582S9B1F6E42AT1K2N"
+      />
     </div>
   );
 }

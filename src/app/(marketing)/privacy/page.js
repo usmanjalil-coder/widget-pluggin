@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Legal</p>
       <h1 className="mt-3 text-4xl font-semibold text-foreground">Privacy Notice</h1>
-      <p className="mt-4 text-sm text-muted-foreground">Last updated: October 28, 2026</p>
+      <p className="mt-4 text-sm text-muted-foreground">Last updated: November 1, 2026</p>
       <div className="mt-8 rounded-2xl border border-warning/20 bg-warning-bg p-5 text-sm leading-6 text-warning-foreground">
         For privacy questions or data requests, contact legal@tellvira.com.
       </div>
