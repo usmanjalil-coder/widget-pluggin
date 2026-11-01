@@ -102,7 +102,7 @@ Next -> Laravel (`register`, Sanctum cookie) -> tenant + default bot + free plan
 
 ### 5.2 Widget Load (cacheable)
 
-1. The site includes `<script src="cdn.../widget.js?v=HASH" data-bot-id>`.
+1. The site includes `<script src="https://tellvira.com/widget.js" defer data-bot-id="..."></script>`.
 2. The widget calls `GET chat.domain.com/api/widget/config/:botId` (ETag + `Cache-Control: max-age=60`).
 3. Config merge order: script attributes > dashboard config > defaults.
 4. FastAPI serves config from an in-memory cache (DB on a miss).

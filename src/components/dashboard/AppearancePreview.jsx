@@ -23,6 +23,7 @@ function loadWidget() {
     widgetScriptPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = getWidgetScriptUrl(WIDGET_VERSION);
+      script.defer = true;
       script.onload = resolve;
       script.onerror = reject;
       document.head.append(script);

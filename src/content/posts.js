@@ -576,7 +576,7 @@ export const posts = [
       ...section(
         "Understand what the script does",
         "The script loads the website assistant for your configured bot. It does not copy your store database into Tellvira, connect to a booking calendar, or grant access to private orders. The assistant's answers come from the website pages, FAQs, and uploaded documents you provide in the dashboard. Treat the snippet as website code and install it only where you are allowed to edit the site.",
-        "The dashboard instruction is: 'Paste this snippet before the closing body tag.' On hosted platforms, the equivalent is often a footer or body-end custom code area. Keep the complete generated snippet intact. Avoid adding unknown script attributes or copying a sample identifier from another website.",
+        "The dashboard instruction is: 'Paste this snippet before the closing body tag.' On hosted platforms, the equivalent is often a footer or body-end custom code area. Keep the complete generated snippet intact. The defer attribute keeps the script from slowing down your page. Avoid adding unknown script attributes or copying a sample identifier from another website.",
       ),
       ...section(
         "Add it to WordPress or WooCommerce",

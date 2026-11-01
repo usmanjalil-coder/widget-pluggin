@@ -131,611 +131,659 @@ function mountWidget({
   teaserClose.setAttribute("aria-label", "Dismiss greeting");
   teaser.append(teaserClose);
   launchArea.append(teaser);
-  const win = make("section", "cb-window");
-  win.setAttribute("role", "dialog");
-  win.setAttribute("aria-label", `${config.texts.botName} chat`);
-  win.setAttribute("aria-modal", "true");
-  const header = make("header", "cb-header");
-  const avatarImage = (source, className = "cb-avatar", variant = "header") => {
-    if (!source) {
-      const avatar = make("span", `${className} cb-default-avatar`);
-      avatar.append(botIcon());
-      return avatar;
-    }
-
-    const image = make("img", className);
-    image.src = source;
-    image.alt = "";
-    image.width = variant === "header" ? 36 : 28;
-    image.height = image.width;
-    return image;
-  };
-  let avatar = avatarImage(config.texts.avatarUrl);
-  const copy = make("div", "cb-head-copy");
-  const title = make("div", "cb-title", config.texts.botName);
-  copy.append(title);
-  const presence = make("div", "cb-presence");
-  presence.append(make("span", "cb-online"), document.createTextNode("Online"));
-  copy.append(presence);
-  // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
-  const close = make("button", "cb-close");
-  close.type = "button";
-  close.setAttribute("aria-label", "Close chat");
-  close.append(xIcon("cb-icon cb-close-icon"));
-  header.append(avatar, copy, close);
-  const messages = make("div", "cb-messages");
-  messages.setAttribute("aria-live", "polite");
-  const scrollButton = make("button", "cb-scroll-bottom", "\u2193");
-  scrollButton.type = "button";
-  scrollButton.hidden = true;
-  scrollButton.setAttribute("aria-label", "Scroll to latest message");
-  const chips = make("div", "cb-chips");
-  chips.setAttribute("role", "group");
-  chips.setAttribute("aria-label", "Suggested questions");
-  const typing = make("div", "cb-typing-row");
-  typing.hidden = true;
-  const typeDots = make("div", "cb-typing-bubble");
-  typeDots.append(make("span", "cb-dot"), make("span", "cb-dot"), make("span", "cb-dot"));
-  const typingAvatar = make("div", "cb-message-avatar");
-  typingAvatar.append(avatarImage(config.texts.avatarUrl, "", "reply"));
-  typing.append(typingAvatar, typeDots);
-  const counter = make("span", "cb-counter");
-  counter.hidden = true;
-  const usage = make("div", "cb-usage");
-  usage.hidden = preview;
-  const compose = make("form", "cb-compose");
-  const input = make("textarea", "cb-input");
-  input.rows = 1;
-  input.maxLength = config.limits.messageCharacters;
-  input.placeholder = config.texts.inputPlaceholder;
-  input.setAttribute("aria-label", config.texts.inputPlaceholder);
-  const send = make("button", "cb-send");
-  send.type = "submit";
-  send.disabled = true;
-  send.setAttribute("aria-label", "Send message");
-  send.append(sendIcon());
-  compose.append(input, counter, send);
-  win.append(header, messages, typing, chips, usage, compose);
-  const footer = make("footer", "cb-footer");
-  const footerIcon = make("img", "cb-brand-icon");
-  footerIcon.src = brandBadgeIconUrl;
-  footerIcon.alt = "";
-  footerIcon.width = 15;
-  footerIcon.height = 15;
-  footer.append(footerIcon, document.createTextNode(`Powered by ${brand.name}`));
-  footer.hidden = !config.branding.showBadge;
-  win.append(footer);
-  root.append(launchArea, win);
+  root.append(launchArea);
   shadow.append(root);
   const mountTarget = container || document.body;
-  if (mountTarget && mountTarget !== document.body) mountTarget.replaceChildren();
+  if (!mountTarget) throw new Error("Widget mount target is unavailable.");
+  if (mountTarget !== document.body) mountTarget.replaceChildren();
   mountTarget.append(host);
   let open = false;
-  let generation = 0;
-  let activeRequest = null;
-  let lastActivityAt = Date.now();
-  let messageCount = 0;
-  let sending = false;
-  let lastMessage = "";
-  let lastSender = "";
-  let lastMinute = "";
-  let chipsUsed = false;
-  let promptsUsed = 0;
-  let promptLimit = config.limits.conversationPrompts;
-  let limitReached = false;
-  const stateKey = `cb-state-${botId}`;
-  const persist = () => {
-    if (preview) return;
-    try {
-      storage.setItem(
-        stateKey,
-        JSON.stringify({
-          updatedAt: lastActivityAt,
-          conversationId: storage.getItem(`cb-conversation-${botId}`),
-          messages: history,
-          usage: { used: promptsUsed, limit: promptLimit, reached: limitReached },
-        }),
-      );
-    } catch {}
-  };
-  const history = [];
-  const testHistory = [];
+  let panel = null;
   const teaserKey = `cb-teaser-${botId}`;
-  const scroll = () => {
-    messages.scrollTop = messages.scrollHeight;
-  };
-  const nearBottom = () => messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
-  const botAvatar = () => {
-    const node = make("div", "cb-message-avatar");
-    node.append(avatarImage(config.texts.avatarUrl, "", "reply"));
-    return node;
-  };
-  const addMessage = (kind, content, save = true) => {
-    messageCount += 1;
-    const stamp = time();
-    const grouped = kind === lastSender && stamp === lastMinute;
-    const row = make("div", `cb-message-row cb-${kind}-row${grouped ? " cb-grouped" : ""}`);
-    const wrap = make("div", "cb-message-wrap");
-    const bubble = make("div", `cb-message cb-${kind}`);
-    if (kind === "bot") {
-      bubble.classList.add("cb-markdown");
-      markdown(bubble, content);
-      row.append(botAvatar());
-    } else bubble.textContent = content;
-    wrap.append(bubble, make("time", "cb-timestamp", stamp));
-    row.append(wrap);
-    messages.append(row);
-    if (content && !preview) {
-      history.push({ kind, content, stamp });
-      if (save) persist();
-    }
-    lastSender = kind;
-    lastMinute = stamp;
-    scroll();
-    return { row, bubble, stamp };
-  };
-  const addError = (message, retryMessage) => {
-    const notice = make("div", "cb-error-notice");
-    notice.setAttribute("role", "alert");
-    notice.append(
-      make("span", "cb-error-symbol", "!"),
-      make("span", "cb-error-text", message),
-    );
-    if (retryMessage) {
-      const retry = make("button", "cb-retry");
-      retry.type = "button";
-      retry.setAttribute("aria-label", "Retry message");
-      retry.title = "Retry message";
-      retry.append(retryIcon());
-      retry.addEventListener("click", () => {
-        notice.remove();
-        sendMessage(retryMessage);
-      });
-      notice.append(retry);
-    }
-    messages.append(notice);
-    scroll();
-  };
-  const renderUsage = () => {
-    usage.textContent = limitReached
-      ? `${promptsUsed} / ${promptLimit} questions · Limit reached`
-      : `${promptsUsed} / ${promptLimit} questions`;
-    usage.classList.toggle("cb-usage-limit", limitReached);
-  };
-  const addLimitNotice = () => {
-    if (messages.querySelector(".cb-limit-notice")) return;
-    const notice = make("div", "cb-limit-notice");
-    notice.setAttribute("role", "status");
-    const text = make(
-      "span",
-      "",
-      "This conversation has reached its limit. Start a new chat to continue.",
-    );
-    const action = make("button", "cb-limit-action", "New chat");
-    action.type = "button";
-    action.addEventListener("click", () => resetChat());
-    notice.append(text, action);
-    messages.append(notice);
-    scroll();
+  let teaserTimer = null;
+  const ensurePanel = () => {
+    if (!panel) panel = createPanel(config);
+    return panel;
   };
   const setOpen = (value) => {
-    if (destroyed || open === value) return;
-    open = value;
-    win.classList.toggle("cb-open", value);
-    launcher.classList.toggle("cb-active", value);
-    launcher.setAttribute("aria-expanded", String(value));
-    if (value) {
-      teaser.classList.remove("cb-visible");
-      storage.setItem(teaserKey, "seen");
-      if (!preview)
-        setTimeout(() => {
-          if (!destroyed && open) input.focus();
-        }, 210);
-    } else launcher.focus();
-    onOpenChange?.(value);
-  };
-  const renderChips = () => {
-    chips.replaceChildren();
-    config.texts.starterQuestions.forEach((question) => {
-      const chip = make("button", "cb-chip", question);
-      chip.type = "button";
-      chip.addEventListener("click", () => sendMessage(question));
-      chips.append(chip);
-    });
-    chips.hidden = chipsUsed || !config.texts.starterQuestions.length;
-  };
-  const hideChips = () => {
-    if (!chipsUsed) {
-      chipsUsed = true;
-      chips.hidden = true;
-    }
-  };
-  const autoGrow = () => {
-    input.style.height = "auto";
-    input.style.height = `${Math.min(input.scrollHeight, 96)}px`;
-    const length = input.value.length;
-    counter.hidden = length < Math.floor(config.limits.messageCharacters * 0.9);
-    counter.textContent = `${length}/${config.limits.messageCharacters}`;
-    counter.classList.toggle("cb-counter-limit", length >= config.limits.messageCharacters);
-  };
-  const renderLeadForm = (payload) => {
-    const form = make("form", "cb-form");
-    form.noValidate = true;
-    form.append(make("p", "cb-form-title", "Request an appointment"));
-    const error = make("p", "cb-form-error");
-    error.hidden = true;
-    const controls = new Map();
-    (payload.fields || []).forEach((field) => {
-      const name = field.name || field.id;
-      if (!name) return;
-      const label = make("label");
-      const labelText = make("span", "cb-form-label", field.label || name);
-      if (field.required !== false) {
-        labelText.append(make("span", "cb-required", " *"));
-      }
-      const control = make("input");
-      control.name = name;
-      control.required = field.required !== false;
-      control.type = ["email", "date", "tel"].includes(field.type) ? field.type : "text";
-      control.autocomplete = name === "phone" ? "tel" : name === "email" ? "email" : "name";
-      control.maxLength = name === "phone" ? 40 : 255;
-      const fieldError = make("span", "cb-field-error");
-      fieldError.hidden = true;
-      control.setAttribute("aria-describedby", `cb-${name}-error`);
-      fieldError.id = `cb-${name}-error`;
-      control.addEventListener("input", () => {
-        control.removeAttribute("aria-invalid");
-        fieldError.hidden = true;
-        error.hidden = true;
-      });
-      label.append(labelText, control, fieldError);
-      form.append(label);
-      controls.set(name, { control, error: fieldError, label: field.label || name });
-    });
-    const showFieldError = (name, message) => {
-      const field = controls.get(name);
-      if (!field) return false;
-      field.control.setAttribute("aria-invalid", "true");
-      field.error.textContent = message;
-      field.error.hidden = false;
-      return true;
-    };
-    const validate = () => {
-      let valid = true;
-      controls.forEach(({ control, error: fieldError, label }) => {
-        control.removeAttribute("aria-invalid");
-        fieldError.hidden = true;
-        const value = control.value.trim();
-        if (control.required && !value) {
-          showFieldError(control.name, `${label} is required.`);
-          valid = false;
-        } else if (value && !control.validity.valid) {
-          showFieldError(
-            control.name,
-            control.validity.typeMismatch
-              ? `Enter a valid ${control.name === "email" ? "email address" : label.toLowerCase()}.`
-              : `${label} is invalid.`,
-          );
-          valid = false;
-        }
-      });
-      const email = controls.get("email")?.control.value.trim();
-      const phone = controls.get("phone")?.control.value.trim();
-      if (controls.has("email") && controls.has("phone") && !email && !phone) {
-        showFieldError("email", "Enter an email address or phone number.");
-        valid = false;
-      }
-      return valid;
-    };
-    const submit = make("button", "", "Send request");
-    submit.type = "submit";
-    form.append(error, submit);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      error.hidden = true;
-      if (!validate()) return;
-      submit.disabled = true;
-      try {
-        const fields = Object.fromEntries(new FormData(form));
-        const response = await fetch(
-          `${apiBase.replace(/\/$/, "")}/api/v1/leads/${encodeURIComponent(botId)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              conversationId: storage.getItem(`cb-conversation-${botId}`),
-              fields,
-            }),
-          },
-        );
-        if (!response.ok) {
-          const body = await response.json().catch(() => null);
-          const validationErrors = body?.errors && typeof body.errors === "object"
-            ? Object.entries(body.errors)
-            : [];
-          let displayed = false;
-          validationErrors.forEach(([key, messages]) => {
-            const name = key.replace(/^fields\./, "");
-            const message = Array.isArray(messages) ? messages[0] : messages;
-            if (typeof message === "string") displayed = showFieldError(name, message) || displayed;
-          });
-          if (displayed) return;
-          throw new Error(body?.message || "We could not send your request. Please try again.");
-        }
-        form.replaceWith(make("p", "cb-form-success", "Thanks! We'll contact you soon."));
-        scroll();
-      } catch (requestError) {
-        error.textContent = requestError.message || "We could not send your request. Please try again.";
-        error.hidden = false;
-      } finally {
-        submit.disabled = false;
-      }
-    });
-    messages.append(form);
-    scroll();
-  };
-  const sendMessage = async (message) => {
-    if (!message.trim() || sending || limitReached) return;
-    if (message.length > config.limits.messageCharacters) {
-      addError(`Please keep your message within ${config.limits.messageCharacters} characters.`);
-      return;
-    }
-    if (preview && testHistory.length + 2 > promptLimit * 2) {
-      addError("Test session limit reached. Reset chat to start a new session.");
-      return;
-    }
-    const requestGeneration = generation;
-    const requestController = new AbortController();
-    activeRequest = requestController;
-    lastMessage = message.trim();
-    hideChips();
-    addMessage("user", lastMessage);
-    input.value = "";
-    autoGrow();
-    sending = true;
-    input.disabled = true;
-    send.disabled = true;
-    typing.hidden = false;
-    scroll();
-    let reply = null;
-    let answer = "";
+    if (destroyed) return;
     try {
-      await streamChat({
-        apiBase,
-        botId,
-        signal: requestController.signal,
-        onConversation: (id) => {
-          if (!preview && !destroyed && requestGeneration === generation)
-            storage.setItem(`cb-conversation-${botId}`, id);
-        },
-        conversationId: preview ? null : storage.getItem(`cb-conversation-${botId}`),
-        message: lastMessage,
-        test: preview,
-        history: preview ? testHistory : undefined,
-        authToken: preview ? getAuthToken() : null,
-        assistantRules: preview ? config.settings?.assistantRules : undefined,
-        botName: preview ? config.texts.botName : undefined,
-        onToken: (token) => {
-          if (destroyed || requestGeneration !== generation) return;
-          if (!token) return;
-          answer += token;
-          if (!answer.trim()) return;
-          typing.hidden = true;
-          reply ??= addMessage("bot", "");
-          markdown(reply.bubble, answer);
-          if (nearBottom()) scroll();
-        },
-        onLeadForm: (payload) => {
-          if (!destroyed && requestGeneration === generation) renderLeadForm(payload);
-        },
-        onUsage: (nextUsage) => {
-          if (preview || destroyed || requestGeneration !== generation) return;
-          promptsUsed = Number(nextUsage.used) || promptsUsed;
-          promptLimit = Number(nextUsage.limit) || promptLimit;
-          limitReached = Boolean(nextUsage.reached);
-          renderUsage();
-        },
-      });
-      if (destroyed || requestGeneration !== generation) return;
-      if (!answer) reply?.row.remove();
-      else if (preview) testHistory.push(
-        { role: "user", text: lastMessage },
-        { role: "assistant", text: answer.slice(0, 100000) },
-      );
-      else {
-        lastActivityAt = Date.now();
-        history.push({ kind: "bot", content: answer, stamp: reply?.stamp || time() });
-        persist();
-      }
-      if (!preview && limitReached) addLimitNotice();
-    } catch (err) {
-      if (destroyed || requestGeneration !== generation) return;
-      typing.hidden = true;
-      reply?.row.remove();
-      if (!preview && err.status === 409 && /message limit/i.test(err.message || "")) {
-        promptsUsed = promptLimit;
-        limitReached = true;
-        renderUsage();
-        persist();
-        addLimitNotice();
-      } else addError(err.message || "Unable to send message.", lastMessage);
-    } finally {
-      if (destroyed || requestGeneration !== generation) return;
-      activeRequest = null;
-      sending = false;
-      input.disabled = limitReached;
-      if (!limitReached) input.focus();
-      send.disabled = limitReached || !input.value.trim() || input.value.length > config.limits.messageCharacters;
-      typing.hidden = true;
+      if (value) ensurePanel();
+      panel?.setOpen(value);
+    } catch {
+      // An embedded widget must never interrupt the host page.
     }
   };
-  let greeting;
-  let restored = null;
-  if (!preview) {
-    try {
-      const saved = JSON.parse(storage.getItem(stateKey) || "null");
-      if (saved && Date.now() - saved.updatedAt < config.limits.conversationInactivityHours * 3600000 && Array.isArray(saved.messages))
-        restored = saved;
-    } catch {}
-  }
-  if (restored) {
-    if (restored.conversationId)
-      storage.setItem(`cb-conversation-${botId}`, restored.conversationId);
-    lastActivityAt = restored.updatedAt;
-    restored.messages.forEach((item) => {
-      const entry = addMessage(item.kind, item.content, false);
-      if (!greeting && item.kind === "bot") greeting = entry;
-    });
-    chipsUsed = restored.messages.some((item) => item.kind === "user");
-    promptsUsed = Number(restored.usage?.used)
-      || restored.messages.filter((item) => item.kind === "user").length;
-    limitReached = promptsUsed >= promptLimit;
-  } else {
-    if (!preview) {
-      storage.removeItem(`cb-conversation-${botId}`);
-      storage.removeItem(stateKey);
-    }
-    greeting = addMessage(
-      "bot",
-      failed && config.texts.offlineMessage
-        ? config.texts.offlineMessage
-        : config.texts.greetingMessage,
-    );
-  }
-  previewMessages.forEach(({ role, text }) => {
-    if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
-  });
-  renderUsage();
-  if (!preview && limitReached) addLimitNotice();
-  renderChips();
-  if (defaultOpen) setOpen(true);
   if (!storage.getItem(teaserKey))
-    setTimeout(() => {
-      if (!open) teaser.classList.add("cb-visible");
-    }, 3e3);
+    teaserTimer = setTimeout(() => {
+      if (!destroyed && !open) teaser.classList.add("cb-visible");
+    }, 3000);
   teaserClose.addEventListener("click", () => {
     teaser.classList.remove("cb-visible");
     storage.setItem(teaserKey, "seen");
   });
   launcher.addEventListener("click", () => setOpen(!open));
-  close.addEventListener("click", () => setOpen(false));
-  compose.addEventListener("submit", (event) => {
-    event.preventDefault();
-    sendMessage(input.value);
-  });
-  input.addEventListener("input", () => {
-    autoGrow();
-    send.disabled = sending || !input.value.trim();
-  });
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      compose.requestSubmit();
-    }
-  });
-  messages.addEventListener("scroll", () => {
-    scrollButton.hidden = nearBottom();
-  });
-  scrollButton.addEventListener("click", scroll);
-  win.append(scrollButton);
-  const escape = (event) => {
-    if (event.key === "Escape" && open) setOpen(false);
-  };
-  document.addEventListener("keydown", escape);
-  function resetChat() {
-    generation += 1;
-    activeRequest?.abort();
-    activeRequest = null;
-    lastActivityAt = Date.now();
-    sending = false;
-    chipsUsed = false;
-    lastSender = "";
-    lastMinute = "";
-    lastMessage = "";
-    messageCount = 0;
-    promptsUsed = 0;
-    limitReached = false;
-    if (!preview) {
-      storage.removeItem(`cb-conversation-${botId}`);
-      storage.removeItem(stateKey);
-    }
-    history.length = 0;
-    testHistory.length = 0;
-    messages.replaceChildren();
-    greeting = addMessage(
-      "bot",
-      failed && config.texts.offlineMessage
-        ? config.texts.offlineMessage
-        : config.texts.greetingMessage,
-    );
-    renderChips();
-    renderUsage();
-    input.disabled = false;
-    input.value = "";
-    send.disabled = true;
-    typing.hidden = true;
-    autoGrow();
-    input.focus();
-  }
-  const widget = {
-    destroy() {
-      if (destroyed) return;
-      destroyed = true;
-      generation += 1;
-      activeRequest?.abort();
-      activeRequest = null;
-      document.removeEventListener("keydown", escape);
-      host.remove();
-    },
-    open() {
-      setOpen(true);
-    },
-    close() {
-      setOpen(false);
-    },
+  if (defaultOpen) setOpen(true);
+  return {
+    open: () => setOpen(true),
+    close: () => setOpen(false),
     resetChat() {
-      resetChat();
+      if (!destroyed) ensurePanel().resetChat();
     },
     update(nextConfig) {
       if (destroyed) return;
-      const oldGreeting = config.texts.greetingMessage;
-      const scrollTop = messages.scrollTop;
       config = nextConfig;
-      input.maxLength = config.limits.messageCharacters;
-      promptLimit = config.limits.conversationPrompts;
-      limitReached = promptsUsed >= promptLimit;
-      renderUsage();
-      applyTheme(host, config);
-      root.classList.toggle("cb-left", config.theme.position === "left");
-      root.classList.toggle("cb-right", config.theme.position === "right");
-      launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
-      win.setAttribute("aria-label", `${config.texts.botName} chat`);
-      title.textContent = config.texts.botName;
-      const nextAvatar = avatarImage(config.texts.avatarUrl);
-      avatar.replaceWith(nextAvatar);
-      avatar = nextAvatar;
-      root.querySelectorAll(".cb-message-avatar").forEach((node) => {
-        node.replaceWith(botAvatar());
-      });
-      launchArea.querySelector(".cb-launch-label")?.remove();
-      if (config.texts.launcherLabel)
-        launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
-      teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
-      input.placeholder = config.texts.inputPlaceholder;
-      autoGrow();
-      input.setAttribute("aria-label", config.texts.inputPlaceholder);
-      footer.hidden = !config.branding.showBadge;
-      if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage)
-        markdown(
-          greeting.bubble,
-          failed && config.texts.offlineMessage
-            ? config.texts.offlineMessage
-            : config.texts.greetingMessage,
-        );
-      if (!chipsUsed) renderChips();
-      messages.scrollTop = scrollTop;
+      if (panel) panel.update(nextConfig);
+      else {
+        applyTheme(host, config);
+        root.classList.toggle("cb-left", config.theme.position === "left");
+        root.classList.toggle("cb-right", config.theme.position === "right");
+        launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
+        launchArea.querySelector(".cb-launch-label")?.remove();
+        if (config.texts.launcherLabel)
+          launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
+        teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
+      }
+    },
+    destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      clearTimeout(teaserTimer);
+      panel?.destroy();
+      host.remove();
     },
   };
-  return widget;
+  function createPanel(initialPanelConfig) {
+    let config = initialPanelConfig;
+    const win = make("section", "cb-window");
+    win.setAttribute("role", "dialog");
+    win.setAttribute("aria-label", `${config.texts.botName} chat`);
+    win.setAttribute("aria-modal", "true");
+    const header = make("header", "cb-header");
+    const avatarImage = (source, className = "cb-avatar", variant = "header") => {
+      if (!source) {
+        const avatar = make("span", `${className} cb-default-avatar`);
+        avatar.append(botIcon());
+        return avatar;
+      }
+
+      const image = make("img", className);
+      image.src = source;
+      image.alt = "";
+      image.width = variant === "header" ? 36 : 28;
+      image.height = image.width;
+      return image;
+    };
+    let avatar = avatarImage(config.texts.avatarUrl);
+    const copy = make("div", "cb-head-copy");
+    const title = make("div", "cb-title", config.texts.botName);
+    copy.append(title);
+    const presence = make("div", "cb-presence");
+    presence.append(make("span", "cb-online"), document.createTextNode("Online"));
+    copy.append(presence);
+    // copy.append(make("div", "cb-reply-time", "Typically replies instantly"));
+    const close = make("button", "cb-close");
+    close.type = "button";
+    close.setAttribute("aria-label", "Close chat");
+    close.append(xIcon("cb-icon cb-close-icon"));
+    header.append(avatar, copy, close);
+    const messages = make("div", "cb-messages");
+    messages.setAttribute("aria-live", "polite");
+    const scrollButton = make("button", "cb-scroll-bottom", "\u2193");
+    scrollButton.type = "button";
+    scrollButton.hidden = true;
+    scrollButton.setAttribute("aria-label", "Scroll to latest message");
+    const chips = make("div", "cb-chips");
+    chips.setAttribute("role", "group");
+    chips.setAttribute("aria-label", "Suggested questions");
+    const typing = make("div", "cb-typing-row");
+    typing.hidden = true;
+    const typeDots = make("div", "cb-typing-bubble");
+    typeDots.append(make("span", "cb-dot"), make("span", "cb-dot"), make("span", "cb-dot"));
+    const typingAvatar = make("div", "cb-message-avatar");
+    typingAvatar.append(avatarImage(config.texts.avatarUrl, "", "reply"));
+    typing.append(typingAvatar, typeDots);
+    const counter = make("span", "cb-counter");
+    counter.hidden = true;
+    const usage = make("div", "cb-usage");
+    usage.hidden = preview;
+    const compose = make("form", "cb-compose");
+    const input = make("textarea", "cb-input");
+    input.rows = 1;
+    input.maxLength = config.limits.messageCharacters;
+    input.placeholder = config.texts.inputPlaceholder;
+    input.setAttribute("aria-label", config.texts.inputPlaceholder);
+    const send = make("button", "cb-send");
+    send.type = "submit";
+    send.disabled = true;
+    send.setAttribute("aria-label", "Send message");
+    send.append(sendIcon());
+    compose.append(input, counter, send);
+    win.append(header, messages, typing, chips, usage, compose);
+    const footer = make("footer", "cb-footer");
+    const footerIcon = make("img", "cb-brand-icon");
+    footerIcon.src = brandBadgeIconUrl;
+    footerIcon.alt = "";
+    footerIcon.width = 15;
+    footerIcon.height = 15;
+    footer.append(footerIcon, document.createTextNode(`Powered by ${brand.name}`));
+    footer.hidden = !config.branding.showBadge;
+    win.append(footer);
+    root.append(win);
+    let generation = 0;
+    let activeRequest = null;
+    let lastActivityAt = Date.now();
+    let messageCount = 0;
+    let sending = false;
+    let lastMessage = "";
+    let lastSender = "";
+    let lastMinute = "";
+    let chipsUsed = false;
+    let promptsUsed = 0;
+    let promptLimit = config.limits.conversationPrompts;
+    let limitReached = false;
+    const stateKey = `cb-state-${botId}`;
+    const persist = () => {
+      if (preview) return;
+      try {
+        storage.setItem(
+          stateKey,
+          JSON.stringify({
+            updatedAt: lastActivityAt,
+            conversationId: storage.getItem(`cb-conversation-${botId}`),
+            messages: history,
+            usage: { used: promptsUsed, limit: promptLimit, reached: limitReached },
+          }),
+        );
+      } catch {}
+    };
+    const history = [];
+    const testHistory = [];
+    const teaserKey = `cb-teaser-${botId}`;
+    let scrollFrame = null;
+    const scroll = () => {
+      if (scrollFrame !== null) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
+        if (!destroyed) messages.scrollTop = messages.scrollHeight;
+      });
+    };
+    const nearBottom = () => messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
+    const botAvatar = () => {
+      const node = make("div", "cb-message-avatar");
+      node.append(avatarImage(config.texts.avatarUrl, "", "reply"));
+      return node;
+    };
+    const addMessage = (kind, content, save = true) => {
+      messageCount += 1;
+      const stamp = time();
+      const grouped = kind === lastSender && stamp === lastMinute;
+      const row = make("div", `cb-message-row cb-${kind}-row${grouped ? " cb-grouped" : ""}`);
+      const wrap = make("div", "cb-message-wrap");
+      const bubble = make("div", `cb-message cb-${kind}`);
+      if (kind === "bot") {
+        bubble.classList.add("cb-markdown");
+        markdown(bubble, content);
+        row.append(botAvatar());
+      } else bubble.textContent = content;
+      wrap.append(bubble, make("time", "cb-timestamp", stamp));
+      row.append(wrap);
+      messages.append(row);
+      if (content && !preview) {
+        history.push({ kind, content, stamp });
+        if (save) persist();
+      }
+      lastSender = kind;
+      lastMinute = stamp;
+      scroll();
+      return { row, bubble, stamp };
+    };
+    const addError = (message, retryMessage) => {
+      const notice = make("div", "cb-error-notice");
+      notice.setAttribute("role", "alert");
+      notice.append(
+        make("span", "cb-error-symbol", "!"),
+        make("span", "cb-error-text", message),
+      );
+      if (retryMessage) {
+        const retry = make("button", "cb-retry");
+        retry.type = "button";
+        retry.setAttribute("aria-label", "Retry message");
+        retry.title = "Retry message";
+        retry.append(retryIcon());
+        retry.addEventListener("click", () => {
+          notice.remove();
+          sendMessage(retryMessage);
+        });
+        notice.append(retry);
+      }
+      messages.append(notice);
+      scroll();
+    };
+    const renderUsage = () => {
+      usage.textContent = limitReached
+        ? `${promptsUsed} / ${promptLimit} questions · Limit reached`
+        : `${promptsUsed} / ${promptLimit} questions`;
+      usage.classList.toggle("cb-usage-limit", limitReached);
+    };
+    const addLimitNotice = () => {
+      if (messages.querySelector(".cb-limit-notice")) return;
+      const notice = make("div", "cb-limit-notice");
+      notice.setAttribute("role", "status");
+      const text = make(
+        "span",
+        "",
+        "This conversation has reached its limit. Start a new chat to continue.",
+      );
+      const action = make("button", "cb-limit-action", "New chat");
+      action.type = "button";
+      action.addEventListener("click", () => resetChat());
+      notice.append(text, action);
+      messages.append(notice);
+      scroll();
+    };
+    const setPanelOpen = (value) => {
+      if (destroyed || open === value) return;
+      open = value;
+      win.classList.toggle("cb-open", value);
+      launcher.classList.toggle("cb-active", value);
+      launcher.setAttribute("aria-expanded", String(value));
+      if (value) {
+        teaser.classList.remove("cb-visible");
+        storage.setItem(teaserKey, "seen");
+        if (!preview)
+          setTimeout(() => {
+            if (!destroyed && open) input.focus();
+          }, 210);
+      } else launcher.focus();
+      onOpenChange?.(value);
+    };
+    const renderChips = () => {
+      chips.replaceChildren();
+      config.texts.starterQuestions.forEach((question) => {
+        const chip = make("button", "cb-chip", question);
+        chip.type = "button";
+        chip.addEventListener("click", () => sendMessage(question));
+        chips.append(chip);
+      });
+      chips.hidden = chipsUsed || !config.texts.starterQuestions.length;
+    };
+    const hideChips = () => {
+      if (!chipsUsed) {
+        chipsUsed = true;
+        chips.hidden = true;
+      }
+    };
+    const autoGrow = () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 96)}px`;
+      const length = input.value.length;
+      counter.hidden = length < Math.floor(config.limits.messageCharacters * 0.9);
+      counter.textContent = `${length}/${config.limits.messageCharacters}`;
+      counter.classList.toggle("cb-counter-limit", length >= config.limits.messageCharacters);
+    };
+    const renderLeadForm = (payload) => {
+      const form = make("form", "cb-form");
+      form.noValidate = true;
+      form.append(make("p", "cb-form-title", "Request an appointment"));
+      const error = make("p", "cb-form-error");
+      error.hidden = true;
+      const controls = new Map();
+      (payload.fields || []).forEach((field) => {
+        const name = field.name || field.id;
+        if (!name) return;
+        const label = make("label");
+        const labelText = make("span", "cb-form-label", field.label || name);
+        if (field.required !== false) {
+          labelText.append(make("span", "cb-required", " *"));
+        }
+        const control = make("input");
+        control.name = name;
+        control.required = field.required !== false;
+        control.type = ["email", "date", "tel"].includes(field.type) ? field.type : "text";
+        control.autocomplete = name === "phone" ? "tel" : name === "email" ? "email" : "name";
+        control.maxLength = name === "phone" ? 40 : 255;
+        const fieldError = make("span", "cb-field-error");
+        fieldError.hidden = true;
+        control.setAttribute("aria-describedby", `cb-${name}-error`);
+        fieldError.id = `cb-${name}-error`;
+        control.addEventListener("input", () => {
+          control.removeAttribute("aria-invalid");
+          fieldError.hidden = true;
+          error.hidden = true;
+        });
+        label.append(labelText, control, fieldError);
+        form.append(label);
+        controls.set(name, { control, error: fieldError, label: field.label || name });
+      });
+      const showFieldError = (name, message) => {
+        const field = controls.get(name);
+        if (!field) return false;
+        field.control.setAttribute("aria-invalid", "true");
+        field.error.textContent = message;
+        field.error.hidden = false;
+        return true;
+      };
+      const validate = () => {
+        let valid = true;
+        controls.forEach(({ control, error: fieldError, label }) => {
+          control.removeAttribute("aria-invalid");
+          fieldError.hidden = true;
+          const value = control.value.trim();
+          if (control.required && !value) {
+            showFieldError(control.name, `${label} is required.`);
+            valid = false;
+          } else if (value && !control.validity.valid) {
+            showFieldError(
+              control.name,
+              control.validity.typeMismatch
+                ? `Enter a valid ${control.name === "email" ? "email address" : label.toLowerCase()}.`
+                : `${label} is invalid.`,
+            );
+            valid = false;
+          }
+        });
+        const email = controls.get("email")?.control.value.trim();
+        const phone = controls.get("phone")?.control.value.trim();
+        if (controls.has("email") && controls.has("phone") && !email && !phone) {
+          showFieldError("email", "Enter an email address or phone number.");
+          valid = false;
+        }
+        return valid;
+      };
+      const submit = make("button", "", "Send request");
+      submit.type = "submit";
+      form.append(error, submit);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        error.hidden = true;
+        if (!validate()) return;
+        submit.disabled = true;
+        try {
+          const fields = Object.fromEntries(new FormData(form));
+          const response = await fetch(
+            `${apiBase.replace(/\/$/, "")}/api/v1/leads/${encodeURIComponent(botId)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                conversationId: storage.getItem(`cb-conversation-${botId}`),
+                fields,
+              }),
+            },
+          );
+          if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            const validationErrors = body?.errors && typeof body.errors === "object"
+              ? Object.entries(body.errors)
+              : [];
+            let displayed = false;
+            validationErrors.forEach(([key, messages]) => {
+              const name = key.replace(/^fields\./, "");
+              const message = Array.isArray(messages) ? messages[0] : messages;
+              if (typeof message === "string") displayed = showFieldError(name, message) || displayed;
+            });
+            if (displayed) return;
+            throw new Error(body?.message || "We could not send your request. Please try again.");
+          }
+          form.replaceWith(make("p", "cb-form-success", "Thanks! We'll contact you soon."));
+          scroll();
+        } catch (requestError) {
+          error.textContent = requestError.message || "We could not send your request. Please try again.";
+          error.hidden = false;
+        } finally {
+          submit.disabled = false;
+        }
+      });
+      messages.append(form);
+      scroll();
+    };
+    const sendMessage = async (message) => {
+      if (!message.trim() || sending || limitReached) return;
+      if (message.length > config.limits.messageCharacters) {
+        addError(`Please keep your message within ${config.limits.messageCharacters} characters.`);
+        return;
+      }
+      if (preview && testHistory.length + 2 > promptLimit * 2) {
+        addError("Test session limit reached. Reset chat to start a new session.");
+        return;
+      }
+      const requestGeneration = generation;
+      const requestController = new AbortController();
+      activeRequest = requestController;
+      lastMessage = message.trim();
+      hideChips();
+      addMessage("user", lastMessage);
+      input.value = "";
+      autoGrow();
+      sending = true;
+      input.disabled = true;
+      send.disabled = true;
+      typing.hidden = false;
+      scroll();
+      let reply = null;
+      let answer = "";
+      try {
+        await streamChat({
+          apiBase,
+          botId,
+          signal: requestController.signal,
+          onConversation: (id) => {
+            if (!preview && !destroyed && requestGeneration === generation)
+              storage.setItem(`cb-conversation-${botId}`, id);
+          },
+          conversationId: preview ? null : storage.getItem(`cb-conversation-${botId}`),
+          message: lastMessage,
+          test: preview,
+          history: preview ? testHistory : undefined,
+          authToken: preview ? getAuthToken() : null,
+          assistantRules: preview ? config.settings?.assistantRules : undefined,
+          botName: preview ? config.texts.botName : undefined,
+          onToken: (token) => {
+            if (destroyed || requestGeneration !== generation) return;
+            if (!token) return;
+            answer += token;
+            if (!answer.trim()) return;
+            typing.hidden = true;
+            reply ??= addMessage("bot", "");
+            markdown(reply.bubble, answer);
+            if (nearBottom()) scroll();
+          },
+          onLeadForm: (payload) => {
+            if (!destroyed && requestGeneration === generation) renderLeadForm(payload);
+          },
+          onUsage: (nextUsage) => {
+            if (preview || destroyed || requestGeneration !== generation) return;
+            promptsUsed = Number(nextUsage.used) || promptsUsed;
+            promptLimit = Number(nextUsage.limit) || promptLimit;
+            limitReached = Boolean(nextUsage.reached);
+            renderUsage();
+          },
+        });
+        if (destroyed || requestGeneration !== generation) return;
+        if (!answer) reply?.row.remove();
+        else if (preview) testHistory.push(
+          { role: "user", text: lastMessage },
+          { role: "assistant", text: answer.slice(0, 100000) },
+        );
+        else {
+          lastActivityAt = Date.now();
+          history.push({ kind: "bot", content: answer, stamp: reply?.stamp || time() });
+          persist();
+        }
+        if (!preview && limitReached) addLimitNotice();
+      } catch (err) {
+        if (destroyed || requestGeneration !== generation) return;
+        typing.hidden = true;
+        reply?.row.remove();
+        if (!preview && err.status === 409 && /message limit/i.test(err.message || "")) {
+          promptsUsed = promptLimit;
+          limitReached = true;
+          renderUsage();
+          persist();
+          addLimitNotice();
+        } else addError(err.message || "Unable to send message.", lastMessage);
+      } finally {
+        if (destroyed || requestGeneration !== generation) return;
+        activeRequest = null;
+        sending = false;
+        input.disabled = limitReached;
+        if (!limitReached) input.focus();
+        send.disabled = limitReached || !input.value.trim() || input.value.length > config.limits.messageCharacters;
+        typing.hidden = true;
+      }
+    };
+    let greeting;
+    let restored = null;
+    if (!preview) {
+      try {
+        const saved = JSON.parse(storage.getItem(stateKey) || "null");
+        if (saved && Date.now() - saved.updatedAt < config.limits.conversationInactivityHours * 3600000 && Array.isArray(saved.messages))
+          restored = saved;
+      } catch {}
+    }
+    if (restored) {
+      if (restored.conversationId)
+        storage.setItem(`cb-conversation-${botId}`, restored.conversationId);
+      lastActivityAt = restored.updatedAt;
+      restored.messages.forEach((item) => {
+        const entry = addMessage(item.kind, item.content, false);
+        if (!greeting && item.kind === "bot") greeting = entry;
+      });
+      chipsUsed = restored.messages.some((item) => item.kind === "user");
+      promptsUsed = Number(restored.usage?.used)
+        || restored.messages.filter((item) => item.kind === "user").length;
+      limitReached = promptsUsed >= promptLimit;
+    } else {
+      if (!preview) {
+        storage.removeItem(`cb-conversation-${botId}`);
+        storage.removeItem(stateKey);
+      }
+      greeting = addMessage(
+        "bot",
+        failed && config.texts.offlineMessage
+          ? config.texts.offlineMessage
+          : config.texts.greetingMessage,
+      );
+    }
+    previewMessages.forEach(({ role, text }) => {
+      if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
+    });
+    renderUsage();
+    if (!preview && limitReached) addLimitNotice();
+    renderChips();
+    close.addEventListener("click", () => setOpen(false));
+    compose.addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendMessage(input.value);
+    });
+    input.addEventListener("input", () => {
+      autoGrow();
+      send.disabled = sending || !input.value.trim();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        compose.requestSubmit();
+      }
+    });
+    messages.addEventListener("scroll", () => {
+      scrollButton.hidden = nearBottom();
+    });
+    scrollButton.addEventListener("click", scroll);
+    win.append(scrollButton);
+    const escape = (event) => {
+      if (event.key === "Escape" && open) setOpen(false);
+    };
+    document.addEventListener("keydown", escape);
+    function resetChat() {
+      generation += 1;
+      activeRequest?.abort();
+      activeRequest = null;
+      lastActivityAt = Date.now();
+      sending = false;
+      chipsUsed = false;
+      lastSender = "";
+      lastMinute = "";
+      lastMessage = "";
+      messageCount = 0;
+      promptsUsed = 0;
+      limitReached = false;
+      if (!preview) {
+        storage.removeItem(`cb-conversation-${botId}`);
+        storage.removeItem(stateKey);
+      }
+      history.length = 0;
+      testHistory.length = 0;
+      messages.replaceChildren();
+      greeting = addMessage(
+        "bot",
+        failed && config.texts.offlineMessage
+          ? config.texts.offlineMessage
+          : config.texts.greetingMessage,
+      );
+      renderChips();
+      renderUsage();
+      input.disabled = false;
+      input.value = "";
+      send.disabled = true;
+      typing.hidden = true;
+      autoGrow();
+      input.focus();
+    }
+    const widget = {
+      destroy() {
+        generation += 1;
+        if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
+        activeRequest?.abort();
+        activeRequest = null;
+        document.removeEventListener("keydown", escape);
+      },
+      setOpen: setPanelOpen,
+      resetChat() {
+        resetChat();
+      },
+      update(nextConfig) {
+        if (destroyed) return;
+        const oldGreeting = config.texts.greetingMessage;
+        const scrollTop = messages.scrollTop;
+        config = nextConfig;
+        input.maxLength = config.limits.messageCharacters;
+        promptLimit = config.limits.conversationPrompts;
+        limitReached = promptsUsed >= promptLimit;
+        renderUsage();
+        applyTheme(host, config);
+        root.classList.toggle("cb-left", config.theme.position === "left");
+        root.classList.toggle("cb-right", config.theme.position === "right");
+        launcher.setAttribute("aria-label", `Open ${config.texts.botName} chat`);
+        win.setAttribute("aria-label", `${config.texts.botName} chat`);
+        title.textContent = config.texts.botName;
+        const nextAvatar = avatarImage(config.texts.avatarUrl);
+        avatar.replaceWith(nextAvatar);
+        avatar = nextAvatar;
+        root.querySelectorAll(".cb-message-avatar").forEach((node) => {
+          node.replaceWith(botAvatar());
+        });
+        launchArea.querySelector(".cb-launch-label")?.remove();
+        if (config.texts.launcherLabel)
+          launchArea.prepend(make("span", "cb-launch-label", config.texts.launcherLabel));
+        teaser.firstChild.textContent = config.texts.greetingMessage.slice(0, 140);
+        input.placeholder = config.texts.inputPlaceholder;
+        autoGrow();
+        input.setAttribute("aria-label", config.texts.inputPlaceholder);
+        footer.hidden = !config.branding.showBadge;
+        if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage)
+          markdown(
+            greeting.bubble,
+            failed && config.texts.offlineMessage
+              ? config.texts.offlineMessage
+              : config.texts.greetingMessage,
+          );
+        if (!chipsUsed) renderChips();
+        messages.scrollTop = scrollTop;
+      },
+    };
+    return widget;
+  }
 }
 export { mountWidget };

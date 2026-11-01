@@ -10,7 +10,7 @@ export default function InstallPanel({ selectedBotId }) {
   const safeBotId = selectedBotId.replace(/[^a-zA-Z0-9_-]/g, "");
   const script =
     safeBotId
-      ? `<script src="${getWidgetScriptUrl()}" data-bot-id="${safeBotId}" data-api-base="${process.env.NEXT_PUBLIC_API_BASE_URL || ""}"></script>`
+      ? `<script src="${getWidgetScriptUrl()}" defer data-bot-id="${safeBotId}"></script>`
       : "Loading install snippet…";
 
   return (
@@ -23,7 +23,8 @@ export default function InstallPanel({ selectedBotId }) {
         <TabsContent value="script" className="mt-4">
           <Card title="Install script">
             <p className="mb-3 text-sm text-muted-foreground">
-              Paste this snippet before the closing body tag.
+              Paste this snippet before the closing body tag. The defer attribute keeps the script from
+              slowing down your page.
             </p>
             <div className="relative">
               <pre className="overflow-x-auto rounded-xl bg-foreground p-4 pr-24 text-sm text-background">

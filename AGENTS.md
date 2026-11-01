@@ -37,7 +37,7 @@ appointment requests, and emails the owner.
 
 ## 1A. Widget (`widget.js`)
 - Install snippet:
-  `<script src="https://app.example.com/widget.js" data-bot-id="abc123"></script>`
+  `<script src="https://tellvira.com/widget.js" defer data-bot-id="abc123"></script>`
 - On load: read `data-bot-id`, fetch public config `GET /api/v1/widget/config/:botId`, apply theme,
   then mount launcher bubble + chat window. Cache config briefly (about 60s or ETag).
 - UI: launcher button, chat window, message list with streaming text, input, typing indicator,

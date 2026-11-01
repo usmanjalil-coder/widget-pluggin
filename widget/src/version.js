@@ -1,1 +1,1 @@
-export const WIDGET_VERSION = "2026-11-01-widget-session-1";
+export const WIDGET_VERSION = "2026-11-01-widget-env-api-1";

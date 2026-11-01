@@ -29,7 +29,7 @@ const INSTRUCTIONS = {
 
 export default function InstallStep({ state, update }) {
   const [platform, setPlatform] = useState("HTML");
-  const snippet = `<script src="${getWidgetScriptUrl()}" data-bot-id="${state.botId}"></script>`;
+  const snippet = `<script src="${getWidgetScriptUrl()}" defer data-bot-id="${state.botId}"></script>`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(snippet);

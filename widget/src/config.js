@@ -115,13 +115,20 @@ async function loadConfig(apiBase, botId) {
     const cached = JSON.parse(sessionStorage.getItem(key) || "null");
     if (cached && cached.expires > Date.now()) return resolveLogo(cached.config);
   } catch {}
-  const response = await fetch(
-    `${apiBase.replace(/\/$/, "")}/api/v1/widget/config/${encodeURIComponent(botId)}`,
-    { headers: { Accept: "application/json" } },
-  );
-  if (!response.ok) throw new Error("Configuration unavailable");
-  const payload = await response.json();
-  const config = payload.data || payload;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  let config;
+  try {
+    const response = await fetch(
+      `${apiBase.replace(/\/$/, "")}/api/v1/widget/config/${encodeURIComponent(botId)}`,
+      { headers: { Accept: "application/json" }, signal: controller.signal },
+    );
+    if (!response.ok) throw new Error("Configuration unavailable");
+    const payload = await response.json();
+    config = payload.data || payload;
+  } finally {
+    clearTimeout(timeout);
+  }
   try {
     sessionStorage.setItem(key, JSON.stringify({ config, expires: Date.now() + 60000 }));
   } catch {}
