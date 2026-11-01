@@ -1,1 +1,1 @@
-export const WIDGET_VERSION = "2026-10-23-admin-chat-settings-1";
+export const WIDGET_VERSION = "2026-11-01-widget-session-1";

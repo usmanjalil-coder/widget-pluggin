@@ -1,3 +1,4 @@
+import { storage } from "./storage.js";
 import { styles } from "./styles.js";
 import { streamChat } from "./chat.js";
 import { applyTheme } from "./theme.js";
@@ -211,6 +212,8 @@ function mountWidget({
   mountTarget.append(host);
   let open = false;
   let generation = 0;
+  let activeRequest = null;
+  let lastActivityAt = Date.now();
   let messageCount = 0;
   let sending = false;
   let lastMessage = "";
@@ -224,14 +227,11 @@ function mountWidget({
   const persist = () => {
     if (preview) return;
     try {
-      localStorage.setItem(
+      storage.setItem(
         stateKey,
         JSON.stringify({
-          updatedAt: Date.now(),
-          conversationId:
-            localStorage.getItem(`cb-conversation-${botId}`) ||
-            crypto.randomUUID?.() ||
-            String(Date.now()),
+          updatedAt: lastActivityAt,
+          conversationId: storage.getItem(`cb-conversation-${botId}`),
           messages: history,
           usage: { used: promptsUsed, limit: promptLimit, reached: limitReached },
         }),
@@ -250,7 +250,7 @@ function mountWidget({
     node.append(avatarImage(config.texts.avatarUrl, "", "reply"));
     return node;
   };
-  const addMessage = (kind, content) => {
+  const addMessage = (kind, content, save = true) => {
     messageCount += 1;
     const stamp = time();
     const grouped = kind === lastSender && stamp === lastMinute;
@@ -267,7 +267,7 @@ function mountWidget({
     messages.append(row);
     if (content && !preview) {
       history.push({ kind, content, stamp });
-      persist();
+      if (save) persist();
     }
     lastSender = kind;
     lastMinute = stamp;
@@ -326,7 +326,7 @@ function mountWidget({
     launcher.setAttribute("aria-expanded", String(value));
     if (value) {
       teaser.classList.remove("cb-visible");
-      localStorage.setItem(teaserKey, "seen");
+      storage.setItem(teaserKey, "seen");
       if (!preview)
         setTimeout(() => {
           if (!destroyed && open) input.focus();
@@ -443,7 +443,7 @@ function mountWidget({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              conversationId: localStorage.getItem(`cb-conversation-${botId}`),
+              conversationId: storage.getItem(`cb-conversation-${botId}`),
               fields,
             }),
           },
@@ -485,6 +485,8 @@ function mountWidget({
       return;
     }
     const requestGeneration = generation;
+    const requestController = new AbortController();
+    activeRequest = requestController;
     lastMessage = message.trim();
     hideChips();
     addMessage("user", lastMessage);
@@ -501,7 +503,12 @@ function mountWidget({
       await streamChat({
         apiBase,
         botId,
-        conversationId: preview ? null : localStorage.getItem(`cb-conversation-${botId}`),
+        signal: requestController.signal,
+        onConversation: (id) => {
+          if (!preview && !destroyed && requestGeneration === generation)
+            storage.setItem(`cb-conversation-${botId}`, id);
+        },
+        conversationId: preview ? null : storage.getItem(`cb-conversation-${botId}`),
         message: lastMessage,
         test: preview,
         history: preview ? testHistory : undefined,
@@ -536,6 +543,7 @@ function mountWidget({
         { role: "assistant", text: answer.slice(0, 100000) },
       );
       else {
+        lastActivityAt = Date.now();
         history.push({ kind: "bot", content: answer, stamp: reply?.stamp || time() });
         persist();
       }
@@ -553,6 +561,7 @@ function mountWidget({
       } else addError(err.message || "Unable to send message.", lastMessage);
     } finally {
       if (destroyed || requestGeneration !== generation) return;
+      activeRequest = null;
       sending = false;
       input.disabled = limitReached;
       if (!limitReached) input.focus();
@@ -564,29 +573,35 @@ function mountWidget({
   let restored = null;
   if (!preview) {
     try {
-      const saved = JSON.parse(localStorage.getItem(stateKey) || "null");
+      const saved = JSON.parse(storage.getItem(stateKey) || "null");
       if (saved && Date.now() - saved.updatedAt < config.limits.conversationInactivityHours * 3600000 && Array.isArray(saved.messages))
         restored = saved;
     } catch {}
   }
   if (restored) {
     if (restored.conversationId)
-      localStorage.setItem(`cb-conversation-${botId}`, restored.conversationId);
+      storage.setItem(`cb-conversation-${botId}`, restored.conversationId);
+    lastActivityAt = restored.updatedAt;
     restored.messages.forEach((item) => {
-      const entry = addMessage(item.kind, item.content);
+      const entry = addMessage(item.kind, item.content, false);
       if (!greeting && item.kind === "bot") greeting = entry;
     });
     chipsUsed = restored.messages.some((item) => item.kind === "user");
     promptsUsed = Number(restored.usage?.used)
       || restored.messages.filter((item) => item.kind === "user").length;
     limitReached = promptsUsed >= promptLimit;
-  } else
+  } else {
+    if (!preview) {
+      storage.removeItem(`cb-conversation-${botId}`);
+      storage.removeItem(stateKey);
+    }
     greeting = addMessage(
       "bot",
       failed && config.texts.offlineMessage
         ? config.texts.offlineMessage
         : config.texts.greetingMessage,
     );
+  }
   previewMessages.forEach(({ role, text }) => {
     if (typeof text === "string" && text.trim()) addMessage(role === "user" ? "user" : "bot", text);
   });
@@ -594,13 +609,13 @@ function mountWidget({
   if (!preview && limitReached) addLimitNotice();
   renderChips();
   if (defaultOpen) setOpen(true);
-  if (!localStorage.getItem(teaserKey))
+  if (!storage.getItem(teaserKey))
     setTimeout(() => {
       if (!open) teaser.classList.add("cb-visible");
     }, 3e3);
   teaserClose.addEventListener("click", () => {
     teaser.classList.remove("cb-visible");
-    localStorage.setItem(teaserKey, "seen");
+    storage.setItem(teaserKey, "seen");
   });
   launcher.addEventListener("click", () => setOpen(!open));
   close.addEventListener("click", () => setOpen(false));
@@ -629,6 +644,9 @@ function mountWidget({
   document.addEventListener("keydown", escape);
   function resetChat() {
     generation += 1;
+    activeRequest?.abort();
+    activeRequest = null;
+    lastActivityAt = Date.now();
     sending = false;
     chipsUsed = false;
     lastSender = "";
@@ -638,8 +656,8 @@ function mountWidget({
     promptsUsed = 0;
     limitReached = false;
     if (!preview) {
-      localStorage.removeItem(`cb-conversation-${botId}`);
-      localStorage.removeItem(stateKey);
+      storage.removeItem(`cb-conversation-${botId}`);
+      storage.removeItem(stateKey);
     }
     history.length = 0;
     testHistory.length = 0;
@@ -664,6 +682,8 @@ function mountWidget({
       if (destroyed) return;
       destroyed = true;
       generation += 1;
+      activeRequest?.abort();
+      activeRequest = null;
       document.removeEventListener("keydown", escape);
       host.remove();
     },
