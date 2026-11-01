@@ -21,6 +21,7 @@ async function main() {
     format: "iife",
     globalName: "ChatbotWidgetBundle",
     outfile: "public/widget.js",
+    loader: { ".png": "dataurl" },
     define: { "process.env.NEXT_PUBLIC_API_BASE_URL": JSON.stringify(apiBase) },
     logLevel: "info",
   };

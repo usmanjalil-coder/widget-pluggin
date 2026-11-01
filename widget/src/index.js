@@ -2,7 +2,7 @@ import { current } from "./script.js";
 import { deepMerge, loadConfig, sanitizeConfig, scriptOverrides } from "./config.js";
 import { mountWidget } from "./ui.js";
 import { WIDGET_VERSION } from "./version.js";
-import { brand } from "../../src/lib/brand.js";
+import brandBadgeIconUrl from "../../public/brand/tellvira-widget-15.png";
 
 async function waitForBody() {
   if (document.body) return;
@@ -27,7 +27,6 @@ function bootstrap() {
       pending = Promise.resolve().then(async () => {
         const apiBase = options.apiBase || script?.dataset.apiBase
           || process.env.NEXT_PUBLIC_API_BASE_URL;
-        const brandBadgeIconUrl = new URL(brand.widgetBadgeIconPath, script?.src || window.location.href).href;
         const raw = options.config || await loadConfig(apiBase, botId);
         let config = sanitizeConfig(deepMerge(raw, scriptOverrides(script)), Boolean(options.preview));
         await waitForBody();
