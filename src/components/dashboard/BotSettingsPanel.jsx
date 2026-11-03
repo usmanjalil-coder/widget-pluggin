@@ -61,6 +61,13 @@ export default function BotSettingsPanel({
             </p>
           </div>
         </Card>
+        <Card title="Conversation limits">
+          <Switch
+            label="Allow visitors to start a new chat after reaching the message limit"
+            checked={draft.features?.allowRestartAfterLimit !== false}
+            onChange={(enabled) => updateDraftField("features", "allowRestartAfterLimit", enabled)}
+          />
+        </Card>
         <Card title="Notifications" subtitle="Email alerts for leads and status changes.">
           <div className="space-y-4">
             <Label className="space-y-2 text-sm text-foreground">

@@ -266,7 +266,13 @@ function mountWidget({
     footerIcon.alt = "";
     footerIcon.width = 15;
     footerIcon.height = 15;
-    footer.append(footerIcon, document.createTextNode(`Powered by ${brand.name}`));
+    const brandLink = make("a", "", brand.name);
+    brandLink.href = process.env.NEXT_PUBLIC_BASE_URL;
+    brandLink.target = "_blank";
+    brandLink.rel = "noopener noreferrer";
+    const credit = make("span");
+    credit.append("Powered by ", brandLink);
+    footer.append(footerIcon, credit);
     footer.hidden = !config.branding.showBadge;
     win.append(footer);
     root.append(win);
@@ -283,6 +289,8 @@ function mountWidget({
     let promptLimit = config.limits.conversationPrompts;
     let limitReached = false;
     const stateKey = `cb-state-${botId}`;
+    const submittedLeadKey = `cb-submitted-lead-${botId}`;
+    const currentConversationId = () => storage.getItem(`cb-conversation-${botId}`);
     const persist = () => {
       if (preview) return;
       try {
@@ -373,12 +381,17 @@ function mountWidget({
       const text = make(
         "span",
         "",
-        "This conversation has reached its limit. Start a new chat to continue.",
+        config.features.allowRestartAfterLimit
+          ? "This conversation has reached its limit. Start a new chat to continue."
+          : "This conversation has reached its limit.",
       );
-      const action = make("button", "cb-limit-action", "New chat");
-      action.type = "button";
-      action.addEventListener("click", () => resetChat());
-      notice.append(text, action);
+      notice.append(text);
+      if (config.features.allowRestartAfterLimit) {
+        const action = make("button", "cb-limit-action", "New chat");
+        action.type = "button";
+        action.addEventListener("click", () => resetChat());
+        notice.append(action);
+      }
       messages.append(notice);
       scroll();
     };
@@ -423,6 +436,15 @@ function mountWidget({
       counter.classList.toggle("cb-counter-limit", length >= config.limits.messageCharacters);
     };
     const renderLeadForm = (payload) => {
+      const conversationId = currentConversationId();
+      const alreadySubmitted = () => !preview && conversationId && storage.getItem(submittedLeadKey) === conversationId;
+      const submittedNotice = () => make("p", "cb-form-success", "Your request has already been submitted.");
+      if (alreadySubmitted()) {
+        messages.append(submittedNotice());
+        scroll();
+        return;
+      }
+      if (messages.querySelector("form.cb-form")) return;
       const form = make("form", "cb-form");
       form.noValidate = true;
       form.append(make("p", "cb-form-title", "Request an appointment"));
@@ -497,8 +519,18 @@ function mountWidget({
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         error.hidden = true;
-        if (!validate()) return;
+        if (conversationId !== currentConversationId()) {
+          form.remove();
+          return;
+        }
+        if (alreadySubmitted()) {
+          form.replaceWith(submittedNotice());
+          return;
+        }
+        if (submit.disabled || !validate()) return;
         submit.disabled = true;
+        submit.textContent = "Submitting…";
+        form.setAttribute("aria-busy", "true");
         try {
           const fields = Object.fromEntries(new FormData(form));
           const response = await fetch(
@@ -507,7 +539,7 @@ function mountWidget({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                conversationId: storage.getItem(`cb-conversation-${botId}`),
+                conversationId,
                 fields,
               }),
             },
@@ -526,12 +558,16 @@ function mountWidget({
             if (displayed) return;
             throw new Error(body?.message || "We could not send your request. Please try again.");
           }
+          if (!preview && conversationId && currentConversationId() === conversationId)
+            storage.setItem(submittedLeadKey, conversationId);
           form.replaceWith(make("p", "cb-form-success", "Thanks! We'll contact you soon."));
           scroll();
         } catch (requestError) {
           error.textContent = requestError.message || "We could not send your request. Please try again.";
           error.hidden = false;
         } finally {
+          form.removeAttribute("aria-busy");
+          submit.textContent = "Send request";
           submit.disabled = false;
         }
       });
@@ -569,8 +605,13 @@ function mountWidget({
           botId,
           signal: requestController.signal,
           onConversation: (id) => {
-            if (!preview && !destroyed && requestGeneration === generation)
+            if (!preview && !destroyed && requestGeneration === generation) {
+              if (id !== currentConversationId()) {
+                storage.removeItem(submittedLeadKey);
+                messages.querySelector("form.cb-form")?.remove();
+              }
               storage.setItem(`cb-conversation-${botId}`, id);
+            }
           },
           conversationId: preview ? null : storage.getItem(`cb-conversation-${botId}`),
           message: lastMessage,
@@ -653,11 +694,13 @@ function mountWidget({
       chipsUsed = restored.messages.some((item) => item.kind === "user");
       promptsUsed = Number(restored.usage?.used)
         || restored.messages.filter((item) => item.kind === "user").length;
-      limitReached = promptsUsed >= promptLimit;
+      limitReached = Boolean(restored.usage?.reached) || promptsUsed >= promptLimit;
+      input.disabled = limitReached;
     } else {
       if (!preview) {
         storage.removeItem(`cb-conversation-${botId}`);
         storage.removeItem(stateKey);
+        storage.removeItem(submittedLeadKey);
       }
       greeting = addMessage(
         "bot",
@@ -697,6 +740,7 @@ function mountWidget({
     };
     document.addEventListener("keydown", escape);
     function resetChat() {
+      if (!preview && limitReached && !config.features.allowRestartAfterLimit) return;
       generation += 1;
       activeRequest?.abort();
       activeRequest = null;
@@ -712,6 +756,7 @@ function mountWidget({
       if (!preview) {
         storage.removeItem(`cb-conversation-${botId}`);
         storage.removeItem(stateKey);
+        storage.removeItem(submittedLeadKey);
       }
       history.length = 0;
       testHistory.length = 0;

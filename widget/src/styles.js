@@ -594,6 +594,8 @@ button {
   gap: 5px;
   font-size: 11px;
 }
+.cb-footer a { color: inherit; text-decoration: underline; }
+.cb-form button:disabled { cursor: wait; }
 .cb-brand-icon {
   width: 15px;
   height: 15px;

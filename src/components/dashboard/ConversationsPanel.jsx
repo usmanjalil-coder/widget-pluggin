@@ -262,7 +262,10 @@ export default function ConversationsPanel({
                     {statusLabel[item.status] || "Open"}
                   </Badge>
                   {item.hasLead && (
-                    <ContactRound className="size-4 text-primary" aria-label="Lead captured" />
+                    <span className="inline-flex" title="Lead captured">
+                      <ContactRound className="size-4 text-primary" aria-hidden="true" />
+                      <span className="sr-only">Lead captured</span>
+                    </span>
                   )}
                   <span className={`ml-auto text-xs ${item.messageUsage?.reached ? "font-medium text-destructive" : "text-muted-foreground"}`}>
                     {item.messageUsage?.used ?? 0}/{item.messageUsage?.limit ?? "—"}

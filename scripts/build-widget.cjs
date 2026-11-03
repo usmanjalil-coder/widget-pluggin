@@ -13,6 +13,10 @@ async function main() {
   if (!["http:", "https:"].includes(url.protocol))
     throw new Error("NEXT_PUBLIC_API_BASE_URL must be an HTTP or HTTPS URL.");
 
+  const siteBase = new URL(process.env.NEXT_PUBLIC_BASE_URL);
+  if (!["http:", "https:"].includes(siteBase.protocol))
+    throw new Error("NEXT_PUBLIC_BASE_URL must be an HTTP or HTTPS URL.");
+
   const options = {
     absWorkingDir: projectDir,
     entryPoints: ["widget/src/index.js"],
@@ -22,7 +26,10 @@ async function main() {
     globalName: "ChatbotWidgetBundle",
     outfile: "public/widget.js",
     loader: { ".png": "dataurl" },
-    define: { "process.env.NEXT_PUBLIC_API_BASE_URL": JSON.stringify(apiBase) },
+    define: {
+      "process.env.NEXT_PUBLIC_API_BASE_URL": JSON.stringify(apiBase),
+      "process.env.NEXT_PUBLIC_BASE_URL": JSON.stringify(siteBase.href),
+    },
     logLevel: "info",
   };
   if (watch) {

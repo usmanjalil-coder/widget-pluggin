@@ -240,7 +240,10 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     try {
       const saved = await updateBot(selectedBotId, {
         settings: draft.settings,
-        features: { leadCapture: Boolean(draft.features?.leadCapture) },
+        features: {
+          leadCapture: Boolean(draft.features?.leadCapture),
+          allowRestartAfterLimit: draft.features?.allowRestartAfterLimit !== false,
+        },
       });
       setDraft(saved);
       notify("Settings saved.");

@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
     starterQuestions: [],
     offlineMessage: "",
   },
-  features: { leadCapture: true, dentalNotice: false },
+  features: { allowRestartAfterLimit: true, leadCapture: true, dentalNotice: false },
   branding: { showBadge: true, badgeText: "" },
   limits: { conversationPrompts: 15, messageCharacters: 500, testPromptsPerHour: 15, conversationInactivityHours: 24 },
   contactText: "the office",
