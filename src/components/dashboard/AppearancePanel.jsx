@@ -397,6 +397,21 @@ export default function AppearancePanel({
                 </SelectContent>
               </Select>
             </div>
+            {["offsetX", "offsetY"].map((field) => (
+              <Label key={field} className="space-y-2 text-sm text-foreground">
+                <span>
+                  {field === "offsetX" ? "Horizontal offset" : "Bottom offset"}: {draft.theme[field] ?? 0}px
+                </span>
+                <Input
+                  type="range"
+                  min="0"
+                  max="64"
+                  value={draft.theme[field] ?? 0}
+                  onChange={(event) => updateDraftField("theme", field, Number(event.target.value))}
+                  className="w-full"
+                />
+              </Label>
+            ))}
             <Label className="space-y-2 text-sm text-foreground">
               <span>Border radius: {draft.theme.borderRadius ?? 16}px<RequiredIndicator /></span>
               <Input

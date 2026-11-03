@@ -9,6 +9,11 @@ function applyTheme(host, config) {
   const dark =
     config.theme.mode === "dark" ||
     (config.theme.mode === "auto" && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+  for (const [field, axis] of [["offsetX", "x"], ["offsetY", "y"]]) {
+    const value = Number(config.theme[field]);
+    const offset = Number.isInteger(value) ? Math.min(64, Math.max(0, value)) : 0;
+    host.style.setProperty(`--cb-offset-${axis}`, `${offset}px`);
+  }
   host.style.setProperty("--cb-primary", config.theme.primaryColor);
   host.style.setProperty("--cb-on-primary", onPrimary(config.theme.primaryColor));
   host.style.setProperty("--cb-bg", dark ? "#202023" : "#ffffff");

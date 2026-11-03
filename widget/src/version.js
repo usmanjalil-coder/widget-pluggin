@@ -1,1 +1,1 @@
-export const WIDGET_VERSION = "2026-11-01-widget-badge-inline-1";
+export const WIDGET_VERSION = "2026-11-03-launcher-offsets-1";

@@ -25,24 +25,24 @@ button {
   line-height: 1.4;
 }
 :host(.cb-embedded-host) { position: absolute; inset: 0; display: block; container-type: size; }
-.cb-embedded { position: absolute; bottom: 16px; right: 16px; }
-.cb-embedded:not(.cb-preview).cb-left { left: 16px; right: auto; }
+.cb-embedded { position: absolute; bottom: calc(16px + var(--cb-offset-y, 0px)); right: calc(16px + var(--cb-offset-x, 0px)); }
+.cb-embedded:not(.cb-preview).cb-left { left: calc(16px + var(--cb-offset-x, 0px)); right: auto; }
 .cb-root.cb-preview { position: absolute; inset: 0; }
-.cb-preview .cb-launch-area { position: absolute; right: 16px; bottom: 16px; }
-.cb-preview.cb-left .cb-launch-area { right: auto; left: 16px; }
+.cb-preview .cb-launch-area { position: absolute; right: calc(16px + var(--cb-offset-x, 0px)); bottom: calc(16px + var(--cb-offset-y, 0px)); }
+.cb-preview.cb-left .cb-launch-area { right: auto; left: calc(16px + var(--cb-offset-x, 0px)); }
 .cb-preview .cb-window { top: 0; bottom: auto; width: min(350px, calc(100% - 32px)); height: min(580px, calc(100% - 92px)); min-height: 0; max-width: none; max-height: none; }
 .cb-preview.cb-left .cb-window { left: 16px; right: auto; }
 .cb-preview.cb-right .cb-window { right: 16px; left: auto; }
 .cb-fixed {
   position: fixed;
-  bottom: max(24px, env(safe-area-inset-bottom));
+  bottom: max(calc(24px + var(--cb-offset-y, 0px)), env(safe-area-inset-bottom));
   z-index: var(--cb-z, 2147483647);
 }
 .cb-fixed.cb-left {
-  left: max(24px, env(safe-area-inset-left));
+  left: max(calc(24px + var(--cb-offset-x, 0px)), env(safe-area-inset-left));
 }
 .cb-fixed.cb-right {
-  right: max(24px, env(safe-area-inset-right));
+  right: max(calc(24px + var(--cb-offset-x, 0px)), env(safe-area-inset-right));
 }
 .cb-launch-area {
   position: relative;
@@ -732,12 +732,12 @@ button {
 }
 @media (max-width: 479px) {
   .cb-fixed {
-    right: max(12px, env(safe-area-inset-right));
-    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(calc(12px + var(--cb-offset-x, 0px)), env(safe-area-inset-right));
+    bottom: max(calc(12px + var(--cb-offset-y, 0px)), env(safe-area-inset-bottom));
     left: auto;
   }
   .cb-fixed.cb-left {
-    left: max(12px, env(safe-area-inset-left));
+    left: max(calc(12px + var(--cb-offset-x, 0px)), env(safe-area-inset-left));
     right: auto;
   }
   :where(.cb-fixed) .cb-window {
@@ -753,8 +753,8 @@ button {
     padding-bottom: env(safe-area-inset-bottom);
     transform: translateY(18px);
   }
-  .cb-preview .cb-launch-area { right: 12px; bottom: 12px; }
-  .cb-preview.cb-left .cb-launch-area { right: auto; left: 12px; }
+  .cb-preview .cb-launch-area { right: calc(12px + var(--cb-offset-x, 0px)); bottom: calc(12px + var(--cb-offset-y, 0px)); }
+  .cb-preview.cb-left .cb-launch-area { right: auto; left: calc(12px + var(--cb-offset-x, 0px)); }
   .cb-preview.cb-left .cb-window { left: 12px; right: auto; }
   .cb-preview.cb-right .cb-window { right: 12px; left: auto; }
   .cb-preview .cb-window { width: calc(100% - 24px); height: calc(100% - 84px); min-height: 0; }

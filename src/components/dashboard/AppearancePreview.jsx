@@ -40,6 +40,7 @@ export default function AppearancePreview({
   previewMessages = [],
 }) {
   const desktopSlot = useRef(null);
+  const previewAside = useRef(null);
   const mobileSlot = useRef(null);
   const host = useRef(null);
   const widget = useRef(null);
@@ -53,8 +54,21 @@ export default function AppearancePreview({
   const [previewMode, setPreviewMode] = useState(null);
   const [device, setDevice] = useState("desktop");
   const [chatOpen, setChatOpen] = useState(true);
-  const [updated, setUpdated] = useState(0);
   const [logoPreview, setLogoPreview] = useState(null);
+  useEffect(() => {
+    if (compact || mobileInline) return;
+    const aside = previewAside.current;
+    const slot = desktopSlot.current;
+    // The open chat starts at the slot's top, below the preview toolbar and frame.
+    const alignHeader = () => {
+      const inset = slot.getBoundingClientRect().top - aside.getBoundingClientRect().top;
+      aside.style.setProperty("--preview-sticky-top", `${5 - inset}px`);
+    };
+    alignHeader();
+    const observer = new ResizeObserver(alignHeader);
+    observer.observe(aside);
+    return () => observer.disconnect();
+  }, [compact, mobileInline]);
   useEffect(() => {
     if (!logoFile) return;
     const url = URL.createObjectURL(logoFile);
@@ -130,12 +144,8 @@ export default function AppearancePreview({
   }, [botId]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!widget.current) return;
-      widget.current.update(effectiveConfig);
-      setUpdated(Date.now());
-    }, 150);
-    return () => clearTimeout(timer);
+    const frame = requestAnimationFrame(() => widget.current?.update(effectiveConfig));
+    return () => cancelAnimationFrame(frame);
   }, [effectiveConfig]);
 
   const toolbar = (
@@ -165,7 +175,9 @@ export default function AppearancePreview({
       ? "min-h-[700px]"
       : mobile || device === "mobile"
         ? "min-h-[700px]"
-        : "min-h-[680px]";
+        : mobileInline
+          ? "min-h-[700px]"
+          : "h-[min(700px,calc(100dvh-4rem))]";
     return (
       <div
         className={`relative mx-auto rounded-xl border border-border bg-card transition-[max-width] ${mobile ? "h-full max-w-[390px]" : device === "mobile" ? "max-w-[390px]" : "max-w-full"}`}
@@ -179,12 +191,13 @@ export default function AppearancePreview({
   return (
     <>
       <aside
+        ref={previewAside}
         className={
           compact
             ? "block"
             : mobileInline
               ? "block self-start"
-              : "hidden self-start lg:block"
+              : "hidden self-start lg:sticky lg:top-[var(--preview-sticky-top)] lg:block"
         }
       >
         <div

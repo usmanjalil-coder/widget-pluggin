@@ -19,6 +19,8 @@ function appearancePayload(draft) {
       primaryColor: textValue(theme.primaryColor),
       mode: textValue(theme.mode) || "light",
       position: textValue(theme.position) || "right",
+      offsetX: theme.offsetX ?? 0,
+      offsetY: theme.offsetY ?? 0,
       borderRadius: Number.isInteger(theme.borderRadius) ? theme.borderRadius : 16,
       fontFamily: textValue(theme.fontFamily) || "system",
     },
