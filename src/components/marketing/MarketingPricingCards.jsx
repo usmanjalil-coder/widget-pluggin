@@ -3,7 +3,7 @@ import { Check, Minus } from "lucide-react";
 import { dashboardFeatures, dashboardPrice, dashboardNumber, featureDisplay } from "@/lib/plan-display";
 import { PlanFeatureDisclosure } from "./PlanFeatureDisclosure";
 
-function PlanCard({ plan }) {
+function PlanCard({ plan, showAdditionalFeatures }) {
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
   const extra = features.slice(6);
@@ -32,29 +32,29 @@ function PlanCard({ plan }) {
         {featured.map((feature) => (
           <DashboardFeatureRow key={feature.key} feature={feature} />
         ))}
-        {extra.length > 0 && <PlanFeatureDisclosure count={extra.length}>{extra.map((feature) => <DashboardFeatureRow key={feature.key} feature={feature} />)}</PlanFeatureDisclosure>}
+        {showAdditionalFeatures && extra.length > 0 && <PlanFeatureDisclosure count={extra.length}>{extra.map((feature) => <DashboardFeatureRow key={feature.key} feature={feature} />)}</PlanFeatureDisclosure>}
       </div>
       <MarketingAuthCta
         loggedOutHref={`/signup?plan=${encodeURIComponent(plan.key)}`}
-        loggedInHref={`/dashboard/billing?plan=${encodeURIComponent(plan.key)}`}
-        loggedOutLabel={plan.key === "free" ? "Start free" : "Get started"}
-        loggedInLabel={plan.key === "free" ? "Start free" : "Select plan"}
-        className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        loggedInHref="/dashboard/billing"
+        loggedOutLabel={plan.key === "free" ? "Start free" : `Choose ${plan.name}`}
+        loggedInLabel="Manage plan"
+        className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground motion-safe:transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </article>
   );
 }
 
-export function MarketingPricingCards({ plans }) {
+export function MarketingPricingCards({ plans, showAdditionalFeatures = true }) {
   return (
     <>
       <div className="mt-8 grid gap-4 lg:grid-cols-3 lg:gap-5">
         {plans.map((plan) => (
-          <PlanCard key={plan.key} plan={plan} />
+          <PlanCard key={plan.key} plan={plan} showAdditionalFeatures={showAdditionalFeatures} />
         ))}
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        A conversation is one visitor chat session, however many messages it has. Fair use applies.
+        Fair use applies.
       </p>
     </>
   );

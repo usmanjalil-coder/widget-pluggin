@@ -32,9 +32,9 @@ export function MarketingAuthCta({
   className,
   loggedOutHref = "/signup",
   loggedInHref = "/dashboard",
-  loggedOutLabel = "Get started free",
+  loggedOutLabel = "Start free",
   loggedInLabel = "Go to dashboard",
-  reserveLabelSpace = false,
+  reserveLabelSpace = true,
 }) {
   const authenticated = useAuthToken();
 
@@ -72,12 +72,10 @@ export function AuthActions({ mobile = false }) {
   return (
     <>
       <MarketingLoginLink
-        className={`${mobile ? "mt-4 text-center" : ""} rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+        className={`${mobile ? "mt-4 text-center" : ""} rounded-lg px-3 py-2 text-sm font-medium text-foreground motion-safe:transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
       />
       <MarketingAuthCta
-        loggedOutLabel="Start free"
-        reserveLabelSpace
-        className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground motion-safe:transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </>
   );

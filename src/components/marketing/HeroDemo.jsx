@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUpRight, Check, CircleCheck, Send } from "lucide-react";
+import { Check, CircleCheck, RotateCcw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/lib/brand";
 import styles from "./HeroDemo.module.css";
@@ -28,6 +28,7 @@ const FIELDS = [
 const LEADS = [
   ["Alex R.", "Contacted", "18m ago"],
   ["Jamie K.", "New", "1h ago"],
+  ["Taylor B.", "Contacted", "2h ago"],
 ];
 
 export default function HeroDemo() {
@@ -113,12 +114,13 @@ export default function HeroDemo() {
         Sample demo of a visitor asking about evening appointments, the assistant answering,
         and a sample lead appearing in the dashboard for follow-up.
       </p>
-      <div ref={frame} aria-hidden="true" data-paused="true" className={styles.demo}>
-        <div className="mb-3 grid grid-cols-4 gap-1">
+      <div ref={frame} data-paused="true" className={styles.demo}>
+        <div className="mb-3 flex items-center gap-1">
           {LABELS.map((label, index) => (
             <span
               key={label}
-              className={`flex items-center gap-1 rounded-md px-1 py-2 text-[10px] font-medium sm:text-[11px] ${index === active ? "bg-accent text-primary" : "text-muted-foreground"}`}
+              aria-hidden="true"
+              className={`hidden sm:flex items-center gap-1 rounded-md px-1 py-2 text-[10px] font-medium sm:text-[11px] ${index === active ? "bg-accent text-primary" : "text-muted-foreground"}`}
             >
               <span className="flex size-4 shrink-0 items-center justify-center rounded-full border border-current">
                 {index + 1}
@@ -126,15 +128,23 @@ export default function HeroDemo() {
               {label}
             </span>
           ))}
+          <button
+            type="button"
+            aria-label="Replay demo"
+            disabled={!finished}
+            onClick={() => {
+              setFinished(false);
+              setStep(0);
+              setRun((previous) => previous + 1);
+            }}
+            className={`ml-auto inline-flex shrink-0 items-center gap-1 rounded-md p-2 text-[11px] font-medium text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:invisible ${finished ? "" : "invisible"}`}
+          >
+            <RotateCcw className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Replay</span>
+          </button>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3 shadow-lg sm:p-4">
-          <div className="mb-3 flex items-center justify-between text-xs">
-            <span className="font-semibold text-foreground">From question to follow-up</span>
-            <span className="rounded-full border border-border bg-muted px-2 py-1 text-muted-foreground">
-              Sample data
-            </span>
-          </div>
-          <div className={`${styles.scene} ${at >= 12000 ? styles.fading : ""} grid h-[470px] min-w-0 gap-3 md:grid-cols-[1.15fr_1fr]`}>
+        <div aria-hidden="true" className="rounded-xl border border-border bg-card p-3 shadow-lg sm:p-4">
+          <div className={`${styles.scene} ${at >= 12000 ? styles.fading : ""} grid h-[400px] min-w-0 gap-3 md:grid-cols-[1.15fr_1fr]`}>
             <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
               <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-3">
                 <Image src={brand.iconPath} alt="" width={28} height={28} unoptimized />
@@ -203,26 +213,15 @@ export default function HeroDemo() {
               </div>
             </div>
             <div className="relative hidden min-w-0 flex-col rounded-xl border border-border bg-background p-3 md:flex">
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <p className="text-sm font-semibold text-foreground">Overview</p>
-                <span className="text-[10px] text-muted-foreground">Last 30 days</span>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {[["Conversations", 248], ["Leads captured", captured ? 37 : 36]].map(([label, value]) => (
-                  <div key={label} className="rounded-lg border border-border bg-muted/30 p-2">
-                    <p className="text-[10px] text-muted-foreground">{label}</p>
-                    <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{value}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 rounded-lg border border-border bg-card p-2">
-                <p className="text-[11px] font-medium text-foreground">Conversations</p>
-                <svg viewBox="0 0 320 100" className="mt-2 h-16 w-full text-primary" fill="none">
-                  <path d="M0 84 C25 74 35 80 58 61 S93 71 118 48 S155 58 181 34 S218 47 243 22 S281 36 320 10" stroke="currentColor" strokeWidth="3" />
-                </svg>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <div className="flex items-start justify-between gap-2 text-muted-foreground">
+                  <p className="text-xs">Leads captured</p>
+                  <span className="text-[10px]">Sample</span>
+                </div>
+                <p className="mt-2 text-xl font-semibold tabular-nums">{captured ? 37 : 36}</p>
               </div>
               <p className="mb-2 mt-4 text-xs font-medium text-foreground">Latest leads</p>
-              <div className="overflow-hidden rounded-lg border border-border text-[11px]">
+              <div className="grid min-h-0 flex-1 auto-rows-fr overflow-hidden rounded-lg border border-border text-[11px]">
                 {captured && (
                   <div className={`${styles.lead} flex items-center justify-between gap-1 border-b border-border bg-accent px-2 py-3 text-accent-foreground`}>
                     <span className="font-medium">Sarah M. - New</span>
@@ -237,10 +236,7 @@ export default function HeroDemo() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 flex items-center gap-1 text-[10px] text-muted-foreground">
-                Follow up from your dashboard <ArrowUpRight className="size-3" />
-              </p>
-              <div className={`${styles.toast} ${captured ? styles.visible : ""} absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-lg border border-primary/20 bg-card p-3 text-xs font-medium text-foreground shadow-sm`}>
+              <div className={`${styles.toast} ${captured ? styles.visible : ""} mt-3 flex shrink-0 items-center gap-2 rounded-lg border border-primary/20 bg-card p-3 text-xs font-medium text-foreground shadow-sm`}>
                 <CircleCheck className="size-4 text-success" /> New lead captured
               </div>
             </div>
@@ -253,13 +249,6 @@ export default function HeroDemo() {
             </div>
           </div>
         </div>
-      </div>
-      <div className="mt-2 flex h-8 justify-end motion-reduce:hidden">
-        {finished && <Button size="sm" variant="ghost" onClick={() => {
-          setFinished(false);
-          setStep(0);
-          setRun((previous) => previous + 1);
-        }}>Replay</Button>}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export default async function MarketingPlans({ compare = false }) {
   return (
     <>
       <JsonLd data={softwareSchema(plans)} />
-      <MarketingPricingCards plans={plans} />
+      <MarketingPricingCards plans={plans} showAdditionalFeatures={compare} />
       {compare && <PricingComparison plans={plans} />}
     </>
   );
