@@ -83,7 +83,7 @@ export default function TermsPage() {
             <Link className="text-primary underline" href="/refunds">
               Refund Policy
             </Link>{" "}
-            for the 15-day money-back guarantee and request process.
+            for the 30-day money-back guarantee and request process.
           </p>
         </section>
         <section>

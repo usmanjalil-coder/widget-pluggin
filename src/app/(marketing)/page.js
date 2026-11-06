@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   BookOpen,
   CalendarCheck,
@@ -15,12 +14,13 @@ import {
   Home,
   UtensilsCrossed,
   ShoppingBag,
-  CircleCheck,
 } from "lucide-react";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
 import { MarketingAuthCta, MarketingLoginLink } from "@/components/marketing/MarketingAuth";
-import { brand } from "@/lib/brand";
+import { UseCaseTabs } from "@/components/marketing/UseCaseTabs";
+import InstallExample from "@/components/marketing/InstallExample";
+import HeroDemo from "@/components/marketing/HeroDemo";
 import { buildMetadata, absoluteUrl, siteConfig, faqSchema, ORGANIZATION_PROFILES } from "@/lib/seo";
 import { homeFaq } from "@/content/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
@@ -36,17 +36,17 @@ const steps = [
   {
     title: "Add your content",
     text: "Use your website, FAQ, or uploaded files as the source material.",
-    icon: "▣",
+    Visual: ContentSample,
   },
   {
     title: "Customize the look",
     text: "Match your brand colors, greeting, and placement in a live preview.",
-    icon: "✦",
+    Visual: AppearanceSample,
   },
   {
     title: "Paste one line of code",
     text: "Add the snippet to any page and your assistant is live.",
-    icon: "</>",
+    Visual: InstallExample,
   },
 ];
 
@@ -94,7 +94,7 @@ const features = [
   },
 ];
 
-function FeatureCard({ feature }) {
+function FeatureCard({ feature, highlight = false }) {
   const Icon = feature.icon;
 
   return (
@@ -113,6 +113,7 @@ function FeatureCard({ feature }) {
       >
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
       </div>
+      {highlight && <div className="mt-4"><FeatureSample title={feature.title} /></div>}
       <h3 className="mt-4 text-sm font-semibold text-foreground">{feature.title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
     </div>
@@ -125,7 +126,7 @@ const useCases = [
     href: "/solutions/dental-practices",
     icon: <Smile className="size-5" aria-hidden="true" />,
     description: "Help patients find services and book their next visit.",
-    questions: ["Can I book a consultation?", "Do you have evening appointments?"],
+    questions: ["Do you have evening appointments?", "Can I book a consultation?"],
   },
   {
     label: "Salons",
@@ -153,167 +154,45 @@ const useCases = [
     href: "/solutions/online-stores",
     icon: <ShoppingBag className="size-5" aria-hidden="true" />,
     description: "Guide shoppers through shipping and returns.",
-    questions: ["Do you ship to my city?", "What is the returns policy?"],
+    questions: ["What is the returns policy?", "Do you ship to my city?"],
   },
 ];
 
-function OutcomeVisual() {
-  const stats = [
-    ["Conversations", "248"],
-    ["Leads captured", "36"],
-    ["Unanswered", "8"],
-  ];
-  const leads = [
-    ["Maya Rahman", "Teeth whitening", "New", "4m ago"],
-    ["Owen Taylor", "Dental implant", "Contacted", "18m ago"],
-    ["Nora Patel", "Checkup", "New", "1h ago"],
-  ];
-  return (
-    <div className="relative min-w-0 lg:pb-20">
-      <div
-        className="absolute inset-8 -z-10 rounded-full bg-primary/15 blur-3xl"
-        aria-hidden="true"
-      />
-      <div className="rounded-xl border border-border bg-card p-5 shadow-lg">
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <p className="text-base font-semibold text-foreground">Overview</p>
-            <p className="mt-1 text-xs text-muted-foreground">Sample data</p>
-          </div>
-          <span className="rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-muted-foreground">
-            Last 30 days
-          </span>
-        </div>
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {stats.map(([label, value]) => (
-            <div key={label} className="rounded-lg border border-border bg-muted/30 p-3">
-              <p className="text-[11px] text-muted-foreground">{label}</p>
-              <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 rounded-lg border border-border bg-background p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Conversations</p>
-            <span className="text-xs text-primary">+18%</span>
-          </div>
-          <svg
-            viewBox="0 0 320 100"
-            className="mt-3 h-24 w-full"
-            role="img"
-            aria-label="Sample conversations trend"
-          >
-            <defs>
-              <linearGradient id="overview-fill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="currentColor" stopOpacity=".22" />
-                <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0 84 C25 74 35 80 58 61 S93 71 118 48 S155 58 181 34 S218 47 243 22 S281 36 320 10 V100 H0Z"
-              fill="url(#overview-fill)"
-              className="text-primary"
-            />
-            <path
-              d="M0 84 C25 74 35 80 58 61 S93 71 118 48 S155 58 181 34 S218 47 243 22 S281 36 320 10"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              className="text-primary"
-            />
-          </svg>
-        </div>
-        <div className="mt-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Latest leads</p>
-            <span className="text-xs text-muted-foreground">Sample data</span>
-          </div>
-          <div className="mt-2 divide-y divide-border rounded-lg border border-border">
-            {leads.map(([name, interest, status, time]) => (
-              <div key={name} className="flex items-center gap-3 px-3 py-2.5">
-                <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {name
-                    .split(" ")
-                    .map((part) => part[0])
-                    .join("")}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{interest}</p>
-                </div>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
-                  {status}
-                </span>
-                <span className="text-xs text-muted-foreground">{time}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="absolute right-0 -top-4 hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm motion-safe:animate-pulse lg:flex">
-        <CircleCheck className="size-4 text-success" aria-hidden="true" />
-        New lead captured
-      </div>
-      <div className="relative mt-4 w-full max-w-sm rounded-xl border border-border bg-card shadow-lg lg:absolute lg:bottom-0 lg:left-0 lg:mt-0 lg:w-80">
-        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-          <Image src={brand.iconPath} alt="Tellvira" width={32} height={32} unoptimized />
-          <div>
-            <p className="text-sm font-semibold text-foreground">Tellvira assistant</p>
-            <p className="text-xs text-muted-foreground">Sample conversation</p>
-          </div>
-        </div>
-        <div className="space-y-3 p-4 text-sm leading-5">
-          <p className="ml-6 rounded-xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground">
-            <span className="sr-only">Visitor: </span>
-            Do you have evening appointments?
-          </p>
-          <p className="mr-6 rounded-xl rounded-bl-sm bg-muted px-3 py-2 text-foreground">
-            <span className="sr-only">Bot: </span>
-            Yes, we are open until 7 PM on Tuesdays and Thursdays. Would you like me to book a visit?
-          </p>
-          <p className="ml-auto w-fit rounded-xl rounded-br-sm bg-primary px-3 py-2 text-primary-foreground">
-            <span className="sr-only">Visitor: </span>
-            Yes please.
-          </p>
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
-            <CircleCheck className="size-3.5" aria-hidden="true" />
-            Lead captured
-          </p>
-        </div>
-      </div>
+const highlightTitles = ["Leads and appointments", "Unanswered question insights", "Your brand, your look"];
+const previewClass = "rounded-xl border border-border bg-muted/30 p-4 text-xs";
+const chipClass = "inline-flex rounded-md border border-border bg-card px-2 py-1";
+
+function AppearanceSample() {
+  return <div className={previewClass}>
+    <div className="flex flex-wrap items-center gap-2">
+      {["bg-primary", "bg-[var(--brand-300)]", "bg-muted-foreground", "bg-foreground"].map((color, i) => (
+        <span key={color} className={"grid size-5 place-items-center rounded-full " + color}>
+          {i === 0 && <Check className="size-3 text-primary-foreground" />}
+        </span>
+      ))}
+      <span className={chipClass}>Inter</span>
     </div>
-  );
+    <p className="mt-3 w-fit rounded-xl rounded-bl-sm bg-accent px-3 py-2 text-accent-foreground">Hi! How can I help?</p>
+  </div>;
 }
 
-function UseCaseCards() {
-  return (
-    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      {useCases.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          aria-label={`Explore ${item.label} chatbot solutions`}
-          className="flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm"
-        >
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            {item.icon}
-          </div>
-          <h3 className="mt-4 text-base font-semibold text-foreground">{item.label}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {item.questions.map((question) => (
-              <span
-                key={question}
-                className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
-              >
-                {question}
-              </span>
-            ))}
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
+function ContentSample() {
+  return <div className={previewClass}>
+    <div className="flex flex-wrap items-center gap-2"><span className={chipClass}>yourbusiness.com</span>
+      <span className="rounded-full bg-accent px-2 py-1 text-primary">Crawling...</span></div>
+    <div className="mt-3 flex flex-wrap gap-2"><span className={chipClass}>FAQ.pdf</span><span className={chipClass}>Services.docx</span></div>
+  </div>;
+}
+
+function FeatureSample({ title }) {
+  if (title === "Your brand, your look") return <AppearanceSample />;
+  if (title === "Leads and appointments") return <div className={previewClass}>
+    <div className="flex items-center justify-between"><span>Sarah M.</span><span className="rounded-full bg-accent px-2 py-1 text-primary">New</span></div>
+    <p className="mt-2 text-muted-foreground">Appointment request</p>
+  </div>;
+  return <div className={previewClass}><p className="font-semibold">Unanswered · 2</p>
+    <ul className="mt-2 space-y-1"><li>Is parking available?</li><li>Do you open on Sundays?</li></ul>
+  </div>;
 }
 
 export default function MarketingHome() {
@@ -344,7 +223,7 @@ export default function MarketingHome() {
           faqSchema(homeFaq),
         ]}
       />
-      <section className="mx-auto flex min-h-0 max-w-7xl items-center px-4 pb-8 pt-16 sm:px-6 lg:min-h-[min(calc(100svh-5rem),880px)] lg:py-8">
+      <section className="mx-auto flex h-auto min-h-0 max-w-7xl items-center px-4 pb-12 pt-16 sm:px-6 lg:min-h-[min(calc(100svh-5rem),880px)] lg:pt-8">
         <div className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="min-w-0">
             <p className="mb-4 inline-flex rounded-full border border-primary/20 bg-accent px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
@@ -372,8 +251,8 @@ export default function MarketingHome() {
             </div>
           </div>
 
-          <div className="min-w-0 lg:-m-4 lg:max-h-[calc(100svh-9rem)] lg:overflow-y-auto lg:p-4">
-            <OutcomeVisual />
+          <div className="h-auto min-w-0">
+            <HeroDemo />
           </div>
         </div>
       </section>
@@ -385,19 +264,22 @@ export default function MarketingHome() {
           </p>
           <h2 className="mt-3 text-3xl font-semibold text-foreground">Three simple steps</h2>
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {steps.map((step) => (
+        <div className="mt-12 grid gap-x-6 gap-y-9 md:grid-cols-3">
+          {steps.map((step, index) => (
             <div
               key={step.title}
-              className="rounded-3xl border border-border bg-card p-6 shadow-sm"
+              className="group relative min-w-0 rounded-3xl border border-border bg-card p-6 shadow-sm motion-safe:transition-[transform,box-shadow] motion-safe:hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-xl font-semibold text-primary">
-                {step.icon}
-              </div>
-              <div className="text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Step {steps.indexOf(step) + 1}
-              </div>
-              <h3 className="mt-3 text-xl font-semibold text-foreground">{step.title}</h3>
+              <span
+                aria-hidden="true"
+                className="absolute right-6 top-0 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-[var(--brand-600)] font-bold text-white ring-[3px] ring-background motion-safe:transition-transform motion-safe:group-hover:scale-105 md:size-9"
+              >
+                {index + 1}
+              </span>
+              <div className="mb-4 min-w-0 md:h-44 lg:h-36"><step.Visual /></div>
+              <h3 className="text-xl font-semibold text-foreground md:min-h-[2lh] xl:min-h-0">
+                <span className="sr-only">Step {index + 1}. </span>{step.title}
+              </h3>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{step.text}</p>
             </div>
           ))}
@@ -420,8 +302,13 @@ export default function MarketingHome() {
               Set up in minutes, configure everything from one dashboard.
             </p>
           </div>
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-            {features.map((feature) => (
+          <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+            {highlightTitles.map((title) => (
+              <FeatureCard key={title} feature={features.find((feature) => feature.title === title)} highlight />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {features.filter((feature) => !highlightTitles.includes(feature.title)).map((feature) => (
               <FeatureCard key={feature.title} feature={feature} />
             ))}
           </div>
@@ -437,7 +324,7 @@ export default function MarketingHome() {
             Built for common business workflows
           </h2>
         </div>
-        <UseCaseCards />
+        <UseCaseTabs items={useCases} />
         <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm font-semibold text-primary">
           <Link href="/solutions">Explore AI chatbot solutions by industry</Link>
           <Link href="/solutions/dental-practices">AI chatbot for dental practices</Link>
@@ -455,7 +342,7 @@ export default function MarketingHome() {
         </div>
         <MarketingPlans />
         <p className="mt-3 text-center text-sm text-muted-foreground">
-          No credit card · Cancel anytime · 15-day money-back guarantee
+          No credit card · Cancel anytime · 30-day money-back guarantee
         </p>
         <p className="mt-6 text-center">
           <Link href="/pricing" className="font-semibold text-primary">

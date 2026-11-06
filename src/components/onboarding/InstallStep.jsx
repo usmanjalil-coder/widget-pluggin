@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Clipboard } from "lucide-react";
 import { Button, Card } from "@/components/ui";
-import { getWidgetScriptUrl } from "@/lib/widget-script-url";
+import { getWidgetSnippet } from "@/lib/widget-script-url";
 
 const INSTRUCTIONS = {
   HTML: [
@@ -29,7 +29,7 @@ const INSTRUCTIONS = {
 
 export default function InstallStep({ state, update }) {
   const [platform, setPlatform] = useState("HTML");
-  const snippet = `<script src="${getWidgetScriptUrl()}" defer data-bot-id="${state.botId}"></script>`;
+  const snippet = getWidgetSnippet(state.botId);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(snippet);

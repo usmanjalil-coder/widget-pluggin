@@ -56,6 +56,6 @@ export const billingFaq = [
   ],
   [
     "Is there a money-back guarantee?",
-    "Yes. Request a refund within 15 days of a paid subscription charge. See the Refund Policy for how to request it through Paddle or our support team.",
+    "Yes. Request a refund within 30 days of a paid subscription charge. See the Refund Policy for how to request it through Paddle or our support team.",
   ],
 ].map(([question, answer]) => ({ question, answer }));

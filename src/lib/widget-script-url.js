@@ -1,3 +1,9 @@
+export const WIDGET_SCRIPT_URL = "https://tellvira.com/widget.js";
+
+export function getWidgetSnippet(botId = "YOUR_BOT_ID") {
+  return `<script src="${WIDGET_SCRIPT_URL}" defer data-bot-id="${botId}"></script>`;
+}
+
 export function getWidgetScriptUrl(version) {
   const configuredUrl = process.env.NEXT_PUBLIC_WIDGET_SCRIPT_URL;
   const scriptUrl =

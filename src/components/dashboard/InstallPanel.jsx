@@ -4,12 +4,12 @@ import { toast as notify } from "sonner";
 import { Copy } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getWidgetScriptUrl } from "@/lib/widget-script-url";
+import { getWidgetSnippet } from "@/lib/widget-script-url";
 
 export default function InstallPanel({ selectedBotId }) {
   const safeBotId = selectedBotId.replace(/[^a-zA-Z0-9_-]/g, "");
   const script = safeBotId
-    ? `<script src="${getWidgetScriptUrl()}" defer data-bot-id="${safeBotId}"></script>`
+    ? getWidgetSnippet(safeBotId)
     : "Loading install snippet…";
 
   return (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WIDGET_SCRIPT_URL } from "@/lib/widget-script-url";
 import Script from "next/script";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { BrandWordmark } from "@/components/marketing/BrandWordmark";
@@ -90,7 +91,7 @@ export default function MarketingLayout({ children }) {
         </div>
       </footer>
       <Script
-        src="https://cdn.tellvira.com/widget.js"
+        src={WIDGET_SCRIPT_URL}
         strategy="afterInteractive"
         defer
         data-bot-id="01M639AT582S9B1F6E42AT1K2N"

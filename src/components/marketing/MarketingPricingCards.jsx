@@ -17,6 +17,7 @@ function PlanCard({ plan }) {
     >
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
+        {plan.key === "starter" && <span className="rounded-full bg-accent px-2 py-1 text-xs font-medium text-primary">Most popular</span>}
       </div>
       {plan.description && (
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
@@ -53,7 +54,7 @@ export function MarketingPricingCards({ plans }) {
         ))}
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        A conversation is one visitor chat session, however many messages it has.
+        A conversation is one visitor chat session, however many messages it has. Fair use applies.
       </p>
     </>
   );
