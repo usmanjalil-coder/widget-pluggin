@@ -8,7 +8,6 @@ import {
   overviewMetrics,
   StatCard,
   UsageCard,
-  WorkspaceLinks,
 } from "./OverviewCards";
 
 export default function OverviewPanel({
@@ -21,6 +20,7 @@ export default function OverviewPanel({
   billingLoading,
   billingError,
   selectedBotId,
+  firstName,
 }) {
   if (loading) return <OverviewSkeleton />;
 
@@ -28,11 +28,10 @@ export default function OverviewPanel({
     ...metric,
     value: Number(account?.[metric.key] ?? 0),
   }));
-  const firstRun = !error && counts[0].value === 0 && counts[2].value === 0;
 
   return (
     <section aria-label="Overview" className="space-y-8">
-      <PageHeader title="Welcome back" description="Your activity and usage across all bots." />
+      <PageHeader title={firstName ? `Welcome back, ${firstName}` : "Welcome back"} description="Your activity and usage across all bots." />
       {error && (
         <Card>
           <p role="alert" className="text-sm text-destructive">
@@ -57,18 +56,14 @@ export default function OverviewPanel({
               />
             ))}
           </div>
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          <div className="grid items-stretch gap-6 lg:grid-cols-2">
             <UsageCard
               billing={billing}
               billingLoading={billingLoading}
               billingError={billingError}
               usagePercent={usage?.percent}
             />
-            {firstRun ? (
-              <GetStartedChecklist botCount={counts[1].value} botId={selectedBotId} />
-            ) : (
-              <WorkspaceLinks />
-            )}
+            <GetStartedChecklist botId={selectedBotId} />
           </div>
         </>
       )}

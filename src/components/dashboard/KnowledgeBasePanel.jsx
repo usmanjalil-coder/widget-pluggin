@@ -100,6 +100,7 @@ const relativeTime = (value) => {
 
 export default function KnowledgeBasePanel({
   documents,
+  embedded,
   stats,
   pagination,
   query,
@@ -201,10 +202,8 @@ export default function KnowledgeBasePanel({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Knowledge Base"
-        description="What your assistant knows. Add content so it can answer accurately."
-        actions={
+      {!embedded && <PageHeader title="Knowledge Base" />}
+      {stats.sources > 0 && <>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
@@ -220,8 +219,7 @@ export default function KnowledgeBasePanel({
             </Button>
             {actions()}
           </div>
-        }
-      />
+
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Sources"
@@ -242,7 +240,8 @@ export default function KnowledgeBasePanel({
           description="Processing or failed"
         />
       </div>
-      {stats.sources || query || status !== "all" ? (
+      </>}
+      {stats.sources > 0 ? (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative w-full sm:max-w-sm">

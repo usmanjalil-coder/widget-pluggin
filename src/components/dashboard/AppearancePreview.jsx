@@ -40,7 +40,6 @@ export default function AppearancePreview({
   previewMessages = [],
 }) {
   const desktopSlot = useRef(null);
-  const previewAside = useRef(null);
   const mobileSlot = useRef(null);
   const host = useRef(null);
   const widget = useRef(null);
@@ -55,20 +54,6 @@ export default function AppearancePreview({
   const [device, setDevice] = useState("desktop");
   const [chatOpen, setChatOpen] = useState(true);
   const [logoPreview, setLogoPreview] = useState(null);
-  useEffect(() => {
-    if (compact || mobileInline) return;
-    const aside = previewAside.current;
-    const slot = desktopSlot.current;
-    // The open chat starts at the slot's top, below the preview toolbar and frame.
-    const alignHeader = () => {
-      const inset = slot.getBoundingClientRect().top - aside.getBoundingClientRect().top;
-      aside.style.setProperty("--preview-sticky-top", `${5 - inset}px`);
-    };
-    alignHeader();
-    const observer = new ResizeObserver(alignHeader);
-    observer.observe(aside);
-    return () => observer.disconnect();
-  }, [compact, mobileInline]);
   useEffect(() => {
     if (!logoFile) return;
     const url = URL.createObjectURL(logoFile);
@@ -173,11 +158,11 @@ export default function AppearancePreview({
   const browserFrame = (slotRef, mobile = false) => {
     const stageHeight = compact
       ? "min-h-[700px]"
-      : mobile || device === "mobile"
+      : mobile
         ? "min-h-[700px]"
         : mobileInline
           ? "min-h-[700px]"
-          : "h-[min(700px,calc(100dvh-4rem))]";
+          : "h-[min(700px,calc(100dvh-11rem))]";
     return (
       <div
         className={`relative mx-auto rounded-xl border border-border bg-card transition-[max-width] ${mobile ? "h-full max-w-[390px]" : device === "mobile" ? "max-w-[390px]" : "max-w-full"}`}
@@ -191,13 +176,12 @@ export default function AppearancePreview({
   return (
     <>
       <aside
-        ref={previewAside}
         className={
           compact
             ? "block"
             : mobileInline
               ? "block self-start"
-              : "hidden self-start lg:sticky lg:top-[var(--preview-sticky-top)] lg:block"
+              : "hidden self-start lg:sticky lg:top-[5px] lg:block"
         }
       >
         <div

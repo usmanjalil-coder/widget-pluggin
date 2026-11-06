@@ -3,7 +3,7 @@ import BotSettingsPanel from "../BotSettingsPanel";
 import { Button, Card } from "@/components/ui";
 import useBotEditor from "../useBotEditor";
 import { useDashboard } from "../dashboard-context";
-export default function BotSettingsPage() {
+export default function BotSettingsPage({ onDelete }) {
   const { selectedBotId, setBots } = useDashboard();
   const editor = useBotEditor({ selectedBotId, setBots });
   if (editor.detailError)
@@ -17,5 +17,5 @@ export default function BotSettingsPage() {
         </Button>
       </Card>
     );
-  return <BotSettingsPanel {...editor} />;
+  return <BotSettingsPanel onDelete={onDelete} {...editor} />;
 }

@@ -1,6 +1,6 @@
 export const botTabs = [
-  { label: "Appearance", value: "appearance" },
   { label: "Knowledge Base", value: "knowledge" },
+  { label: "Appearance", value: "appearance" },
   { label: "Settings", value: "settings" },
   { label: "Install", value: "install" },
 ];

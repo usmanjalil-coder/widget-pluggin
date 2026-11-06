@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { CircleHelp, Mail } from "lucide-react";
 import { Badge, Button, Card, Input, Label, Skeleton, Switch } from "@/components/ui";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AssistantRulesField from "@/components/shared/AssistantRulesField";
 import BotPurposeField, { botPurpose } from "@/components/shared/BotPurposeField";
 
+import { domainHelp } from "./domain-help";
+import BotSaveBar from "./BotSaveBar";
 import BookingSettingsEditor from "./BookingSettingsEditor";
 
 function toList(value) {
@@ -19,18 +22,21 @@ function toList(value) {
 
 export default function BotSettingsPanel({
   draft,
-  bot,
+  resetSettings,
+  settingsDirty,
+  onDelete,
   updateDraftField,
   savingSettings,
   saveSettings,
   settingsErrors = {},
 }) {
+  const [domainText, setDomainText] = useState(null);
   if (!draft) return <Skeleton className="h-72 w-full rounded-2xl" />;
   const notificationEmails = toList(draft.settings?.notificationEmails);
   const allowedDomains = toList(draft.settings?.allowedDomains);
 
   return (
-    <form
+    <form className="space-y-6 pb-20"
       onSubmit={(event) => {
         event.preventDefault();
         saveSettings();
@@ -109,7 +115,7 @@ export default function BotSettingsPanel({
           />
         </Card>
 
-        <Card title="Allowed domains" subtitle="Optional hosts for embed and CORS validation.">
+        <Card title="Allowed domains">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="allowed-domains">Domain hosts</Label>
@@ -134,25 +140,20 @@ export default function BotSettingsPanel({
             </div>
             <Input
               id="allowed-domains"
-              value={allowedDomains.join(", ")}
+              value={domainText ?? allowedDomains.join(", ")}
+              onBlur={() => setDomainText(null)}
               placeholder="e.g. example.com, shop.example.com"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
               aria-describedby="allowed-domains-help"
-              onChange={(event) =>
-                updateDraftField(
-                  "settings",
-                  "allowedDomains",
-                  event.target.value
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                )
-              }
+              onChange={(event) => {
+                setDomainText(event.target.value);
+                updateDraftField("settings", "allowedDomains", toList(event.target.value));
+              }}
             />
             <p id="allowed-domains-help" className="text-xs text-muted-foreground">
-              Visitors can use this bot only from the listed website hosts.
+              {domainHelp}
             </p>
           </div>
         </Card>
@@ -172,20 +173,11 @@ export default function BotSettingsPanel({
             ))}
           </div>
         )}
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={
-              savingSettings || (
-                JSON.stringify(draft.settings) === JSON.stringify(bot?.settings)
-                && JSON.stringify(draft.features) === JSON.stringify(bot?.features)
-              )
-            }
-          >
-            {savingSettings ? "Saving…" : "Save settings"}
-          </Button>
-        </div>
+        <Card title="Danger zone">
+          <Button type="button" variant="destructive" onClick={onDelete}>Delete bot</Button>
+        </Card>
       </fieldset>
+      <BotSaveBar dirty={settingsDirty} saving={savingSettings} onDiscard={resetSettings} />
     </form>
   );
 }

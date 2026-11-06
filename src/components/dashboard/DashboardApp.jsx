@@ -50,7 +50,7 @@ export default function DashboardApp({ children }) {
   );
   const isBotDetailPage = Boolean(routeBotId);
   const page = isBotDetailPage ? "Appearance" : dashboardPages[pathname] || "Overview";
-  const tabFromQuery = searchParams.get("tab") || "appearance";
+  const tabFromQuery = searchParams.get("tab") || "knowledge";
   const currentPageLabel = isBotDetailPage
     ? botTabs.find((tab) => tab.value === tabFromQuery)?.label || "Appearance"
     : page;
@@ -77,7 +77,7 @@ export default function DashboardApp({ children }) {
       if (navigationGuard.current && !navigationGuard.current()) return false;
       setStoredBotId(id);
       window.localStorage.setItem("chatbot-current-bot", id);
-      router.push("/dashboard/bots/" + id + "?tab=appearance");
+      router.push("/dashboard/bots/" + id + "?tab=knowledge");
       setMobileNavOpen(false);
       return true;
     },

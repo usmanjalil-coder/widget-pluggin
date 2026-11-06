@@ -40,7 +40,7 @@ export default function CreateBotDialog({ createDialogOpen, setCreateDialogOpen,
       setPurpose("support");
       setCreateDialogOpen(false);
       notify.success("Bot created.");
-      router.push(`/dashboard/bots/${encodeURIComponent(created.public_id ?? created.id)}?tab=appearance`);
+      router.push(`/dashboard/bots/${encodeURIComponent(created.public_id ?? created.id)}?tab=knowledge`);
     } catch (error) {
       setCreateError(error.message || "Could not create a bot right now.");
     } finally {

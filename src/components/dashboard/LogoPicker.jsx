@@ -22,7 +22,7 @@ function LocalLogoPreview({ file }) {
 export default function LogoPicker({ value = "", file, onFileChange, onUrlChange }) {
   const [choice, setChoice] = useState(null);
   const [error, setError] = useState("");
-  const mode = file ? "upload" : choice || (value.includes("/bot-logos/") ? "upload" : "link");
+  const mode = file ? "upload" : choice || (!value || value.includes("/bot-logos/") ? "upload" : "link");
   const source = dashboardAvatarUrl(value);
 
   return (

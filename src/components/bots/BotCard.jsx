@@ -4,7 +4,7 @@ import { memo, useCallback, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Copy, Info, MessageSquare, MoreHorizontal, Trash2, Users } from "lucide-react";
-import { Badge, Button, Switch } from "@/components/ui";
+import { Button, Switch } from "@/components/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import BotAvatar from "./BotAvatar";
-import StatusBadge from "./StatusBadge";
 
 function relativeTime(value) {
   if (!value) return null;
@@ -31,11 +30,11 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
   const botId = bot.public_id ?? bot.id;
   const isActive = bot.status === "active";
   const [statusLoading, setStatusLoading] = useState(false);
-  const href = `/dashboard/bots/${encodeURIComponent(botId)}?tab=appearance`;
+  const href = `/dashboard/bots/${encodeURIComponent(botId)}?tab=knowledge`;
   const menus = [
     ["Open", href],
-    ["Appearance", href],
-    ["Knowledge Base", `/dashboard/bots/${encodeURIComponent(botId)}?tab=knowledge`],
+    ["Knowledge Base", href],
+    ["Appearance", `/dashboard/bots/${encodeURIComponent(botId)}?tab=appearance`],
     ["Settings", `/dashboard/bots/${encodeURIComponent(botId)}?tab=settings`],
     ["Install", `/dashboard/bots/${encodeURIComponent(botId)}?tab=install`],
   ];
@@ -70,7 +69,7 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
       <Link
         href={href}
         className="absolute inset-0 z-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring"
-        aria-label={`Open ${bot.name} Appearance`}
+        aria-label={`Open ${bot.name} Knowledge Base`}
       />
       <div className="relative z-10 flex min-w-0 items-start gap-3 p-5 pointer-events-none">
         <BotAvatar bot={bot} />
@@ -98,7 +97,6 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
           </div>
         </div>
         <div className="pointer-events-auto flex shrink-0 items-start gap-1">
-          <StatusBadge status={bot.status} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -191,11 +189,7 @@ function BotCard({ bot, current, onSwitch, onDelete, onToggleStatus }) {
             </TooltipContent>
           </Tooltip>
         </div>
-        {current ? (
-          <Badge tone="info" className="shrink-0">
-            Current
-          </Badge>
-        ) : (
+        {!current && (
           <Button
             type="button"
             size="sm"

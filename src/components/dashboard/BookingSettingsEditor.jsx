@@ -16,7 +16,7 @@ const BOOKING_FIELDS = [
   { id: "name", label: "Full name", type: "text", required: true },
   { id: "email", label: "Email", type: "email", required: false },
   { id: "phone", label: "Phone", type: "phone", required: false },
-  { id: "preferred_time", label: "Preferred time", type: "date", required: false },
+  { id: "preferred_time", label: "Preferred date", type: "date", required: false },
   { id: "interest", label: "Service or interest", type: "text", required: false },
 ];
 
@@ -114,6 +114,20 @@ export default function BookingSettingsEditor({ settings, updateDraftField }) {
       </Card>
       <Card title="Working hours" subtitle="Availability shown on the booking form">
         <div className="space-y-3">
+          {hours.monday && (
+            <Button type="button" variant="secondary" size="sm"
+              disabled={hours.monday.closed || !hours.monday.open || !hours.monday.close}
+              onClick={() => updateDraftField("settings", "workingHours",
+                Object.fromEntries(Object.entries(hours).map(([day, schedule]) => [
+                  day, schedule.closed ? schedule : {
+                    ...schedule, open: hours.monday.open, close: hours.monday.close,
+                  },
+                ])),
+              )}
+            >
+              Copy Monday&apos;s hours to all open days
+            </Button>
+          )}
           {Object.entries(hours).map(([day, schedule]) => (
             <div key={day} className="space-y-3 rounded-lg border p-4">
               <div className="flex items-center justify-between gap-3">

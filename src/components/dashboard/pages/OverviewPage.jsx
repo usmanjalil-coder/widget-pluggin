@@ -2,12 +2,15 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getBillingOverview } from "@/lib/api/billing.api";
+import { getAccount } from "@/lib/api/account.api";
+import useDashboardResource from "../useDashboardResource";
 import OverviewPanel from "../OverviewPanel";
 import { useDashboard } from "../dashboard-context";
 
 export default function OverviewPage() {
   const { usage, account, accountLoading, accountError, loadAccount, selectedBotId } =
     useDashboard();
+  const profile = useDashboardResource(getAccount);
   const billingQuery = useQuery({
     queryKey: ["billing", "overview"],
     queryFn: ({ signal }) => getBillingOverview(signal),
@@ -17,6 +20,7 @@ export default function OverviewPage() {
 
   return (
     <OverviewPanel
+      firstName={profile.data?.name?.trim().split(/\s+/)[0]}
       usage={usage}
       billing={billingQuery.data}
       billingLoading={billingQuery.isPending}

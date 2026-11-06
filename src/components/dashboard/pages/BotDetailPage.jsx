@@ -1,10 +1,11 @@
 "use client";
 
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Button, Skeleton } from "@/components/ui";
+import { Skeleton } from "@/components/ui";
+import DeleteBotDialog from "../DeleteBotDialog";
 import PageHeader from "@/components/shared/PageHeader";
 import { deleteBot, getBots } from "@/lib/api/bots.api";
 import { useDashboard } from "../dashboard-context";
@@ -22,9 +23,11 @@ const InstallPanel = lazy(loadInstallPanel);
 
 export default function BotDetailPage({ botId }) {
   const { selectedBot, setBots, setSelectedBotId } = useDashboard();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") || "appearance";
+  const tab = searchParams.get("tab") || "knowledge";
   const currentPageLabel = botTabs.find((item) => item.value === tab)?.label || "Appearance";
   useEffect(() => {
     void Promise.all([
@@ -50,6 +53,7 @@ export default function BotDetailPage({ botId }) {
     window.history.pushState(null, "", href);
   };
   const handleDeleteBot = async () => {
+    setDeleting(true);
     try {
       await deleteBot(botId);
       const nextBots = await getBots();
@@ -59,6 +63,9 @@ export default function BotDetailPage({ botId }) {
       router.push("/dashboard/bots");
     } catch {
       toast("Bot could not be deleted.");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
     }
   };
   return (
@@ -66,11 +73,6 @@ export default function BotDetailPage({ botId }) {
       <PageHeader
         title={currentPageLabel}
         description={selectedBot?.name || "Bot details"}
-        actions={
-          <Button type="button" variant="secondary" onClick={handleDeleteBot}>
-            Delete bot
-          </Button>
-        }
       />
       <div className="flex gap-2 overflow-x-auto pb-1">
         {botTabs.map((item) => {
@@ -96,15 +98,17 @@ export default function BotDetailPage({ botId }) {
       </div>
       <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>
         {tab === "knowledge" ? (
-          <KnowledgePage key={botId} />
+          <KnowledgePage key={botId} embedded />
         ) : tab === "settings" ? (
-          <BotSettingsPage key={botId} />
+          <BotSettingsPage key={botId} onDelete={() => setConfirmDelete(true)} />
         ) : tab === "install" ? (
           <InstallPanel selectedBotId={botId} />
         ) : (
           <AppearancePage key={botId} />
         )}
       </Suspense>
+      <DeleteBotDialog bot={confirmDelete ? selectedBot : null} deletingBot={deleting}
+        onClose={() => setConfirmDelete(false)} onDelete={handleDeleteBot} />
     </div>
   );
 }

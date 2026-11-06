@@ -4,7 +4,8 @@ import { toast as notify } from "sonner";
 import { Copy } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getWidgetSnippet } from "@/lib/widget-script-url";
+import { domainHelp } from "./domain-help";
+import { WIDGET_SCRIPT_URL, getWidgetSnippet } from "@/lib/widget-script-url";
 
 export default function InstallPanel({ selectedBotId }) {
   const safeBotId = selectedBotId.replace(/[^a-zA-Z0-9_-]/g, "");
@@ -19,6 +20,7 @@ export default function InstallPanel({ selectedBotId }) {
           Paste this snippet before the closing body tag. The defer attribute keeps the script from
           slowing down your page.
         </p>
+        <p className="mb-3 text-sm text-muted-foreground">{domainHelp}</p>
         <div className="relative min-w-0">
           <pre className="whitespace-pre-wrap break-all rounded-xl bg-foreground p-4 pr-24 text-sm text-background">
             <code>{script}</code>
@@ -121,10 +123,6 @@ export default function InstallPanel({ selectedBotId }) {
                   Do not paste the snippet into a page or post editor. Use the footer so it loads
                   site-wide.
                 </li>
-                <li>
-                  Add your website&apos;s domain (with and without www) to your bot&apos;s{" "}
-                  <strong>Allowed domains</strong>, otherwise the chat will not load.
-                </li>
               </ul>
               <p>
                 Still stuck?{" "}
@@ -136,7 +134,6 @@ export default function InstallPanel({ selectedBotId }) {
                 </a>
               </p>
             </section>
-            <p className="text-muted-foreground">A Tellvira WordPress plugin is on our roadmap.</p>
           </TabsContent>
           <TabsContent value="shopify" className="mt-4 space-y-3 text-sm">
             <h3 className="text-base font-semibold">Add Tellvira to Shopify</h3>
@@ -170,7 +167,11 @@ export default function InstallPanel({ selectedBotId }) {
           </TabsContent>
         </Tabs>
       </Card>
-      <Card title="Advanced override">
+      <details className="rounded-xl border bg-card p-4">
+        <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-ring">Advanced override</summary>
+        <pre className="my-3 whitespace-pre-wrap break-all rounded-lg bg-muted p-3 text-sm">
+          <code>{`<script src="${WIDGET_SCRIPT_URL}" defer data-bot-id="${safeBotId || "YOUR_BOT_ID"}" data-primary-color="#0F766E" data-greeting="Hello!"></script>`}</code>
+        </pre>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>data-primary-color</li>
           <li>data-greeting</li>
@@ -180,7 +181,7 @@ export default function InstallPanel({ selectedBotId }) {
         <p className="mt-3 text-sm text-muted-foreground">
           Precedence is script attributes over saved dashboard config, then defaults.
         </p>
-      </Card>
+      </details>
     </div>
   );
 }

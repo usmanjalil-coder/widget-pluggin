@@ -42,19 +42,8 @@ export default function CharLimitInput({
         aria-describedby={error ? `${id}-error` : undefined}
         {...props}
       />
-      <div className="flex items-center gap-3">
-        <div className="h-0.5 flex-1 overflow-hidden rounded-full bg-border" aria-hidden="true">
-          <div
-            className={cn(
-              "h-full transition-all",
-              count >= maxLength ? "bg-destructive" : ratio >= 90 ? "bg-warning" : "bg-primary",
-            )}
-            style={{ width: `${ratio}%` }}
-          />
-        </div>
-        <span className={cn("min-w-12 text-right text-xs tabular-nums", tone)}>
-          {count}/{maxLength}
-        </span>
+      <div className="min-h-4 text-right text-xs tabular-nums">
+        {ratio >= 80 && <span className={tone}>{count}/{maxLength}</span>}
       </div>
       {error && (
         <p id={`${id}-error`} className="text-xs text-destructive">

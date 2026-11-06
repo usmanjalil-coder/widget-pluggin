@@ -41,9 +41,6 @@ function appearancePayload(draft) {
     branding: {
       showBadge: Boolean(draft.branding?.showBadge),
     },
-    settings: {
-      assistantRules: textValue(draft.settings?.assistantRules),
-    },
   };
 }
 
@@ -120,13 +117,11 @@ export default function useBotEditor({ selectedBotId, setBots }) {
             theme: draft.theme,
             texts: draft.texts,
             branding: draft.branding,
-            rules: draft.settings?.assistantRules || "",
           }) !==
             JSON.stringify({
               theme: bot.theme,
               texts: bot.texts,
               branding: bot.branding,
-              rules: bot.settings?.assistantRules || "",
             })),
       ),
     [bot, draft, logoFile],
@@ -269,6 +264,11 @@ export default function useBotEditor({ selectedBotId, setBots }) {
     saveAppearance,
     resetAppearance,
     saveSettings,
+    resetSettings: () => {
+      setDraft(bot);
+      setSettingsErrors({});
+    },
+    settingsDirty: unsavedChanges,
     savingAppearance,
     savingSettings,
     settingsErrors,

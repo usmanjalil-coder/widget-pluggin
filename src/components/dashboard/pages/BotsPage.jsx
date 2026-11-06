@@ -3,15 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import DeleteBotDialog from "../DeleteBotDialog";
 import { deleteBot, getBots, toggleBotStatus } from "@/lib/api/bots.api";
 import BotsPanel from "../BotsPanel";
 import CreateBotDialog from "../CreateBotDialog";
@@ -115,39 +107,8 @@ export default function BotsPage() {
         setCreateDialogOpen={setCreateDialogOpen}
         onCreated={onCreated}
       />
-      <Dialog
-        open={Boolean(botToDelete)}
-        onOpenChange={(open) => {
-          if (!open && !deletingBot) setBotToDelete(null);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete {botToDelete?.name}?</DialogTitle>
-            <DialogDescription>
-              This permanently removes the bot and its dashboard configuration.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={deletingBot}
-              onClick={() => setBotToDelete(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={deletingBot}
-              onClick={handleDelete}
-            >
-              {deletingBot ? "Deleting…" : "Delete bot"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteBotDialog bot={botToDelete} deletingBot={deletingBot}
+        onClose={() => setBotToDelete(null)} onDelete={handleDelete} />
     </>
   );
 }

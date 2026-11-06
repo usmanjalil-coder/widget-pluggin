@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import CharLimitInput from "@/components/shared/CharLimitInput";
 import AppearancePreview from "@/components/dashboard/AppearancePreview";
 import LogoPicker from "@/components/dashboard/LogoPicker";
-import AssistantRulesField from "@/components/shared/AssistantRulesField";
+import BotSaveBar from "./BotSaveBar";
 import { HEX_COLOR, TEXT_LIMITS } from "@/lib/limits";
 import { DEFAULT_CONFIG } from "../../../widget/src/config.js";
 
@@ -93,7 +93,7 @@ export default function AppearancePanel({
   }
 
   return (
-    <div className="grid items-start gap-6 pb-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+    <div className="grid items-start gap-6 pb-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
       {Object.keys(appearanceErrors).length > 0 && (
         <div
           ref={errorSummaryRef}
@@ -130,6 +130,11 @@ export default function AppearancePanel({
               value={draft.texts.launcherLabel || ""}
               onChange={(event) => updateDraftField("texts", "launcherLabel", event.target.value)}
             />
+            <Switch
+              checked={Boolean(draft.branding?.showBadge)}
+              label="Show powered by badge"
+              onChange={(value) => updateDraftField("branding", "showBadge", value)}
+            />
             <LogoPicker
               key={selectedBotId}
               value={draft.texts.avatarUrl || ""}
@@ -140,17 +145,6 @@ export default function AppearancePanel({
           </div>
         </Card>
 
-        <Card
-          title="Assistant rules"
-          subtitle="Tell your assistant how to respond. You can also edit these same rules in Settings."
-          className="order-5"
-        >
-          <AssistantRulesField
-            id="appearance-assistant-rules"
-            value={draft.settings?.assistantRules}
-            onChange={(event) => updateDraftField("settings", "assistantRules", event.target.value)}
-          />
-        </Card>
 
         <Card title="Colors" subtitle="Review text contrast before saving." className="order-2">
           <TooltipProvider>
@@ -375,10 +369,12 @@ export default function AppearancePanel({
           </div>
         </Card>
 
-        <Card
+        <details className="order-5 rounded-xl border bg-card p-4">
+          <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-ring">Advanced layout</summary>
+          <Card
           title="Layout"
           subtitle="Set the widget position, shape and type."
-          className="order-3"
+          className="mt-4"
         >
           <div className="space-y-4">
             <div className="space-y-2">
@@ -463,11 +459,7 @@ export default function AppearancePanel({
                 </SelectContent>
               </Select>
             </div>
-            <Switch
-              checked={Boolean(draft.branding?.showBadge)}
-              label="Show powered by badge"
-              onChange={(value) => updateDraftField("branding", "showBadge", value)}
-            />
+
             <Button
               type="button"
               variant="outline"
@@ -485,34 +477,12 @@ export default function AppearancePanel({
             </Button>
           </div>
         </Card>
+        </details>
       </fieldset>
 
       <AppearancePreview botId={selectedBotId} config={draft} logoFile={logoFile} />
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-border bg-card/95 p-3 shadow-sm backdrop-blur-sm lg:left-64">
-        <span
-          className={`flex items-center gap-2 text-sm ${dirty ? "text-foreground" : "text-muted-foreground"}`}
-        >
-          {dirty && <span className="size-2 rounded-full bg-warning" />}
-          {dirty ? "Unsaved changes" : "All changes saved"}
-        </span>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!dirty || savingAppearance}
-            onClick={resetAppearance}
-          >
-            Discard
-          </Button>
-          <Button
-            type="button"
-            disabled={!dirty || savingAppearance || !HEX_COLOR.test(draft.theme.primaryColor || "")}
-            onClick={saveAppearance}
-          >
-            {savingAppearance ? "Saving…" : "Save changes"}
-          </Button>
-        </div>
-      </div>
+      <BotSaveBar dirty={dirty} saving={savingAppearance} onDiscard={resetAppearance}
+        onSave={saveAppearance} invalid={!HEX_COLOR.test(draft.theme.primaryColor || "")} />
     </div>
   );
 }

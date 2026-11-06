@@ -10,7 +10,7 @@ import { useDashboard } from "../dashboard-context";
 const EMPTY = [];
 const EMPTY_STATS = { sources: 0, ready: 0, needs_attention: 0 };
 
-function BotKnowledge({ botId }) {
+function BotKnowledge({ botId, embedded }) {
   const client = useQueryClient();
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ page: 1, per_page: 10, search: "", status: "all" });
@@ -78,6 +78,7 @@ function BotKnowledge({ botId }) {
 
   return (
     <KnowledgeBasePanel
+      embedded={embedded}
       documents={query.data?.data ?? EMPTY}
       stats={query.data?.stats ?? EMPTY_STATS}
       pagination={query.data}
@@ -97,7 +98,7 @@ function BotKnowledge({ botId }) {
   );
 }
 
-export default function KnowledgePage() {
+export default function KnowledgePage({ embedded = false }) {
   const { selectedBotId } = useDashboard();
-  return <BotKnowledge key={selectedBotId} botId={selectedBotId} />;
+  return <BotKnowledge embedded={embedded} key={selectedBotId} botId={selectedBotId} />;
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { listDocuments } from "@/lib/api/bots.api";
+import { listLeads } from "@/lib/api/leads.api";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -12,7 +15,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { Button, Card, Skeleton } from "@/components/ui";
+import { Badge, Button, Card, Skeleton } from "@/components/ui";
 
 const number = new Intl.NumberFormat("en-US");
 
@@ -77,9 +80,9 @@ export function UsageCard({ billing, billingLoading, billingError, usagePercent 
     <Card className="min-w-0 space-y-6" aria-busy={billingLoading}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold">Usage this cycle</h2>
+          <h2 className="text-base font-semibold">Conversation usage</h2>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            {plan?.name ? `${plan.name} plan · Across all bots` : "Across all bots"}
+            {plan?.name ? `${plan.name} plan · This cycle · Across all bots` : "This cycle · Across all bots"}
           </p>
         </div>
         {start && <span className="text-xs text-muted-foreground">Cycle started {start}</span>}
@@ -146,18 +149,12 @@ export function UsageCard({ billing, billingLoading, billingError, usagePercent 
                 role="status"
                 className={`text-[13px] font-medium ${reached ? "text-destructive" : "text-warning-foreground"}`}
               >
-                {reached ? "Conversation limit reached." : "Approaching your conversation limit."}
+                {reached ? "Limit reached" : "You're close to your limit"}
               </p>
             )}
-            <Button
-              asChild
-              variant={high ? "primary" : "ghost"}
-              className={`min-h-10 ${!high ? "-ml-3 text-primary" : ""}`}
-            >
-              <Link href="/dashboard/billing">
-                {high ? "Upgrade" : "Manage plan"}
-                <ChevronRight className="size-4" aria-hidden="true" />
-              </Link>
+            {reached && <Button asChild><Link href="/dashboard/billing">Upgrade plan</Link></Button>}
+            <Button asChild variant="ghost" className="min-h-10 text-primary">
+              <Link href="/dashboard/billing">Manage plan <ChevronRight className="size-4" aria-hidden="true" /></Link>
             </Button>
           </div>
         </>
@@ -166,35 +163,38 @@ export function UsageCard({ billing, billingLoading, billingError, usagePercent 
   );
 }
 
-export function GetStartedChecklist({ botCount, botId }) {
-  const botPage = botId
-    ? `/dashboard/bots/${encodeURIComponent(botId)}`
+const sourceFilters = { page: 1, per_page: 10, search: "", status: "all" };
+
+export function GetStartedChecklist({ botId }) {
+  const sources = useQuery({
+    queryKey: ["documents", botId, sourceFilters],
+    queryFn: ({ signal }) => listDocuments(botId, sourceFilters, signal),
+    enabled: Boolean(botId),
+    staleTime: 30_000,
+    retry: false,
+  });
+  const botTab = (tab) => botId
+    ? `/dashboard/bots/${encodeURIComponent(botId)}?tab=${tab}`
     : "/dashboard/bots?create=1";
   const steps = [
-    {
-      label: "Create your bot",
-      href: "/dashboard/bots?create=1",
-      done: botCount > 0,
-      icon: Sparkles,
-    },
-    { label: "Add knowledge", href: "/dashboard/knowledge", icon: BookOpen },
-    {
-      label: "Test your bot",
-      href: botId ? `${botPage}?tab=appearance` : botPage,
-      icon: MessageSquare,
-    },
-    {
-      label: "Install the widget on your website",
-      href: botId ? `${botPage}?tab=install` : botPage,
-      icon: Code2,
-    },
+    { label: "Add your content", href: "/dashboard/knowledge", done: sources.data?.stats?.sources > 0, icon: BookOpen },
+    { label: "Customize your bot", href: botTab("settings"), icon: Sparkles },
+    { label: "Add the snippet to your website", href: botTab("install"), icon: Code2 },
+    { label: "Send a test message", href: botTab("appearance"), icon: MessageSquare },
   ];
+  const tracked = steps.filter((step) => typeof step.done === "boolean");
+  const completed = tracked.filter((step) => step.done).length;
+  if (botId && sources.isPending) {
+    return <Skeleton className="h-80 rounded-xl" role="status" aria-label="Loading setup progress" />;
+  }
+  if (completed === tracked.length && completed > 0) return <LatestLeads botId={botId} />;
   return (
-    <Card className="min-w-0">
+    <Card className="min-h-80 min-w-0">
       <h2 className="text-base font-semibold">Get started</h2>
       <p className="mt-1 text-[13px] text-muted-foreground">
-        Set up your bot and share it with visitors.
+        {sources.isError ? "Setup progress is unavailable." : `${completed} of 4 done`}
       </p>
+      {!sources.isError && <progress aria-label="Setup progress" value={completed} max={4} className="mt-2 block h-1.5 w-full overflow-hidden rounded-full appearance-none [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-primary [&::-moz-progress-bar]:bg-primary" />}
       <ul className="mt-5 divide-y">
         {steps.map(({ label, href, done, icon: Icon }) => (
           <li key={label}>
@@ -225,34 +225,42 @@ export function GetStartedChecklist({ botCount, botId }) {
   );
 }
 
-export function WorkspaceLinks() {
-  const items = [
-    { label: "Conversations", href: "/dashboard/conversations", icon: MessageSquare },
-    { label: "Leads", href: "/dashboard/leads", icon: Users },
-    { label: "Knowledge base", href: "/dashboard/knowledge", icon: BookOpen },
-  ];
+function LatestLeads({ botId }) {
+  const leads = useQuery({
+    queryKey: ["leads", botId, 1, "", "all"],
+    queryFn: ({ signal }) => listLeads(botId, { page: 1, search: "", status: "all" }, signal),
+    staleTime: 15_000,
+    retry: false,
+  });
+  const items = leads.data?.items.slice(0, 5) ?? [];
   return (
-    <Card className="min-w-0">
-      <h2 className="text-base font-semibold">Your workspace</h2>
-      <p className="mt-1 text-[13px] text-muted-foreground">Pick up where you left off.</p>
-      <div className="mt-5 grid gap-3">
-        {items.map(({ label, href, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className="group flex min-h-14 items-center gap-3 rounded-lg border px-4 text-sm font-medium outline-none transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
-          >
-            <Icon className="size-4 text-primary" aria-hidden="true" />
-            <span className="flex-1">{label}</span>
-            <ArrowRight
-              className="size-4 text-muted-foreground group-hover:text-primary"
-              aria-hidden="true"
-            />
-          </Link>
-        ))}
-      </div>
+    <Card className="min-h-80 min-w-0">
+      <h2 className="text-base font-semibold">Latest leads</h2>
+      <p className="mt-1 text-[13px] text-muted-foreground">For your selected bot</p>
+      {leads.isPending ? <Skeleton className="my-4 h-44" aria-label="Loading leads" /> : leads.isError ? (
+        <p role="alert" className="my-4 text-sm text-destructive">Latest leads could not be loaded.</p>
+      ) : items.length ? (
+        <ul className="my-3 divide-y">
+          {items.map((lead) => (
+            <li key={lead.id} className="flex min-h-10 items-center gap-2 text-sm">
+              <span className="min-w-0 flex-1 truncate">{lead.name}</span>
+              <Badge tone={lead.status === "done" ? "success" : lead.status === "confirmed" ? "info" : "warning"} className="capitalize">{lead.status}</Badge>
+              <time dateTime={lead.createdAt} className="text-xs text-muted-foreground">{leadAge(lead.createdAt)}</time>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="my-5 text-sm text-muted-foreground">Your first lead will appear here when a visitor shares their details.</p>}
+      <Link href="/dashboard/leads" className="text-sm font-medium text-primary hover:underline">View all leads</Link>
     </Card>
   );
+}
+
+function leadAge(date) {
+  const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(date)) / 60000));
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
+  return `${Math.floor(minutes / 1440)}d ago`;
 }
 
 export function OverviewSkeleton() {
@@ -268,8 +276,8 @@ export function OverviewSkeleton() {
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Skeleton className="h-72 rounded-xl motion-reduce:animate-none" />
-        <Skeleton className="h-72 rounded-xl motion-reduce:animate-none" />
+        <Skeleton className="h-80 rounded-xl motion-reduce:animate-none" />
+        <Skeleton className="h-80 rounded-xl motion-reduce:animate-none" />
       </div>
     </div>
   );
@@ -281,8 +289,8 @@ export const overviewMetrics = [
     key: "total_conversations",
     icon: MessageSquare,
     href: "/dashboard/conversations",
-    zero: "No conversations yet",
-    helper: "Across all bots",
+    zero: "All time · Across all bots",
+    helper: "All time · Across all bots",
   },
   {
     label: "Bots",
