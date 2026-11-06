@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Mail,
   Loader2,
   MoreHorizontal,
+  Phone,
   Search,
 } from "lucide-react";
-import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
+import { Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
 import {
   Table,
   TableBody,
@@ -21,12 +23,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,50 +41,81 @@ import {
 } from "@/components/ui/sheet";
 
 const statuses = ["all", "new", "confirmed", "done"];
-const tone = (status) =>
-  status === "done" ? "success" : status === "confirmed" ? "info" : "warning";
 const relativeTime = (value, now) => {
   const days = Math.max(0, Math.floor((now - new Date(value).getTime()) / 86400000));
   return days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`;
 };
+const fullDate = (value) => value ? new Date(value).toLocaleString() : "";
+const shortDate = (value) => value ? new Date(value).toLocaleString(undefined, {
+  month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
+}) : "";
+const preferredDate = (value) => {
+  if (!value) return { label: "Preferred date", value: "—" };
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  const date = new Date(dateOnly ? `${value}T00:00:00` : value);
+  if (Number.isNaN(date.getTime())) return { label: "Preferred time", value };
+  return {
+    label: dateOnly ? "Preferred date" : "Preferred time",
+    value: date.toLocaleString(undefined, {
+      month: "short", day: "numeric", year: "numeric",
+      ...(!dateOnly ? { hour: "numeric", minute: "2-digit" } : {}),
+    }),
+  };
+};
+const sourceLabel = (value) => value === "widget" ? "Chat widget" : value
+  ? value.charAt(0).toUpperCase() + value.slice(1) : "—";
 const escapeCsv = (value) =>
   `"${String(value ?? "")
-    .replace(/^[=+@-]/, "'$&")
+    .replace(/^(\s*[=+@-])/, "'$1")
     .replaceAll('"', '""')}"`;
+
+function Contact({ lead }) {
+  if (!lead.email && !lead.phone) {
+    return <span className="text-sm text-muted-foreground">No contact info</span>;
+  }
+  return <div className="space-y-1 text-sm">
+    {lead.email && <a href={`mailto:${lead.email}`}
+      className="flex items-center gap-1.5 break-all hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <Mail className="size-3.5 shrink-0" aria-hidden="true" />{lead.email}
+    </a>}
+    {lead.phone && <a href={`tel:${lead.phone}`}
+      className="flex items-center gap-1.5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <Phone className="size-3.5 shrink-0" aria-hidden="true" />{lead.phone}
+    </a>}
+  </div>;
+}
+
+function LeadName({ lead }) {
+  return <span className={lead.status === "new" ? "inline-flex items-center gap-2 font-semibold" : "font-medium"}>
+    {lead.status === "new" && <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />}
+    {lead.name}
+  </span>;
+}
 
 function StatusSelect({ lead, onChange, saving }) {
   return (
-    <div
-      onClick={(event) => event.stopPropagation()}
-      onKeyDown={(event) => event.stopPropagation()}
-    >
-      <Select
+    <div data-no-row-click>
+      <NativeSelect
         value={lead.status}
-        onValueChange={(value) => onChange(lead.id, value)}
+        onChange={(event) => onChange(lead.id, event.target.value)}
         disabled={saving}
+        aria-label={`Status for ${lead.name}`}
+        size="sm"
+        className="w-32 cursor-pointer capitalize bg-card font-medium"
       >
-        <SelectTrigger
-          aria-label={`Status for ${lead.name}`}
-          className="h-8 w-32 border-0 bg-transparent px-1 shadow-none"
-        >
-          <Badge tone={tone(lead.status)} className="capitalize">
-            {lead.status}
-          </Badge>
-        </SelectTrigger>
-        <SelectContent>
-          {statuses.slice(1).map((status) => (
-            <SelectItem key={status} value={status} className="capitalize">
-              {status}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {statuses.slice(1).map((status) => (
+          <NativeSelectOption key={status} value={status}>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
     </div>
   );
 }
 
 export default function LeadsPanel({
   leadCaptureEnabled = true,
+  installHref,
   leads,
   counts,
   pagination,
@@ -112,6 +142,14 @@ export default function LeadsPanel({
   const [now] = useState(() => Date.now());
   const [savingId, setSavingId] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const returnFocusRef = useRef(null);
+  const openLead = (id, event) => {
+    returnFocusRef.current = event.currentTarget;
+    onSelect(id);
+  };
+  const selectedSummary = leads.find((lead) => lead.id === selectedId);
+  const selectedCreatedAt = selectedSummary?.createdAt;
+  const appointment = preferredDate(selected?.preferredTime);
   const pages = pagination?.pages ?? 1;
   const setLeadStatus = async (id, value) => {
     setSavingId(id);
@@ -173,9 +211,8 @@ export default function LeadsPanel({
     return (
       <EmptyState
         title="No leads yet"
-        body={leadCaptureEnabled
-          ? "Contact details captured by your bot will appear here."
-          : "This bot has no previously captured leads. You can continue reviewing its conversations."}
+        body="Leads captured by your bot will appear here."
+        action={<Button asChild><Link href={installHref}>Open Install</Link></Button>}
       />
     );
 
@@ -249,19 +286,21 @@ export default function LeadsPanel({
                   tabIndex={0}
                   aria-label={`View lead ${lead.name}`}
                   className="cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => onSelect(lead.id)}
+                  onClick={(event) => {
+                    if (event.target.closest('a, button, select, [role="combobox"], [role="menu"], [role="menuitem"], [role="option"], [data-no-row-click]')) return;
+                    openLead(lead.id, event);
+                  }}
                   onKeyDown={(event) => {
                     if (event.target !== event.currentTarget) return;
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      onSelect(lead.id);
+                      openLead(lead.id, event);
                     }
                   }}
                 >
-                  <TableCell className="font-medium">{lead.name}</TableCell>
+                  <TableCell><LeadName lead={lead} /></TableCell>
                   <TableCell>
-                    <span className="block">{lead.email || "—"}</span>
-                    <span className="text-xs text-muted-foreground">{lead.phone || "—"}</span>
+                    <Contact lead={lead} />
                   </TableCell>
                   <TableCell>{lead.interest || "General inquiry"}</TableCell>
                   <TableCell>
@@ -272,14 +311,16 @@ export default function LeadsPanel({
                     />
                   </TableCell>
                   <TableCell>
-                    <span title={new Date(lead.createdAt).toLocaleString()}>
+                    <span title={fullDate(lead.createdAt)}>
                       {relativeTime(lead.createdAt, now)}
                     </span>
                   </TableCell>
-                  <TableCell onClick={(event) => event.stopPropagation()}>
+                  <TableCell data-no-row-click>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost" aria-label={`Actions for ${lead.name}`}>
+                        <Button size="icon" variant="ghost" aria-label={`Actions for ${lead.name}`}
+                          onClick={(event) => { returnFocusRef.current = event.currentTarget.closest("tr"); }}
+                          onFocus={(event) => { returnFocusRef.current = event.currentTarget.closest("tr"); }}>
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -300,29 +341,28 @@ export default function LeadsPanel({
             <Card key={lead.id} className="space-y-2 p-4">
               <button
                 type="button"
-                onClick={() => onSelect(lead.id)}
+                onClick={(event) => openLead(lead.id, event)}
                 className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="block font-semibold text-foreground">{lead.name}</span>
-                <span className="block break-all text-sm text-muted-foreground">
-                  {lead.email || lead.phone || "No contact"}
-                </span>
+                <LeadName lead={lead} />
                 <span className="block text-sm text-foreground">
                   {lead.interest || "General inquiry"}
                 </span>
                 <span
                   className="block text-xs text-muted-foreground"
-                  title={new Date(lead.createdAt).toLocaleString()}
+                  title={fullDate(lead.createdAt)}
                 >
                   {relativeTime(lead.createdAt, now)}
                 </span>
               </button>
+              <Contact lead={lead} />
               <StatusSelect lead={lead} onChange={setLeadStatus} saving={savingId === lead.id} />
             </Card>
           ))}
         </div>
         {!leads.length && (
-          <EmptyState title="No leads found" body="Try another search or status." />
+          <EmptyState title="No leads match" body="Try another search or status."
+            action={<Button variant="link" onClick={() => { onQueryChange(""); onFilterChange("all"); }}>Clear filters</Button>} />
         )}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm text-muted-foreground">
           <span>
@@ -359,10 +399,18 @@ export default function LeadsPanel({
           if (!open) onClose();
         }}
       >
-        <SheetContent className="w-full overflow-y-auto p-6 sm:max-w-md">
+        <SheetContent className="w-full overflow-y-auto p-6 sm:max-w-md"
+          onCloseAutoFocus={(event) => {
+            if (returnFocusRef.current?.isConnected) {
+              event.preventDefault();
+              returnFocusRef.current.focus();
+            }
+          }}>
           <SheetHeader className="p-0 pr-8">
             <SheetTitle>{selected?.name || "Lead details"}</SheetTitle>
-            <SheetDescription>Contact and appointment request</SheetDescription>
+            <SheetDescription title={fullDate(selectedCreatedAt)}>
+              {selectedCreatedAt ? `Created ${shortDate(selectedCreatedAt)}` : "Contact and appointment request"}
+            </SheetDescription>
           </SheetHeader>
           {detailLoading && <Skeleton className="h-72 w-full rounded-xl" />}
           {detailError && (
@@ -373,12 +421,20 @@ export default function LeadsPanel({
           )}
           {selected && !detailError && (
             <div className="space-y-5 text-sm">
+              <div className="flex flex-wrap gap-2">
+                {selected.phone && <Button asChild size="sm" variant="secondary"><a href={`tel:${selected.phone}`}><Phone className="size-4" />Call</a></Button>}
+                {selected.email && <Button asChild size="sm" variant="secondary"><a href={`mailto:${selected.email}`}><Mail className="size-4" />Email</a></Button>}
+                {selected.phone && <Button size="sm" variant="secondary" onClick={async () => {
+                  try { await navigator.clipboard.writeText(selected.phone); toast.success("Phone copied."); }
+                  catch { toast.error("Could not copy phone."); }
+                }}>Copy phone</Button>}
+              </div>
               {[
                 ["Email", selected.email || "—"],
                 ["Phone", selected.phone || "—"],
                 ["Interest", selected.interest || "General inquiry"],
-                ["Source", selected.source || "Website widget"],
-                ["Preferred time", selected.preferredTime || "—"],
+                ["Source", sourceLabel(selected.source)],
+                [appointment.label, appointment.value],
                 ["Notes", selected.notes || "No notes yet."],
               ].map(([label, value]) => (
                 <div key={label}>
@@ -395,7 +451,7 @@ export default function LeadsPanel({
                 />
               </div>
               {selected.conversationId && (
-                <Button asChild variant="secondary">
+                <Button asChild>
                   <Link
                     href={`/dashboard/conversations?conversation=${encodeURIComponent(selected.conversationId)}`}
                   >

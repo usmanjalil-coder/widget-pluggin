@@ -121,6 +121,7 @@ function BotLeads({ botId }) {
       )}
       <LeadsPanel
         leadCaptureEnabled={botQuery.data?.features?.leadCapture !== false}
+        installHref={`/dashboard/bots/${encodeURIComponent(botId)}?tab=install`}
         leads={listQuery.data?.items ?? EMPTY}
         counts={listQuery.data?.counts}
         pagination={listQuery.data}

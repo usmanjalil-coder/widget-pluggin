@@ -26,9 +26,9 @@ const FIELDS = [
   ["Preferred time", "Tue 6:00 PM", 6900],
 ];
 const LEADS = [
-  ["Alex R.", "Contacted", "18m ago"],
+  ["Alex R.", "Confirmed", "18m ago"],
   ["Jamie K.", "New", "1h ago"],
-  ["Taylor B.", "Contacted", "2h ago"],
+  ["Taylor B.", "Confirmed", "2h ago"],
 ];
 
 export default function HeroDemo() {

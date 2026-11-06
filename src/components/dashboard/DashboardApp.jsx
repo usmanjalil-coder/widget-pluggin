@@ -186,7 +186,7 @@ export default function DashboardApp({ children }) {
           </aside>
 
           <main
-            className={`min-w-0 flex-1 ${page === "Conversations" ? "lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden" : ""}`}
+            className={`min-w-0 flex-1 ${page === "Conversations" ? "md:flex md:h-dvh md:flex-col md:overflow-hidden" : ""}`}
           >
             <header
               className={`${page === "Appearance" ? "relative" : "sticky top-0"} z-20 shrink-0 border-b border-border bg-card/90 backdrop-blur-sm`}
@@ -233,7 +233,7 @@ export default function DashboardApp({ children }) {
             </Sheet>
 
             <div
-              className={`mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 ${page === "Conversations" ? "lg:min-h-0 lg:flex-1" : ""}`}
+              className={`mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 ${page === "Conversations" ? "md:min-h-0 md:flex-1 md:py-5 md:pb-4" : ""}`}
             >
               {children}
             </div>

@@ -39,7 +39,7 @@ function BotConversations({ botId, linkedConversationId }) {
     retry: false,
   });
   const conversations = listQuery.data?.items ?? EMPTY;
-  const activeId = selectedId || conversations[0]?.id;
+  const activeId = selectedId;
   const detailQuery = useQuery({
     queryKey: ["conversation", botId, activeId],
     queryFn: ({ signal }) => getConversation(botId, activeId, signal),
@@ -68,6 +68,11 @@ function BotConversations({ botId, linkedConversationId }) {
 
   const selectConversation = (id) => {
     setSelectedId(id);
+    if (linkedConversationId) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("conversation", id);
+      window.history.replaceState(window.history.state, "", url);
+    }
   };
   const changeFilter = (setter) => (value) => {
     setter(value);
@@ -78,10 +83,18 @@ function BotConversations({ botId, linkedConversationId }) {
     setPage(value);
     setSelectedId(null);
   };
+  const clearFilters = () => {
+    setQuery("");
+    setSearch("");
+    setStatus("all");
+    setRange("all");
+    setPage(1);
+    setSelectedId(null);
+  };
 
   return (
-    <div className="lg:flex lg:h-full lg:min-h-0 lg:flex-col">
-      <div className="mb-6 shrink-0">
+    <div className="md:flex md:h-full md:min-h-0 md:flex-col">
+      <div className="mb-4 shrink-0">
         <PageHeader title="Conversations" description="Review chats and follow up with visitors." />
       </div>
       <ConversationsPanel
@@ -105,6 +118,7 @@ function BotConversations({ botId, linkedConversationId }) {
         onStatusChange={changeFilter(setStatus)}
         range={range}
         onRangeChange={changeFilter(setRange)}
+        onClearFilters={clearFilters}
         page={page}
         nextPage={listQuery.data?.nextPage}
         onPageChange={changePage}

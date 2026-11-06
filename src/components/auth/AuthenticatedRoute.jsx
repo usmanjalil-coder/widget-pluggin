@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/api/auth.api";
 import { clearQueryCache } from "@/lib/query-client";
+import FullPageLoader from "@/components/shared/FullPageLoader";
 
 export default function AuthenticatedRoute({ children }) {
   const [ready, setReady] = useState(false);
@@ -30,15 +31,5 @@ export default function AuthenticatedRoute({ children }) {
     };
   }, []);
 
-  if (!ready) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading your account…
-        </p>
-      </main>
-    );
-  }
-
-  return children;
+  return <FullPageLoader ready={ready}>{children}</FullPageLoader>;
 }

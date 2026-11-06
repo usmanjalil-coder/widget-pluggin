@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
+import FullPageLoader from "@/components/shared/FullPageLoader";
 import { establishAuthSession, getCurrentUser, login } from "@/lib/api/auth.api";
 
 function destinationForPlan(plan) {
@@ -69,17 +70,8 @@ export default function LoginPage() {
     }
   };
 
-  if (checkingSession) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <p role="status" className="text-sm text-muted-foreground">
-          Checking your session…
-        </p>
-      </main>
-    );
-  }
-
   return (
+    <FullPageLoader ready={!checkingSession}>
     <main className="min-h-screen bg-muted">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr]">
         <AuthShowcase
@@ -165,5 +157,6 @@ export default function LoginPage() {
       </div>
       <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
     </main>
+    </FullPageLoader>
   );
 }
