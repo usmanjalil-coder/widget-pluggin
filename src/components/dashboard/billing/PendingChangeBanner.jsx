@@ -18,10 +18,10 @@ export default function PendingChangeBanner({
 
   return (
     <div
-      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/25 bg-warning-bg p-4"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4"
       role="status"
     >
-      <p className="flex min-w-0 items-start gap-2 text-sm text-warning-foreground">
+      <p className="flex min-w-0 items-start gap-2 text-sm text-foreground">
         <CalendarClock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>
           Switching to <strong>{targetName}</strong>

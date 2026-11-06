@@ -20,11 +20,11 @@ function BotSwitcher({ bots = [], selectedId, onSelect, onCreate, onViewAll, tri
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("max-w-[230px] justify-between gap-2", triggerClassName)}
+          className={cn("h-11 w-full min-w-0 justify-start gap-2 px-3", triggerClassName)}
           aria-label={`Current bot: ${selected?.name || "none"}${selected?.status ? `, ${selected.status}` : ""}. Switch bot`}
         >
-          <BotAvatar bot={selected} className="size-8" />
-          <span className="min-w-0 truncate text-sm">{selected?.name || "Select bot"}</span>
+          <BotAvatar bot={selected} className="size-8 shrink-0" />
+          <span className="min-w-0 flex-1 truncate text-left text-sm">{selected?.name || "Select bot"}</span>
           <span
             title={selected?.status || "Status unavailable"}
             aria-hidden="true"
@@ -33,7 +33,7 @@ function BotSwitcher({ bots = [], selectedId, onSelect, onCreate, onViewAll, tri
           <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-1">
+      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] p-1">
         {bots.length > 6 && (
           <div className="relative p-2">
             <Search className="absolute top-4 left-4 size-4 text-muted-foreground" />
@@ -46,19 +46,19 @@ function BotSwitcher({ bots = [], selectedId, onSelect, onCreate, onViewAll, tri
             />
           </div>
         )}
-        <div role="listbox" aria-label="Bots" className="max-h-64 overflow-y-auto p-1">
+        <div role="listbox" aria-label="Bots" className="max-h-64 overflow-x-hidden overflow-y-auto p-1">
           {visible.map((bot) => (
             <button
               key={bot.public_id ?? bot.id}
               type="button"
               role="option"
               aria-selected={String(bot.public_id ?? bot.id) === String(selectedId)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
+              className="flex w-full min-w-0 items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
               onClick={() => {
                 if (onSelect(bot.public_id ?? bot.id) !== false) setOpen(false);
               }}
             >
-              <BotAvatar bot={bot} className="size-8" />
+              <BotAvatar bot={bot} className="size-8 shrink-0" />
               <span className="min-w-0 flex-1 truncate">{bot.name}</span>
               <span
                 title={bot.status || "Status unavailable"}
@@ -66,7 +66,7 @@ function BotSwitcher({ bots = [], selectedId, onSelect, onCreate, onViewAll, tri
                 className={`size-1.5 shrink-0 rounded-full ${bot.status === "active" ? "bg-success" : "bg-muted-foreground"}`}
               />
               <span className="sr-only">{bot.status || "Status unavailable"}</span>
-              {String(bot.public_id ?? bot.id) === String(selectedId) && <Check className="size-4 text-primary" />}
+              {String(bot.public_id ?? bot.id) === String(selectedId) && <Check className="size-4 shrink-0 text-primary" />}
             </button>
           ))}
           {!visible.length && <p className="p-3 text-sm text-muted-foreground">No bots found.</p>}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Check, ExternalLink, FileText } from "lucide-react";
+import { AlertTriangle, ExternalLink, FileText } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge, Button, Card, EmptyState, Skeleton } from "@/components/ui";
+import { Button, Card, EmptyState, Skeleton } from "@/components/ui";
 import {
   ConfirmCancellation,
   InvoiceRow,
@@ -167,10 +167,6 @@ function CurrentPlan({
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-3xl font-semibold tracking-tight">{plan.name}</h2>
-            <Badge tone="info">
-              <Check aria-hidden="true" />
-              Current plan
-            </Badge>
           </div>
           {planPrice && (
             <p className="pt-2 text-3xl font-semibold tracking-tight">
@@ -219,6 +215,19 @@ function CurrentPlan({
           </div>
         )}
       </div>
+      {plan.canManageSubscription && !plan.cancelAtPeriodEnd && plan.subscriptionStatus !== "canceled" && (
+        <div className="flex flex-wrap justify-end border-t pt-5">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={actionPending}
+            className="min-h-10 hover:border-destructive/30 hover:bg-destructive-bg hover:text-destructive focus-visible:border-destructive/30 focus-visible:text-destructive focus-visible:ring-destructive/20"
+          >
+            Cancel subscription
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -391,6 +400,9 @@ export default function BillingPage() {
   const pendingTargetPlan = currentPlan.pendingPlanChange
     ? availablePlans.find((plan) => plan.key === currentPlan.pendingPlanChange.planKey)
     : null;
+  const paidInvoices = invoicesQuery.data?.filter(
+    (invoice) => !invoice.status || ["paid", "completed"].includes(invoice.status),
+  ) ?? [];
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -412,7 +424,7 @@ export default function BillingPage() {
                 onClick={manageBillingAccount}
                 disabled={pendingAction === "portal"}
               >
-                {pendingAction === "portal" ? "Opening..." : "Manage billing account"}
+                {pendingAction === "portal" ? "Opening..." : "Open billing portal"}
                 <ExternalLink className="size-4" aria-hidden="true" />
               </Button>
             )}
@@ -462,10 +474,12 @@ export default function BillingPage() {
         }}
       />
 
-      <UsageByBot
-        items={usageByBot}
-        conversationTotal={numericFeature(currentPlan, "conversations")?.used}
-      />
+      {numericFeature(currentPlan, "bots")?.used >= 2 && (
+        <UsageByBot
+          items={usageByBot}
+          conversationTotal={numericFeature(currentPlan, "conversations")?.used}
+        />
+      )}
 
       <section aria-labelledby="plans-heading" className="space-y-4">
         <div>
@@ -522,10 +536,10 @@ export default function BillingPage() {
                 title="Invoices unavailable"
                 body="Please refresh the page to try again."
               />
-            ) : invoicesQuery.data?.length ? (
+            ) : paidInvoices.length ? (
               <div>
                 <ul id="billing-invoices" className="divide-y">
-                  {(showAllInvoices ? invoicesQuery.data : invoicesQuery.data.slice(0, 5)).map(
+                  {(showAllInvoices ? paidInvoices : paidInvoices.slice(0, 5)).map(
                     (invoice) => (
                       <InvoiceRow
                         key={invoice.id}
@@ -549,7 +563,7 @@ export default function BillingPage() {
                     ),
                   )}
                 </ul>
-                {invoicesQuery.data.length > 5 && (
+                {paidInvoices.length > 5 && (
                   <Button
                     type="button"
                     variant="ghost"
@@ -558,12 +572,12 @@ export default function BillingPage() {
                     aria-controls="billing-invoices"
                     onClick={() => setShowAllInvoices((value) => !value)}
                   >
-                    {showAllInvoices ? "Show less" : `Show all (${invoicesQuery.data.length})`}
+                    {showAllInvoices ? "Show less" : `Show all (${paidInvoices.length})`}
                   </Button>
                 )}
               </div>
             ) : (
-              <EmptyState title="No invoices yet" />
+              <EmptyState title="No invoices yet" body="Paid invoices will appear here." />
             )}
           </Card>
         </div>

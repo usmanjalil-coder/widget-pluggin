@@ -53,7 +53,7 @@ function BotName({ item }) {
 }
 
 export default function UsageByBot({ items, conversationTotal }) {
-  if (!Array.isArray(items)) return null;
+  if (!Array.isArray(items) || items.length < 2) return null;
 
   const total = Number.isFinite(conversationTotal)
     ? conversationTotal

@@ -30,7 +30,6 @@ export function billingDate(value) {
 export function SubscriptionBanner({
   plan,
   onResume,
-  onCancel,
   onPayment,
   actionPending,
   paymentPending,
@@ -92,16 +91,7 @@ export function SubscriptionBanner({
             <Button className="min-h-10" onClick={onResume} disabled={actionPending}>
               {actionPending ? "Updating…" : "Keep subscription"}
             </Button>
-          ) : (
-            <Button
-              className="min-h-10 w-auto border-destructive/30 bg-background px-4 text-destructive shadow-sm hover:border-destructive/50 hover:bg-destructive-bg hover:text-destructive focus-visible:ring-destructive/30"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={actionPending}
-            >
-              Cancel subscription
-            </Button>
-          )}
+          ) : null}
         </div>
       )}
     </div>
@@ -132,8 +122,7 @@ export function ConfirmCancellation({ confirmation, plan, onClose, onConfirm }) 
         <DialogHeader>
           <DialogTitle>{downgrade ? "Switch to Free?" : "Cancel subscription?"}</DialogTitle>
           <DialogDescription className="leading-relaxed">
-            Your {plan.name} plan stays available{" "}
-            {end ? `until ${end}` : "until the end of your current billing period"}. After that,
+            You keep access until {end || "the end of your current billing period"}. After that,
             your subscription ends and Free plan limits apply. You can keep your subscription before
             then.
           </DialogDescription>
@@ -190,42 +179,31 @@ export function InvoiceRow({ invoice, pending, onDownload }) {
   const date = billingDate(invoice.issuedAt);
   // The current API also uses `number` for Paddle transaction IDs.
   const invoiceNumber = invoice.number && !/^txn_/i.test(invoice.number) ? invoice.number : null;
-  const title = invoiceNumber || `Invoice${date ? ` · ${date}` : ""}`;
+  const title = invoiceNumber || `Invoice${date ? ` - ${date}` : ""}`;
   return (
-    <li className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_2.5rem] items-center gap-x-3 gap-y-2 py-4">
+    <li className="flex min-w-0 flex-wrap items-center gap-3 py-4">
       <div className="min-w-0">
         <p className="break-words text-sm font-medium">{title}</p>
         <p className="mt-1 text-xs text-muted-foreground">
           {invoiceNumber && date ? date : "Subscription billing"}
         </p>
       </div>
-      <div className="flex flex-col items-end gap-1.5">
+      <div className="ml-auto flex flex-col items-end gap-1.5">
         <p className="text-sm font-semibold tabular-nums">
           {new Intl.NumberFormat("en-US", { style: "currency", currency: invoice.currency }).format(
             invoice.amountCents / 100,
           )}
         </p>
-        <Badge
-          className="capitalize"
-          tone={
-            invoice.status === "paid"
-              ? "success"
-              : invoice.status === "open"
-                ? "warning"
-                : "default"
-          }
-        >
-          {invoice.status}
-        </Badge>
+        <Badge tone="success">Paid</Badge>
       </div>
-      <Button
+      {invoice.downloadUrl && <Button
         type="button"
         variant="ghost"
         size="icon-lg"
         aria-label="Download invoice PDF"
         aria-busy={pending}
         title={pending ? "Opening…" : "Download invoice PDF"}
-        disabled={pending || !invoice.downloadUrl}
+        disabled={pending}
         onClick={onDownload}
       >
         {pending ? (
@@ -236,7 +214,7 @@ export function InvoiceRow({ invoice, pending, onDownload }) {
         ) : (
           <Download className="size-4" aria-hidden="true" />
         )}
-      </Button>
+      </Button>}
     </li>
   );
 }

@@ -2,16 +2,12 @@
 
 import { dashboardFeatures, dashboardPrice, featureDisplay } from "@/lib/plan-display";
 import { memo } from "react";
+import Link from "next/link";
 import { MarketingPricingCards } from "./MarketingPricingCards";
 export { PricingComparison } from "./MarketingPricingCards";
 import { Check, Minus } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { billingDate } from "@/components/dashboard/billing/BillingDetails";
 function DashboardFeatureRow({ feature }) {
   const { text, enabled } = featureDisplay(feature);
   return (
@@ -26,29 +22,6 @@ function DashboardFeatureRow({ feature }) {
   );
 }
 
-function AdditionalFeatures({ features, dashboard = false }) {
-  return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value="more">
-        <AccordionTrigger
-          className={
-            dashboard
-              ? "min-h-10 rounded-lg px-2 py-2 text-primary hover:bg-primary/5 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring"
-              : "py-2 text-primary hover:no-underline"
-          }
-        >
-          View more ({features.length})
-        </AccordionTrigger>
-        <AccordionContent className="space-y-3 pt-2">
-          {features.map((feature) => (
-            <DashboardFeatureRow key={feature.key} feature={feature} />
-          ))}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
-}
-
 function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPrice }) {
   const isCurrent = plan.key === currentPlan.key;
   const isDowngrade = plan.priceCents < currentPlan.priceCents;
@@ -60,14 +33,18 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
   const cancellationBlocksDowngrade = currentPlan.cancelAtPeriodEnd && isPaidDowngrade;
   const features = dashboardFeatures(plan);
   const featured = features.slice(0, 6);
-  const extra = features.slice(6);
+  const effectiveDate = billingDate(
+    currentPlan.pendingPlanChange?.effectiveAt || currentPlan.currentPeriodEnd,
+  );
   const price = dashboardPrice(plan);
   const action = isCurrent
     ? "Current plan"
     : plan.priceCents > currentPlan.priceCents
       ? "Upgrade"
-      : isDowngrade
-        ? "Downgrade"
+      : plan.key === "free"
+        ? "Switch to Free"
+        : isDowngrade
+          ? "Downgrade"
         : "Change plan";
   const cardClassName =
     "flex min-w-0 flex-col rounded-xl border p-6 shadow-sm " +
@@ -87,7 +64,6 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
             Current plan
           </Badge>
         )}
-        {scheduled && !isCurrent && <Badge tone="warning">Scheduled</Badge>}
       </div>
       {plan.description && (
         <p className="mt-3 min-h-10 text-[13px] leading-relaxed text-muted-foreground">
@@ -106,7 +82,6 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
         {featured.map((feature) => (
           <DashboardFeatureRow key={feature.key} feature={feature} />
         ))}
-        {extra.length > 0 && <AdditionalFeatures features={extra} dashboard />}
       </div>
       {isCurrent ? (
         <p className="mt-7 flex min-h-10 items-center justify-center gap-2 text-sm font-medium text-primary">
@@ -114,8 +89,8 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
           Your current plan
         </p>
       ) : scheduled ? (
-        <p className="mt-7 flex min-h-10 items-center justify-center text-sm font-medium text-warning-foreground">
-          Change scheduled
+        <p className="mt-7 flex min-h-10 items-center justify-center text-sm text-muted-foreground">
+          Scheduled for {effectiveDate || "period end"}
         </p>
       ) : paymentBlocked ? (
         <div className="mt-7 space-y-2 text-center">
@@ -137,18 +112,21 @@ function DashboardPlanCard({ plan, currentPlan, onSelectPlan, pending, highestPr
           Keep your subscription to change plans.
         </p>
       ) : (
-        <Button
-          type="button"
-          variant={action === "Upgrade" ? "primary" : "secondary"}
-          title={
-            !plan.canCheckout ? "Online checkout isn’t configured for this plan yet." : undefined
-          }
-          disabled={pending || !plan.canCheckout}
-          onClick={() => onSelectPlan?.(plan)}
-          className="mt-7 min-h-10 w-full"
-        >
-          {pending ? "Updating…" : plan.canCheckout ? action : "Not configured"}
-        </Button>
+        <div className="mt-7 space-y-2 text-center">
+          <Button
+            type="button"
+            variant={action === "Upgrade" ? "primary" : "secondary"}
+            title={!plan.canCheckout ? "Online checkout isn’t configured for this plan yet." : undefined}
+            disabled={pending || !plan.canCheckout}
+            onClick={() => onSelectPlan?.(plan)}
+            className="min-h-10 w-full"
+          >
+            {pending ? "Updating…" : plan.canCheckout ? action : "Not configured"}
+          </Button>
+          {plan.key === "free" && effectiveDate && (
+            <p className="text-xs text-muted-foreground">Takes effect {effectiveDate}</p>
+          )}
+        </div>
       )}
     </article>
   );
@@ -162,17 +140,22 @@ export const PricingCards = memo(function PricingCards({
 }) {
   if (mode === "dashboard") {
     return (
-      <div className="grid gap-4 lg:grid-cols-3">
-        {plans.map((plan) => (
-          <DashboardPlanCard
-            key={plan.key}
-            plan={plan}
-            highestPrice={plan.priceCents === Math.max(...plans.map((item) => item.priceCents))}
-            currentPlan={currentPlan}
-            onSelectPlan={onSelectPlan}
-            pending={pendingPlanKey === plan.key}
-          />
-        ))}
+      <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <DashboardPlanCard
+              key={plan.key}
+              plan={plan}
+              highestPrice={plan.priceCents === Math.max(...plans.map((item) => item.priceCents))}
+              currentPlan={currentPlan}
+              onSelectPlan={onSelectPlan}
+              pending={pendingPlanKey === plan.key}
+            />
+          ))}
+        </div>
+        <Link href="/pricing" className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          Compare all features
+        </Link>
       </div>
     );
   }
