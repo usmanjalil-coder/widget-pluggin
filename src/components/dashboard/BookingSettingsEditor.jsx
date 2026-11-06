@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Plus, Search, Trash2 } from "lucide-react";
 import { Button, Card, Input, Label, Switch } from "@/components/ui";
 import {
   Select,
@@ -12,6 +13,10 @@ import {
 
 const FIELD_TYPES = ["text", "phone", "email", "date"];
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const FALLBACK_TIMEZONES = ["UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Asia/Karachi", "Asia/Dubai", "Asia/Tokyo", "Australia/Sydney"];
+const TIMEZONES = typeof Intl.supportedValuesOf === "function"
+  ? ["UTC", ...Intl.supportedValuesOf("timeZone")]
+  : FALLBACK_TIMEZONES;
 const BOOKING_FIELDS = [
   { id: "name", label: "Full name", type: "text", required: true },
   { id: "email", label: "Email", type: "email", required: false },
@@ -21,8 +26,42 @@ const BOOKING_FIELDS = [
 ];
 
 export default function BookingSettingsEditor({ settings, updateDraftField }) {
+  const [timezoneSearch, setTimezoneSearch] = useState("");
+  const [timezoneOpen, setTimezoneOpen] = useState(false);
+  const [activeTimezoneIndex, setActiveTimezoneIndex] = useState(0);
+  const timezonePickerRef = useRef(null);
   const fields = settings.bookingFields ?? [];
   const hours = settings.workingHours ?? {};
+  const availableTimezones = settings.timezone && !TIMEZONES.includes(settings.timezone)
+    ? [settings.timezone, ...TIMEZONES]
+    : TIMEZONES;
+  const matchingTimezones = availableTimezones.filter((timezone) =>
+    timezone.toLowerCase().includes(timezoneSearch.trim().toLowerCase()),
+  );
+  useEffect(() => {
+    if (timezoneOpen) {
+      timezonePickerRef.current
+        ?.querySelector(`#timezone-option-${activeTimezoneIndex}`)
+        ?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeTimezoneIndex, timezoneOpen]);
+  useEffect(() => {
+    if (!timezoneOpen) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!timezonePickerRef.current?.contains(event.target)) {
+        setTimezoneOpen(false);
+        setTimezoneSearch("");
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, [timezoneOpen]);
+  const selectTimezone = (timezone) => {
+    updateDraftField("settings", "timezone", timezone);
+    setTimezoneOpen(false);
+    setTimezoneSearch("");
+    setActiveTimezoneIndex(0);
+  };
   const updateFields = (value) => updateDraftField("settings", "bookingFields", value);
   const updateField = (index, patch) => {
     updateFields(fields.map((field, i) => (i === index ? { ...field, ...patch } : field)));
@@ -114,6 +153,109 @@ export default function BookingSettingsEditor({ settings, updateDraftField }) {
       </Card>
       <Card title="Working hours" subtitle="Availability shown on the booking form">
         <div className="space-y-3">
+          {Object.hasOwn(settings, "timezone") && (
+            <div className="space-y-2">
+              <Label htmlFor="working-hours-timezone">Timezone</Label>
+              <div
+                ref={timezonePickerRef}
+                className="relative"
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setTimezoneOpen(false);
+                    setTimezoneSearch("");
+                  }
+                }}
+              >
+                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Input
+                  id="working-hours-timezone"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={timezoneOpen}
+                  aria-controls="working-hours-timezone-options"
+                  aria-activedescendant={timezoneOpen && matchingTimezones.length
+                    ? `timezone-option-${activeTimezoneIndex}` : undefined}
+                  autoComplete="off"
+                  placeholder="Select timezone"
+                  className="pl-9"
+                  value={timezoneOpen ? timezoneSearch : (settings.timezone ?? "")}
+                  onFocus={() => {
+                    setTimezoneOpen(true);
+                    setTimezoneSearch("");
+                    setActiveTimezoneIndex(0);
+                  }}
+                  onChange={(event) => {
+                    setTimezoneSearch(event.target.value);
+                    setActiveTimezoneIndex(0);
+                    setTimezoneOpen(true);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      setTimezoneOpen(false);
+                      setTimezoneSearch("");
+                    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                      event.preventDefault();
+                      setTimezoneOpen(true);
+                      setActiveTimezoneIndex((index) => Math.max(0, Math.min(
+                        matchingTimezones.length - 1,
+                        index + (event.key === "ArrowDown" ? 1 : -1),
+                      )));
+                    } else if (event.key === "Enter" && timezoneOpen && matchingTimezones.length) {
+                      event.preventDefault();
+                      selectTimezone(matchingTimezones[activeTimezoneIndex]);
+                    }
+                  }}
+                />
+                {timezoneOpen && (
+                  <div
+                    id="working-hours-timezone-options"
+                    role="listbox"
+                    aria-label="Timezones"
+                    className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md"
+                  >
+                    {settings.timezone && !timezoneSearch && (
+                      <button type="button" className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={() => selectTimezone(null)}
+                      >Clear timezone</button>
+                    )}
+                    {matchingTimezones.map((timezone, index) => (
+                      <button
+                        key={timezone}
+                        id={`timezone-option-${index}`}
+                        type="button"
+                        role="option"
+                        aria-selected={settings.timezone === timezone}
+                        className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${index === activeTimezoneIndex ? "bg-accent" : "hover:bg-accent"}`}
+                        onMouseEnter={() => setActiveTimezoneIndex(index)}
+                        onClick={() => selectTimezone(timezone)}
+                      >
+                        {timezone}
+                        {settings.timezone === timezone && <Check aria-hidden="true" className="size-4 text-primary" />}
+                      </button>
+                    ))}
+                    {!matchingTimezones.length && (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">No matching timezones.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              {!settings.timezone && (
+                <Button type="button" variant="link" size="sm" className="px-0"
+                  onClick={() => updateDraftField(
+                    "settings", "timezone", Intl.DateTimeFormat().resolvedOptions().timeZone,
+                  )}
+                >
+                  Use my browser timezone
+                </Button>
+              )}
+              <p className="text-xs text-muted-foreground">Working hours are shown in this timezone.</p>
+              {!settings.timezone && Object.values(hours).some((day) => !day.closed) && (
+                <p className="text-xs text-warning-foreground">
+                  Set a timezone so booking times are clear to visitors.
+                </p>
+              )}
+            </div>
+          )}
           {hours.monday && (
             <Button type="button" variant="secondary" size="sm"
               disabled={hours.monday.closed || !hours.monday.open || !hours.monday.close}
