@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ContactRound, Loader2, Search } from "lucide-react";
 import { Badge, Button, Card, EmptyState, Input, Skeleton } from "@/components/ui";
@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { renderChatMessage } from "@/lib/render-chat-message";
 
 const relativeTime = (value, now) => {
   const minutes = Math.max(0, Math.floor((now - new Date(value).getTime()) / 60000));
@@ -27,6 +28,19 @@ const statusLabel = {
 };
 const statusTone = (status) =>
   status === "needs_followup" ? "warning" : status === "resolved" ? "success" : "info";
+
+function AssistantMessage({ text }) {
+  const render = useCallback((node) => {
+    if (node) renderChatMessage(node, text);
+  }, [text]);
+
+  return (
+    <div
+      ref={render}
+      className="[&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_em]:italic [&_a]:font-medium [&_a]:underline [&_ul]:mt-[7px] [&_ul]:mb-[3px] [&_ul]:list-disc [&_ul]:pl-[18px]"
+    />
+  );
+}
 
 function Transcript({
   conversation,
@@ -85,13 +99,13 @@ function Transcript({
             className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed wrap-anywhere ${
                 message.role === "user"
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-foreground"
               }`}
             >
-              <p>{message.text}</p>
+              {message.role === "assistant" ? <AssistantMessage text={message.text} /> : <p>{message.text}</p>}
               <p
                 className={`mt-1 text-[11px] ${message.role === "user" ? "text-primary-foreground" : "text-muted-foreground"}`}
               >
@@ -157,9 +171,9 @@ export default function ConversationsPanel({
 
   if (loading) {
     return (
-      <div className="grid gap-4 lg:grid-cols-[380px_minmax(0,1fr)]">
-        <Skeleton className="h-[600px] rounded-xl" />
-        <Skeleton className="hidden h-[600px] rounded-xl lg:block" />
+      <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[380px_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        <Skeleton className="h-[600px] rounded-xl lg:h-full" />
+        <Skeleton className="hidden h-[600px] rounded-xl lg:block lg:h-full" />
       </div>
     );
   }
@@ -191,7 +205,7 @@ export default function ConversationsPanel({
 
   return (
     <>
-      <div className="grid min-h-[min(680px,calc(100vh-13rem))] min-w-0 gap-4 lg:h-[calc(100vh-13rem)] lg:grid-cols-[380px_minmax(0,1fr)]">
+      <div className="grid min-h-[min(680px,calc(100dvh-13rem))] min-w-0 gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[380px_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
         <Card className="flex min-h-0 min-w-0 flex-col overflow-hidden p-0">
           <div className="space-y-3 border-b border-border p-4">
             <div className="relative">

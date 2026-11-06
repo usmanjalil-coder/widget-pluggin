@@ -3,6 +3,7 @@ import { styles } from "./styles.js";
 import { streamChat } from "./chat.js";
 import { applyTheme } from "./theme.js";
 import { brand } from "../../src/lib/brand.js";
+import { renderChatMessage } from "../../src/lib/render-chat-message.js";
 const make = (tag, className, value) => {
   const el = document.createElement(tag);
   if (className) el.className = className;
@@ -54,42 +55,6 @@ const time = () =>
     hour: "numeric",
     minute: "2-digit",
   }).format(/* @__PURE__ */ new Date());
-function markdown(target, value) {
-  target.replaceChildren();
-  const inline = (parent, text) =>
-    text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|https?:\/\/[^\s]+)/g).forEach((part) => {
-      if (!part) return;
-      if (/^\*\*[^*]+\*\*$/.test(part)) parent.append(make("strong", "", part.slice(2, -2)));
-      else if (/^\*[^*]+\*$/.test(part)) parent.append(make("em", "", part.slice(1, -1)));
-      else if (/^https?:\/\//.test(part)) {
-        const link = make("a", "", part);
-        link.href = part;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        parent.append(link);
-      } else parent.append(document.createTextNode(part));
-    });
-  let list;
-  String(value || "")
-    .split("\n")
-    .forEach((line) => {
-      const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
-      if (bullet) {
-        if (!list) {
-          list = make("ul");
-          target.append(list);
-        }
-        const item = make("li");
-        inline(item, bullet[1]);
-        list.append(item);
-      } else {
-        list = null;
-        const p = make("p");
-        inline(p, line);
-        target.append(p);
-      }
-    });
-}
 function mountWidget({
   container,
   botId,
@@ -331,7 +296,7 @@ function mountWidget({
       const bubble = make("div", `cb-message cb-${kind}`);
       if (kind === "bot") {
         bubble.classList.add("cb-markdown");
-        markdown(bubble, content);
+        renderChatMessage(bubble, content);
         row.append(botAvatar());
       } else bubble.textContent = content;
       wrap.append(bubble, make("time", "cb-timestamp", stamp));
@@ -627,7 +592,7 @@ function mountWidget({
             if (!answer.trim()) return;
             typing.hidden = true;
             reply ??= addMessage("bot", "");
-            markdown(reply.bubble, answer);
+            renderChatMessage(reply.bubble, answer);
             if (nearBottom()) scroll();
           },
           onLeadForm: (payload) => {
@@ -818,7 +783,7 @@ function mountWidget({
         input.setAttribute("aria-label", config.texts.inputPlaceholder);
         footer.hidden = !config.branding.showBadge;
         if (messageCount === 1 && oldGreeting !== config.texts.greetingMessage)
-          markdown(
+          renderChatMessage(
             greeting.bubble,
             failed && config.texts.offlineMessage
               ? config.texts.offlineMessage

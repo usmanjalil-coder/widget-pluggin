@@ -80,8 +80,8 @@ function BotConversations({ botId, linkedConversationId }) {
   };
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="lg:flex lg:h-full lg:min-h-0 lg:flex-col">
+      <div className="mb-6 shrink-0">
         <PageHeader title="Conversations" description="Review chats and follow up with visitors." />
       </div>
       <ConversationsPanel

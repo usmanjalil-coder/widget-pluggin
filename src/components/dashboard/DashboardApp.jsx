@@ -185,9 +185,11 @@ export default function DashboardApp({ children }) {
             {sidebar}
           </aside>
 
-          <main className="min-w-0 flex-1">
+          <main
+            className={`min-w-0 flex-1 ${page === "Conversations" ? "lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden" : ""}`}
+          >
             <header
-              className={`${page === "Appearance" ? "relative" : "sticky top-0"} z-20 border-b border-border bg-card/90 backdrop-blur-sm`}
+              className={`${page === "Appearance" ? "relative" : "sticky top-0"} z-20 shrink-0 border-b border-border bg-card/90 backdrop-blur-sm`}
             >
               <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
@@ -230,7 +232,11 @@ export default function DashboardApp({ children }) {
               </SheetContent>
             </Sheet>
 
-            <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</div>
+            <div
+              className={`mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 ${page === "Conversations" ? "lg:min-h-0 lg:flex-1" : ""}`}
+            >
+              {children}
+            </div>
           </main>
         </div>
       </div>
