@@ -1,24 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
-@keyframes tellvira-loader-turn {
-  from { transform: rotateY(-12deg) scale(1); opacity: 0.9; }
-  to { transform: rotateY(12deg) scale(1.03); opacity: 1; }
-}
-@keyframes tellvira-loader-glow {
-  from { opacity: 0.35; transform: scale(0.9); }
-  to { opacity: 0.65; transform: scale(1.08); }
-}
-.tellvira-loader-icon {
-  animation: tellvira-loader-turn 1.6s ease-in-out infinite alternate;
-}
-.tellvira-loader-glow {
-  animation: tellvira-loader-glow 1.6s ease-in-out infinite alternate;
-}
-@media (prefers-reduced-motion: reduce) {
-  .tellvira-loader-icon,
-  .tellvira-loader-glow { animation: none; }
-}
 :root {
   --brand-50: #f0fdfa;
   --brand-100: #ccfbf1;

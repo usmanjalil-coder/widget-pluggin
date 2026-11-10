@@ -70,8 +70,9 @@ export default function LoginPage() {
     }
   };
 
+  if (checkingSession) return <FullPageLoader />;
+
   return (
-    <FullPageLoader ready={!checkingSession}>
     <main className="min-h-screen bg-muted">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-4 py-8 lg:grid-cols-[0.9fr_1.1fr]">
         <AuthShowcase
@@ -157,6 +158,5 @@ export default function LoginPage() {
       </div>
       <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
     </main>
-    </FullPageLoader>
   );
 }

@@ -31,5 +31,5 @@ export default function AuthenticatedRoute({ children }) {
     };
   }, []);
 
-  return <FullPageLoader ready={ready}>{children}</FullPageLoader>;
+  return ready ? children : <FullPageLoader />;
 }
