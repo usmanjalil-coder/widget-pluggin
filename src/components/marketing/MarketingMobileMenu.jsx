@@ -14,7 +14,7 @@ export default function MarketingMobileMenu({ open, onOpenChange, navigation }) 
           <div className="flex flex-col gap-2 text-sm text-foreground">
             {navigation.map((item) => (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 className="rounded-lg px-2 py-2 hover:bg-background"
               >

@@ -28,7 +28,7 @@ function Inline({ content }) {
     if (/^https?:\/\//.test(part.href)) {
       return (
         <a
-          key={`${part.href}-${index}`}
+          key={`link-${index}`}
           href={part.href}
           target="_blank"
           rel="noopener noreferrer"
@@ -39,7 +39,7 @@ function Inline({ content }) {
       );
     }
     return (
-      <Link key={`${part.href}-${index}`} href={part.href} className={linkClass}>
+      <Link key={`link-${index}`} href={part.href} className={linkClass}>
         {part.text}
       </Link>
     );

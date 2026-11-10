@@ -20,7 +20,7 @@ export function Breadcrumbs({ items }) {
       <nav aria-label="Breadcrumb" className="mb-8 text-sm text-muted-foreground">
         <ol className="flex flex-wrap items-center gap-2">
           {items.map(({ name, path }, index) => (
-            <li key={path} className="flex items-center gap-2">
+            <li key={`breadcrumb-${index}`} className="flex items-center gap-2">
               {index > 0 && <span aria-hidden="true">/</span>}
               {index === items.length - 1 ? (
                 <span aria-current="page">{name}</span>

@@ -39,7 +39,7 @@ export function MarketingNav() {
 
         <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
           {navigation.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-foreground">
+            <Link key={item.label} href={item.href} className="hover:text-foreground">
               {item.label}
             </Link>
           ))}
