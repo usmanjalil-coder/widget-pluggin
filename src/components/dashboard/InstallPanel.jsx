@@ -35,6 +35,9 @@ const html = \`<!DOCTYPE html>
   <style>html, body { margin: 0; height: 100%; }</style>
 </head>
 <body>
+  <p id="widget-status" role="status" style="padding:24px;font:16px system-ui">
+    Loading chat…
+  </p>
   <script src="https://tellvira.com/widget.js"
     data-bot-id="${safeBotId}"
     onload="window.ChatbotWidget.init({
@@ -43,7 +46,17 @@ const html = \`<!DOCTYPE html>
       onOpenChange: function (open) {
         if (!open) window.ReactNativeWebView.postMessage('tellvira-close');
       }
-    })"></script>
+    }).then(function (widget) {
+      var status = document.getElementById('widget-status');
+      if (widget) {
+        status.remove();
+      } else {
+        status.textContent = 'Chat could not start. Check the Bot ID, Allowed domains, and the API URL used to build widget.js.';
+      }
+    }).catch(function () {
+      document.getElementById('widget-status').textContent = 'Chat initialization failed. Check the WebView console and network requests.';
+    })"
+    onerror="document.getElementById('widget-status').textContent = 'Could not load. Check the script URL and network connection.';"></script>
 </body>
 </html>\`;
 
