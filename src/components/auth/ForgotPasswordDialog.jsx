@@ -12,9 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { getSafeNext } from "@/lib/auth-redirect";
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function ForgotPasswordDialog({ open, onOpenChange }) {
+export default function ForgotPasswordDialog({ open, onOpenChange, next = "/dashboard" }) {
   const [email, setEmail] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,9 @@ export default function ForgotPasswordDialog({ open, onOpenChange }) {
     setError("");
     try {
       await forgotPassword(email.trim());
+      try {
+        localStorage.setItem("auth-reset-next", getSafeNext(next));
+      } catch {}
       setSuccess(true);
     } catch (err) {
       setError(

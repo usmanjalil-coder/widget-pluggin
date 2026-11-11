@@ -15,12 +15,11 @@ import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
 import FullPageLoader from "@/components/shared/FullPageLoader";
 import { establishAuthSession, getCurrentUser, login } from "@/lib/api/auth.api";
 
-function destinationForPlan(plan) {
-  return plan === "free" ? "/dashboard" : "/dashboard/billing?plan=" + encodeURIComponent(plan);
-}
+import { getSafeNext } from "@/lib/auth-redirect";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [next, setNext] = useState("/dashboard");
   const [plan, setPlan] = useState("free");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +31,8 @@ export default function LoginPage() {
   useEffect(() => {
     const nextPlan = new URLSearchParams(window.location.search).get("plan") || "free";
     setPlan(nextPlan);
+    const destination = getSafeNext(new URLSearchParams(window.location.search).get("next"));
+    setNext(destination);
 
     if (!window.localStorage.getItem("token")) {
       setCheckingSession(false);
@@ -42,7 +43,7 @@ export default function LoginPage() {
 
     getCurrentUser()
       .then(() => {
-        if (active) router.replace(destinationForPlan(nextPlan));
+        if (active) router.replace(destination);
       })
       .catch(() => {
         window.localStorage.removeItem("token");
@@ -62,7 +63,7 @@ export default function LoginPage() {
     try {
       const authResult = await login({ email, password });
       establishAuthSession(authResult);
-      window.location.replace(destinationForPlan(plan));
+      router.replace(getSafeNext(next));
     } catch (loginError) {
       setError(loginError.message || "Unable to sign in right now.");
     } finally {
@@ -148,7 +149,7 @@ export default function LoginPage() {
           <p className="mt-5 text-center text-sm text-muted-foreground">
             No account yet?{" "}
             <Link
-              href={`/signup?plan=${encodeURIComponent(plan)}`}
+              href={`/signup?plan=${encodeURIComponent(plan)}&next=${encodeURIComponent(next)}`}
               className="font-medium text-primary"
             >
               Create one
@@ -156,7 +157,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-      <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
+      <ForgotPasswordDialog next={next} open={forgotOpen} onOpenChange={setForgotOpen} />
     </main>
   );
 }

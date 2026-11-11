@@ -11,6 +11,8 @@ import { Button, Input, Label } from "@/components/ui";
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
 import { resetPassword } from "@/lib/api/auth.api";
 
+import { getSafeNext, loginUrl } from "@/lib/auth-redirect";
+
 const rules = [
   (value) => value.length >= 8,
   (value) => /[A-Z]/.test(value),
@@ -19,6 +21,7 @@ const rules = [
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const [next, setNext] = useState("/dashboard");
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +36,11 @@ export default function ResetPasswordPage() {
   /* eslint-disable react-hooks/set-state-in-effect -- Read reset credentials from the browser URL after hydration. */
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
+    let storedNext = null;
+    try {
+      storedNext = localStorage.getItem("auth-reset-next");
+    } catch {}
+    setNext(getSafeNext(query.get("next") ?? storedNext));
     setToken(query.get("token") || "");
     setEmail(query.get("email") || "");
   }, []);
@@ -53,8 +61,11 @@ export default function ResetPasswordPage() {
     setLoading(true);
     try {
       await resetPassword({ token, email, password, password_confirmation: confirm });
+      try {
+        localStorage.removeItem("auth-reset-next");
+      } catch {}
       toast.success("Password updated successfully.");
-      router.replace("/login");
+      router.replace(loginUrl(next));
     } catch (err) {
       const code = err.code.toLowerCase();
       if (code.includes("invalid_reset_token") || code.includes("expired")) setInvalid(true);
@@ -85,7 +96,7 @@ export default function ResetPasswordPage() {
               This reset link is incomplete or invalid. Request a new link to continue.
             </p>
             <Button asChild className="w-full">
-              <Link href="/login">Back to login</Link>
+              <Link href={loginUrl(next)}>Back to login</Link>
             </Button>
             <button
               type="button"
@@ -107,7 +118,7 @@ export default function ResetPasswordPage() {
               Request a new link
             </Button>
             <Button variant="secondary" asChild className="w-full">
-              <Link href="/login">Back to login</Link>
+              <Link href={loginUrl(next)}>Back to login</Link>
             </Button>
           </div>
         ) : (
@@ -183,12 +194,12 @@ export default function ResetPasswordPage() {
         )}
         <p className="mt-5 text-center text-sm text-muted-foreground">
           Remember your password?{" "}
-          <Link href="/login" className="font-medium text-primary">
+          <Link href={loginUrl(next)} className="font-medium text-primary">
             Log in
           </Link>
         </p>
       </section>
-      <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
+      <ForgotPasswordDialog next={next} open={forgotOpen} onOpenChange={setForgotOpen} />
     </main>
   );
 }

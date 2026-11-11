@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/api/auth.api";
 import { clearQueryCache } from "@/lib/query-client";
+import { loginUrl } from "@/lib/auth-redirect";
 import FullPageLoader from "@/components/shared/FullPageLoader";
 
 export default function AuthenticatedRoute({ children }) {
@@ -12,7 +13,7 @@ export default function AuthenticatedRoute({ children }) {
     let active = true;
     if (!window.localStorage.getItem("token")) {
       clearQueryCache();
-      window.location.replace("/login");
+      window.location.replace(loginUrl(window.location.pathname + window.location.search));
       return;
     }
 
@@ -23,7 +24,7 @@ export default function AuthenticatedRoute({ children }) {
       .catch(() => {
         clearQueryCache();
         window.localStorage.removeItem("token");
-        if (active) window.location.replace("/login");
+        if (active) window.location.replace(loginUrl(window.location.pathname + window.location.search));
       });
 
     return () => {

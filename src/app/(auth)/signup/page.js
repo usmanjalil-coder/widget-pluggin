@@ -16,6 +16,8 @@ import {
   getCurrentUser,
 } from "@/lib/api/auth.api";
 
+import { getSafeNext } from "@/lib/auth-redirect";
+
 const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordRules = [
   ["8 characters", (value) => value.length >= 8],
@@ -35,6 +37,7 @@ function validationMessages(errors) {
 }
 
 export default function SignupPage() {
+  const [next, setNext] = useState(null);
   const inputRefs = useRef([]);
   const [plan, setPlan] = useState("free");
   const [name, setName] = useState("");
@@ -52,6 +55,9 @@ export default function SignupPage() {
   useEffect(() => {
     const selectedPlan = new URLSearchParams(window.location.search).get("plan") || "free";
     setPlan(selectedPlan);
+    const rawNext = new URLSearchParams(window.location.search).get("next");
+    const destination = rawNext === null ? null : getSafeNext(rawNext);
+    setNext(destination);
 
     if (!window.localStorage.getItem("token")) return undefined;
 
@@ -60,9 +66,9 @@ export default function SignupPage() {
       .then(() => {
         if (!active) return;
         window.location.replace(
-          selectedPlan === "free"
+          destination || (selectedPlan === "free"
             ? "/dashboard"
-            : "/dashboard/billing?plan=" + encodeURIComponent(selectedPlan),
+            : "/dashboard/billing?plan=" + encodeURIComponent(selectedPlan)),
         );
       })
       .catch(() => window.localStorage.removeItem("token"));
@@ -158,9 +164,11 @@ export default function SignupPage() {
       establishAuthSession(result);
       const selectedPlanKey = result.data?.selectedPlanKey;
       window.location.replace(
-        selectedPlanKey
-          ? "/dashboard/billing?plan=" + encodeURIComponent(selectedPlanKey)
-          : "/onboarding",
+        next
+          ? getSafeNext(next)
+          : selectedPlanKey
+            ? "/dashboard/billing?plan=" + encodeURIComponent(selectedPlanKey)
+            : "/onboarding",
       );
     } catch (err) {
       setError(
@@ -469,7 +477,7 @@ export default function SignupPage() {
           <p className="mt-5 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
-              href={`/login?plan=${encodeURIComponent(plan)}`}
+              href={`/login?plan=${encodeURIComponent(plan)}${next ? "&next=" + encodeURIComponent(next) : ""}`}
               className="font-medium text-primary"
             >
               Log in

@@ -1,3 +1,4 @@
+import { loginUrl } from "@/lib/auth-redirect";
 import { toast } from "sonner";
 
 const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
@@ -101,6 +102,11 @@ export default async function callApi({
     }
     return payload;
   } catch (error) {
+    if (error.status === 401 && isBrowser &&
+        /^\/(?:dashboard|onboarding)(?:\/|$)/.test(window.location.pathname)) {
+      window.localStorage.removeItem("token");
+      window.location.replace(loginUrl(window.location.pathname + window.location.search));
+    }
     if (loadingToast) toast.dismiss(loadingToast);
     if (toastr && isBrowser) {
       if (error?.payload?.status === "ERROR") toast.error(error.message);
