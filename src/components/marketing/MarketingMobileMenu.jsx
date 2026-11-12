@@ -1,13 +1,15 @@
 "use client";
 
+import useMobileMenuClose from "@/components/shared/useMobileMenuClose";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AuthActions } from "./MarketingAuth";
 
 export default function MarketingMobileMenu({ open, onOpenChange, navigation }) {
+  const closeHandlers = useMobileMenuClose(open, onOpenChange, 768);
   return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[min(22rem,90vw)] p-6 md:hidden">
+        {open && <SheetContent {...closeHandlers} side="right" className="w-[min(22rem,90vw)] p-6 md:hidden">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
@@ -23,7 +25,7 @@ export default function MarketingMobileMenu({ open, onOpenChange, navigation }) 
             ))}
             <AuthActions mobile />
           </div>
-        </SheetContent>
+        </SheetContent>}
       </Sheet>
   );
 }

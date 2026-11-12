@@ -1,5 +1,6 @@
 "use client";
 
+import useMobileMenuClose from "@/components/shared/useMobileMenuClose";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,6 +38,7 @@ export default function DashboardApp({ children }) {
   const account = dashboard.account;
   const [storedBotId, setStoredBotId] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const closeHandlers = useMobileMenuClose(mobileNavOpen, setMobileNavOpen, 1024, searchParams.toString());
   const navigationGuard = useRef(null);
   const routeBotId = typeof params.id === "string" ? params.id : "";
   const selectedBotId =
@@ -199,6 +201,7 @@ export default function DashboardApp({ children }) {
                     size="icon"
                     className="lg:hidden"
                     aria-label="Open navigation"
+                    aria-expanded={mobileNavOpen}
                     onClick={() => setMobileNavOpen(true)}
                   >
                     <Menu className="size-5" />
@@ -224,12 +227,12 @@ export default function DashboardApp({ children }) {
               </div>
             </header>
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-              <SheetContent side="left" className="w-64 gap-0 p-0" showCloseButton={false}>
+              {mobileNavOpen && <SheetContent {...closeHandlers} side="left" className="w-64 gap-0 p-0" showCloseButton={false}>
                 <SheetHeader className="sr-only">
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
                 {sidebar}
-              </SheetContent>
+              </SheetContent>}
             </Sheet>
 
             <div

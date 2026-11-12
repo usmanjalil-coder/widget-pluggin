@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
+import { PostToc } from "@/components/marketing/PostToc";
 import { PostBody, buildHeadingIds } from "@/components/marketing/PostBody";
 import { publishedNiches } from "@/content/niches";
 import { publishedPosts, readingMinutes } from "@/content/posts";
@@ -43,6 +44,11 @@ export default async function PostPage({ params }) {
     .map((id) => publishedPosts.find((item) => item.slug === id))
     .filter(Boolean);
   const headingIds = buildHeadingIds(post.body);
+  const toc = post.body
+    .map((block, index) => ({ ...block, id: headingIds[index] }))
+    .filter((block) => block.type === "h2")
+    .map(({ id, text }) => ({ id, text }));
+  const showToc = toc.length >= 3;
   const url = absoluteUrl(`/blog/${slug}`);
   const organization = { "@type": "Organization", name: "Tellvira", url: absoluteUrl("/") };
   const article = {
@@ -71,55 +77,41 @@ export default async function PostPage({ params }) {
           { name: post.title, path: `/blog/${slug}` },
         ]}
       />
-      <article className="max-w-3xl">
-        <p className="text-sm font-medium text-primary">{post.category}</p>
-        <h1 className="mt-4 text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
-          {post.title}
-        </h1>
-        <p className="mt-5 text-sm text-muted-foreground">
-          By the Tellvira team · Published{" "}
-          <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time> · Updated{" "}
-          <time dateTime={post.updatedAt}>{formatDate(post.updatedAt)}</time> · {readingMinutes(post)} min read
-        </p>
-        <nav
-          aria-label="Table of contents"
-          className="my-10 rounded-xl border border-border bg-muted/30 p-6"
-        >
-          <h2 className="text-lg font-semibold text-foreground">On this page</h2>
-          <ul className="mt-3 space-y-2 text-sm text-primary">
-            {post.body
-              .map((block, index) => ({ block, id: headingIds[index] }))
-              .filter(({ block }) => block.type === "h2")
-              .map(({ block, id }) => (
-                <li key={id}>
-                  <a
-                    href={`#${id}`}
-                    className="underline underline-offset-4 hover:decoration-2"
-                  >
-                    {block.text}
-                  </a>
-                </li>
-              ))}
-          </ul>
-        </nav>
-        <PostBody blocks={post.body} />
-        {post.faq?.length > 0 && (
-          <section className="mt-16">
-            <h2 className="text-3xl font-semibold text-foreground">Frequently asked questions</h2>
-            <div className="mt-6 divide-y divide-border rounded-xl border border-border px-6">
-              {post.faq.map(({ question, answer }) => (
-                <div key={question} data-faq-item className="py-5">
-                  <h3 data-faq-question className="font-semibold text-foreground">
-                    {question}
-                  </h3>
-                  <p data-faq-answer className="mt-2 leading-7 text-muted-foreground">
-                    {answer}
-                  </p>
-                </div>
+      <article className="[--toc-offset:96px] [&_h1]:scroll-mt-[var(--toc-offset)] [&_h2]:scroll-mt-[var(--toc-offset)] [&_h3]:scroll-mt-[var(--toc-offset)]">
+        <header>
+          <p className="text-sm font-medium text-primary">{post.category}</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+            {post.title}
+          </h1>
+          <p className="mt-5 text-sm text-muted-foreground">
+            By the Tellvira team · Published{" "}
+            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time> · Updated{" "}
+            <time dateTime={post.updatedAt}>{formatDate(post.updatedAt)}</time> · {readingMinutes(post)} min read
+          </p>
+        </header>
+        <div className={`mx-auto mt-10 grid gap-8 lg:gap-10 ${showToc ? "lg:grid-cols-[250px_minmax(0,1fr)]" : "max-w-3xl"}`}>
+          {showToc && <PostToc items={toc} />}
+          <div className="min-w-0 w-full max-w-[75ch]">
+            <PostBody blocks={post.body} />
+            {post.faq?.length > 0 && (
+              <section className="mt-16">
+                <h2 className="text-3xl font-semibold text-foreground">Frequently asked questions</h2>
+                <div className="mt-6 divide-y divide-border rounded-xl border border-border px-6">
+                  {post.faq.map(({ question, answer }) => (
+                    <div key={question} data-faq-item className="py-5">
+                      <h3 data-faq-question className="font-semibold text-foreground">
+                        {question}
+                      </h3>
+                      <p data-faq-answer className="mt-2 leading-7 text-muted-foreground">
+                        {answer}
+                      </p>
+                    </div>
               ))}
             </div>
           </section>
         )}
+          </div>
+        </div>
       </article>
       {(relatedNiches.length > 0 || relatedPosts.length > 0) && (
         <div className="mt-16 grid max-w-3xl gap-8 sm:grid-cols-2">

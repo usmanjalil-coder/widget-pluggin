@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   ChevronRight,
@@ -55,6 +56,7 @@ function DashboardSidebar({
   account,
   onNavigate,
 }) {
+  const router = useRouter();
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-center pt-6 pb-7">
@@ -129,7 +131,7 @@ function DashboardSidebar({
             <DropdownMenuItem
               onSelect={async () => {
                 await endAuthSession();
-                window.location.replace("/login");
+                router.replace("/login");
               }}
             >
               Log out
