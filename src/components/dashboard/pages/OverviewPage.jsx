@@ -2,15 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getBillingOverview } from "@/lib/api/billing.api";
-import { getAccount } from "@/lib/api/account.api";
-import useDashboardResource from "../useDashboardResource";
+import useAccount from "../useAccount";
 import OverviewPanel from "../OverviewPanel";
 import { useDashboard } from "../dashboard-context";
 
 export default function OverviewPage() {
   const { usage, account, accountLoading, accountError, loadAccount, selectedBotId } =
     useDashboard();
-  const profile = useDashboardResource(getAccount);
+  const profile = useAccount();
   const billingQuery = useQuery({
     queryKey: ["billing", "overview"],
     queryFn: ({ signal }) => getBillingOverview(signal),

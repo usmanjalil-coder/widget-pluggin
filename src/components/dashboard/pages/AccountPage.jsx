@@ -3,12 +3,12 @@
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AccountSettingsPanel from "../AccountSettingsPanel";
-import useDashboardResource from "../useDashboardResource";
-import { getAccount, updateAccount, updatePassword } from "@/lib/api/account.api";
+import useAccount from "../useAccount";
+import { updateAccount, updatePassword } from "@/lib/api/account.api";
 import { getBillingOverview } from "@/lib/api/billing.api";
 
 export default function AccountPage() {
-  const { data: account, loading, error, reload, setData } = useDashboardResource(getAccount);
+  const { data: account, loading, error, reload, setData } = useAccount();
   const billing = useQuery({
     queryKey: ["billing", "overview"],
     queryFn: ({ signal }) => getBillingOverview(signal),
@@ -18,7 +18,7 @@ export default function AccountPage() {
   const onSave = useCallback(
     async (payload) => {
       const saved = await updateAccount(payload);
-      setData(saved);
+      await setData(saved);
       return saved;
     },
     [setData],
