@@ -19,6 +19,7 @@ export const posts = [
     ...dated,
     slug: "how-to-answer-patient-questions-after-hours",
     title: "How to answer patient questions after hours",
+    highlight: "patient questions",
     metaTitle: "Answer Dental Patient Questions After Hours | Tellvira",
     metaDescription:
       "A practical guide to answering dental office questions after hours, collecting appointment requests, and keeping clinical decisions with your front desk team.",
@@ -297,6 +298,7 @@ export const posts = [
     ...dated,
     slug: "capture-leads-from-your-website-without-a-contact-form",
     title: "Capture website leads without a contact form",
+    highlight: "website leads",
     metaTitle: "Capture Website Leads Without a Contact Form | Tellvira",
     metaDescription:
       "Learn when conversational lead capture helps, which details to request, and how to hand inquiries to your team without promising an automated booking.",
@@ -414,6 +416,7 @@ export const posts = [
     ...dated,
     slug: "chatbot-vs-live-chat-for-small-business",
     title: "Chatbot vs live chat for a small business",
+    highlight: "Chatbot vs live chat",
     metaTitle: "Chatbot vs Live Chat for Small Business | Tellvira",
     metaDescription:
       "Compare chatbots and staffed live chat on coverage, answer quality, cost, and handoff so you can choose a practical mix for your small business website.",
@@ -540,6 +543,7 @@ export const posts = [
     ...dated,
     slug: "how-to-add-an-ai-chatbot-to-wordpress-or-shopify",
     title: "How to add an AI chatbot to WordPress or Shopify",
+    highlight: "AI chatbot",
     metaTitle: "Add an AI Chatbot to WordPress or Shopify | Tellvira",
     metaDescription:
       "Learn where to place a chatbot script on WordPress, Shopify, Wix, Squarespace, or Webflow, then test the published site and common installation issues.",

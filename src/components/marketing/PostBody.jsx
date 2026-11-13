@@ -92,7 +92,7 @@ export function PostBody({ blocks }) {
           return (
             <Tag
               key={index}
-              className={`${block.type === "ol" ? "list-decimal" : "list-disc"} space-y-2 pl-6`}
+              className={`${block.type === "ol" ? "list-decimal" : "list-disc marker:text-primary"} space-y-2 pl-6`}
             >
               {block.items.map((item, itemIndex) => (
                 <li key={itemIndex}>

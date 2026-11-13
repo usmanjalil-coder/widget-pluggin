@@ -20,7 +20,9 @@ export default function MarketingLayout({ children }) {
             <Link href="/" aria-label="Tellvira homepage" className="inline-flex">
               <BrandWordmark size="footer" />
             </Link>
-            <p className="mt-4 max-w-sm text-sm text-muted-foreground">{brand.tagline}</p>
+            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
+              AI chatbot for small business websites. Answers visitor questions and captures leads.
+            </p>
           </div>
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">

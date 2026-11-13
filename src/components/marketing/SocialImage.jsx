@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { siteConfig } from "@/lib/seo";
 
 // ImageResponse renders independently of the site's CSS theme tokens.
@@ -10,7 +12,10 @@ const ember = {
   gradient: "linear-gradient(90deg, #f59e0b 0%, #ff5722 100%)",
 };
 
-export function createSocialImage() {
+export async function createSocialImage() {
+  const logo = await readFile(join(process.cwd(), "public/web-app-manifest-192x192.png"));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+
   return new ImageResponse(
     <div
       style={{
@@ -35,8 +40,11 @@ export function createSocialImage() {
           backgroundImage: ember.gradient,
         }}
       />
-      <div style={{ display: "flex", fontSize: 112, fontWeight: 700 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 24, fontSize: 112, fontWeight: 700 }}>
+        <img src={logoSrc} alt="" width={128} height={128} />
+        <div style={{ display: "flex" }}>
         {siteConfig.name.slice(0, 4)}<span style={{ color: ember.primary }}>{siteConfig.name.slice(4)}</span>
+        </div>
       </div>
       <div style={{ display: "flex", fontSize: 48, marginTop: 32, maxWidth: 1000 }}>
         {siteConfig.tagline}
