@@ -4,6 +4,7 @@ import { toast as notify } from "sonner";
 import { Copy } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { domainHelp } from "./domain-help";
 import { WIDGET_SCRIPT_URL, getWidgetSnippet } from "@/lib/widget-script-url";
 import { useQuery } from "@tanstack/react-query";
@@ -19,15 +20,18 @@ export default function InstallPanel({ selectedBotId }) {
     refetchOnWindowFocus: false,
   });
   const safeBotId = (bot?.public_id || selectedBotId).replace(/[^a-zA-Z0-9_-]/g, "");
-  const domain = bot?.settings?.allowedDomains?.[0]?.trim();
-  const siteUrl = domain
-    ? `https://${domain.replace(/^https?:\/\//i, "").replace(/\/+$/, "")}`
-    : "https://your-allowed-domain.com";
-  const mobileScript = `import React from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
-import { WebView } from "react-native-webview";
+  const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "")
+    .replace(/\/+$/, "")
+    .replace(/\/api\/v1$/, "");
+  const escapeSnippetValue = (value) => JSON.stringify(value).slice(1, -1).replace(/'/g, "\\'");
+  const mobileScript = `import { KeyboardAvoidingView, Platform, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { WebView } from 'react-native-webview';
 
-const SITE_URL = ${JSON.stringify(siteUrl)};
+// Replace these values
+const BOT_ID = '${safeBotId}';
+const WIDGET_SCRIPT_URL = '${escapeSnippetValue(WIDGET_SCRIPT_URL)}';
+const API_BASE = '${escapeSnippetValue(apiBase)}';
+const SITE_URL = 'https://your-allowed-domain.com'; // must be one of your bot's Allowed domains
 const html = \`<!DOCTYPE html>
 <html>
 <head>
@@ -35,50 +39,62 @@ const html = \`<!DOCTYPE html>
   <style>html, body { margin: 0; height: 100%; }</style>
 </head>
 <body>
-  <p id="widget-status" role="status" style="padding:24px;font:16px system-ui">
-    Loading chat…
-  </p>
-  <script src="https://tellvira.com/widget.js"
-    data-bot-id="${safeBotId}"
+  <p id="widget-status" role="status" style="padding:24px;font:16px system-ui">Loading chat…</p>
+  <script
+    src="\${WIDGET_SCRIPT_URL}"
+    data-bot-id="\${BOT_ID}"
     onload="window.ChatbotWidget.init({
       script: this,
+      apiBase: '\${API_BASE}',
       open: true,
       onOpenChange: function (open) {
         if (!open) window.ReactNativeWebView.postMessage('tellvira-close');
       }
     }).then(function (widget) {
-      var status = document.getElementById('widget-status');
-      if (widget) {
-        status.remove();
-      } else {
-        status.textContent = 'Chat could not start. Check the Bot ID, Allowed domains, and the API URL used to build widget.js.';
-      }
+      var s = document.getElementById('widget-status');
+      if (widget) { s.remove(); } else { s.textContent = 'Chat could not start. Check the Bot ID, Allowed domains, and the API URL.'; }
     }).catch(function () {
-      document.getElementById('widget-status').textContent = 'Chat initialization failed. Check the WebView console and network requests.';
+      document.getElementById('widget-status').textContent = 'Chat initialization failed.';
     })"
-    onerror="document.getElementById('widget-status').textContent = 'Could not load. Check the script URL and network connection.';"></script>
+    onerror="document.getElementById('widget-status').textContent = 'Could not load the chat script.';"
+  ></script>
 </body>
 </html>\`;
 
-export default function ChatScreen({ navigation }) {
+export default function TellviraChatScreen({ navigation, onClose }) {
+  const close = () => (onClose ? onClose() : navigation?.goBack());
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <WebView
-        originWhitelist={['*']}
-        source={{ html, baseUrl: SITE_URL }}
-        javaScriptEnabled
-        domStorageEnabled
-        style={{ flex: 1 }}
-        onMessage={(event) => {
-          if (event.nativeEvent.data === "tellvira-close") navigation.goBack();
-        }}
-      />
-    </KeyboardAvoidingView>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <WebView
+          style={styles.flex}
+          originWhitelist={['*']}
+          source={{ html, baseUrl: SITE_URL }}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={({ nativeEvent }) => {
+            if (nativeEvent.data === 'tellvira-close') close();
+          }}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
-}`;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  flex: {
+    flex: 1,
+  },
+});`;
   const script = safeBotId
     ? getWidgetSnippet(safeBotId)
     : "Loading install snippet…";
@@ -247,10 +263,10 @@ export default function ChatScreen({ navigation }) {
               <li>
                 <strong>Install.</strong>
                 <pre className="mt-2 whitespace-pre-wrap break-all rounded-xl bg-foreground p-4 text-background">
-                  <code>{"npm install react-native-webview\n\n# Expo\nnpx expo install react-native-webview"}</code>
+                  <code>{"npx expo install react-native-webview"}</code>
                 </pre>
               </li>
-              <li><strong>Add the screen.</strong> Use this component as a React Navigation screen.</li>
+              <li><strong>Add the screen.</strong> Paste the component into your screen file and replace the four values.</li>
             </ol>
             {isPending || isError ? (
               <p role="status" className="text-muted-foreground">
@@ -280,32 +296,123 @@ export default function ChatScreen({ navigation }) {
               </div>
             )}
             <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-              <li>Add the SITE_URL domain to your bot&apos;s Allowed domains, or the widget will return a 403 error.</li>
-              <li>If you do not use React Navigation, replace navigation.goBack() with your app&apos;s own close or back action.</li>
-              <li>Wrap the screen in KeyboardAvoidingView, especially on iOS (included in the example).</li>
-              <li>Chat history remains in WebView storage after an app restart unless storage is cleared. A new chat starts after the inactivity limit.</li>
-              <li>Direct API calls without a WebView are not currently supported.</li>
-              <li>The chat opens automatically. In this example, tapping X returns to the previous screen. Keep your app&apos;s own header or back button available too.</li>
-              <li>The chat fills the screen at viewport widths of 479px or less.</li>
-              <li>Test on real iOS and Android devices: chat replies, the lead form, the close button, and chat history after restarting the app.</li>
+              <li>SITE_URL must be one of the bot&apos;s Allowed domains in the dashboard, otherwise the chat returns 403.</li>
+              <li>Using React Navigation? It works as is (closing the chat calls goBack). Otherwise pass an onClose prop.</li>
+              <li>Production must use HTTPS. For local HTTP testing only, add <code>mixedContentMode=&apos;always&apos;</code> to the WebView.</li>
             </ul>
           </TabsContent>
         </Tabs>
       </Card>
-      <details className="rounded-xl border bg-card p-4">
-        <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-ring">Advanced override</summary>
-        <pre className="my-3 whitespace-pre-wrap break-all rounded-lg bg-muted p-3 text-sm">
-          <code>{`<script src="${WIDGET_SCRIPT_URL}" defer data-bot-id="${safeBotId || "YOUR_BOT_ID"}" data-primary-color="#0F766E" data-greeting="Hello!"></script>`}</code>
-        </pre>
-        <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>data-primary-color</li>
-          <li>data-greeting</li>
-          <li>data-position</li>
-          <li>data-bot-name</li>
-        </ul>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Precedence is script attributes over saved dashboard config, then defaults.
-        </p>
+      <details className="min-w-0 rounded-xl border bg-card p-4">
+        <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-ring">
+          Advanced options &amp; JavaScript API
+        </summary>
+        <div className="mt-4 min-w-0 space-y-6 text-sm">
+          <section className="space-y-3" aria-label="Advanced options">
+            <h3 className="text-base font-semibold">Advanced options</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Option</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Default</TableHead>
+                  <TableHead>Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="[&_td]:whitespace-normal [&_td]:align-top">
+                <TableRow>
+                  <TableCell><code>botId</code></TableCell>
+                  <TableCell>string</TableCell>
+                  <TableCell>required</TableCell>
+                  <TableCell>Bot ID. Also accepts <code>data-bot-id</code> on the script tag. An ID passed to <code>init()</code> takes priority.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>script</code></TableCell>
+                  <TableCell>The <code>{"<script>"}</code> element</TableCell>
+                  <TableCell>none</TableCell>
+                  <TableCell>Pass <code>script: this</code> in manual <code>init()</code> to apply the data attributes below. Without it, data attributes are ignored.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>apiBase</code></TableCell>
+                  <TableCell>API origin, without <code>/api/v1</code></TableCell>
+                  <TableCell><code>data-api-base</code>, then build default</TableCell>
+                  <TableCell>Only needed when the widget should use a different API origin.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>open</code> (alias <code>defaultOpen</code>)</TableCell>
+                  <TableCell>boolean</TableCell>
+                  <TableCell><code>false</code></TableCell>
+                  <TableCell>Start with the chat panel open.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>onOpenChange(open)</code></TableCell>
+                  <TableCell>function</TableCell>
+                  <TableCell>none</TableCell>
+                  <TableCell>Called when the panel opens or closes. Manual init() only.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>container</code></TableCell>
+                  <TableCell>DOM element; selector and ID strings are not supported</TableCell>
+                  <TableCell>none (floating widget on the page)</TableCell>
+                  <TableCell>Mounts inside this element and removes its existing children. The launcher still appears. The parent needs <code>position: relative</code> and an explicit height. Initializing the same element again does not apply new options.</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </section>
+          <p className="text-muted-foreground">
+            Callbacks such as onOpenChange work only with manual init(), not with the &lt;script&gt; tag install.
+          </p>
+          <section className="space-y-3" aria-label="Script tag data attributes">
+            <h3 className="text-base font-semibold">Data attributes</h3>
+            <p className="text-muted-foreground">These attributes override dashboard settings.</p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Attribute</TableHead>
+                  <TableHead>Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="[&_td]:whitespace-normal">
+                <TableRow>
+                  <TableCell><code>data-primary-color</code></TableCell>
+                  <TableCell><code>#RGB</code> or <code>#RRGGBB</code>; invalid values use <code>#0f766e</code>.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>data-position</code></TableCell>
+                  <TableCell><code>left</code> or <code>right</code> (default: <code>right</code>).</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>data-greeting</code></TableCell>
+                  <TableCell>Text, maximum 200 characters.</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>data-bot-name</code></TableCell>
+                  <TableCell>Text, maximum 40 characters.</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+            <pre className="whitespace-pre-wrap break-all rounded-lg bg-muted p-3 text-sm">
+              <code>{`<script src="${WIDGET_SCRIPT_URL}" defer data-bot-id="${safeBotId || "YOUR_BOT_ID"}" data-primary-color="#0F766E" data-greeting="Hello!"></script>`}</code>
+            </pre>
+          </section>
+          <section className="space-y-3" aria-label="JavaScript API">
+            <h3 className="text-base font-semibold">JavaScript API</h3>
+            <p className="text-muted-foreground">
+              <code>ChatbotWidget.init(options)</code> returns a Promise that resolves to a widget
+              instance, or <code>null</code> if setup fails (it never throws). Always check the result.
+            </p>
+            <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+              <li><code>open()</code>: Open the chat panel.</li>
+              <li><code>close()</code>: Close the chat panel.</li>
+              <li><code>resetChat()</code>: Clear the visitor&apos;s local chat history. Nothing is deleted from the backend.</li>
+              <li><code>destroy()</code>: Remove the widget, for example on an SPA route change.</li>
+            </ul>
+            <pre className="whitespace-pre-wrap break-all rounded-lg bg-muted p-3 text-sm">
+              <code>{`const widget = await window.ChatbotWidget.init({ script: document.currentScript, botId: 'YOUR_BOT_ID' });
+if (widget) widget.open();`}</code>
+            </pre>
+          </section>
+        </div>
       </details>
     </div>
   );
