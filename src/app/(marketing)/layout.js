@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { WIDGET_SCRIPT_URL } from "@/lib/widget-script-url";
 import Script from "next/script";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -14,6 +15,9 @@ export default function MarketingLayout({ children }) {
     <div className="min-h-screen bg-card text-foreground">
       <MarketingNav />
       {children}
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
       <footer className="border-t border-border bg-background">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
           <div>

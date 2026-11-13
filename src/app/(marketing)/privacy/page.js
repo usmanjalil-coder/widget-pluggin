@@ -69,8 +69,18 @@ export default function PrivacyPage() {
           </p>
         </section>
         <section>
+          <h2 className="text-xl font-semibold">Analytics</h2>
+          <p className="mt-3">
+            We use Google Analytics to understand how visitors use our marketing site.
+            Google uses cookies and processes usage data to provide these analytics.
+          </p>
+        </section>
+        <section>
           <h2 className="text-xl font-semibold">Who receives data</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5">
+            <li>
+              <strong>Google</strong> receives marketing-site usage data through Google Analytics.
+            </li>
             <li>
               <strong>Paddle</strong>, our merchant of record for paid purchases, receives billing
               and transaction information.
