@@ -1,5 +1,7 @@
 "use client";
 
+import AuthLogo from "@/components/auth/AuthLogo";
+
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import PasswordInput from "@/components/shared/PasswordInput";
 
@@ -83,6 +85,7 @@ export default function LoginPage() {
         />
 
         <div className="order-1 mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <AuthLogo />
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Welcome back</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Info } from "lucide-react";
 import { notFound } from "next/navigation";
 import { MarketingAuthCta } from "@/components/marketing/MarketingAuth";
 import { publishedNiches as niches } from "@/content/niches";
@@ -28,6 +29,8 @@ export default async function NichePage({ params }) {
   const niche = niches.find((item) => item.slug === slug);
   if (!niche) notFound();
 
+  const highlightIndex = niche.highlight ? niche.h1.indexOf(niche.highlight) : -1;
+
   const related = niche.relatedSlugs
     .map((relatedSlug) => niches.find((item) => item.slug === relatedSlug))
     .filter(Boolean);
@@ -48,7 +51,13 @@ export default async function NichePage({ params }) {
             {niche.name}
           </p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
-            {niche.h1}
+            {highlightIndex === -1 ? (
+              niche.h1
+            ) : (
+              <>
+                {niche.h1.slice(0, highlightIndex)}<span className="text-highlight">{niche.highlight}</span>{niche.h1.slice(highlightIndex + niche.highlight.length)}
+              </>
+            )}
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">{niche.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -72,7 +81,7 @@ export default async function NichePage({ params }) {
             {niche.painPoints.map((point) => (
               <article
                 key={point.title}
-                className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors duration-150 hover:border-primary/50"
               >
                 <h3 className="text-lg font-semibold text-foreground">{point.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{point.body}</p>
@@ -90,7 +99,7 @@ export default async function NichePage({ params }) {
           {niche.useCases.map((useCase) => (
             <article
               key={useCase.title}
-              className="rounded-xl border border-border bg-card p-6 shadow-sm"
+              className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors duration-150 hover:border-primary/50"
             >
               <h3 className="text-lg font-semibold text-foreground">{useCase.title}</h3>
               <p className="mt-3 text-sm leading-7 text-muted-foreground">{useCase.body}</p>
@@ -110,7 +119,7 @@ export default async function NichePage({ params }) {
                 key={step.title}
                 className="rounded-xl border border-border bg-card p-6 shadow-sm"
               >
-                <span className="text-sm font-semibold text-primary">Step {index + 1}</span>
+                <span className="inline-flex size-7 items-center justify-center rounded-full border border-primary/30 bg-accent-soft text-sm font-semibold text-highlight" aria-label={`Step ${index + 1}`}>{index + 1}</span>
                 <h3 className="mt-3 text-lg font-semibold text-foreground">{step.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{step.body}</p>
               </li>
@@ -124,7 +133,12 @@ export default async function NichePage({ params }) {
           <h2 className="text-3xl font-semibold text-foreground">Sample conversation</h2>
           <div className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
             {niche.sampleConversation.map((message, index) => (
-              <p key={index} className="text-sm leading-7 text-foreground">
+              <p
+                key={index}
+                className={message.from === "visitor"
+                  ? "text-sm leading-7 text-foreground"
+                  : "border-l-2 border-primary bg-accent-soft text-sm leading-7 text-foreground"}
+              >
                 <strong className="mr-2">{message.from === "visitor" ? "Visitor:" : "Assistant:"}</strong>
                 {message.text}
               </p>
@@ -150,7 +164,7 @@ export default async function NichePage({ params }) {
       {niche.knowledgeChecklist?.length > 0 && (
         <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
           <h2 className="text-3xl font-semibold text-foreground">What to add to your knowledge base</h2>
-          <ul className="mt-6 list-disc space-y-3 pl-6 text-muted-foreground">
+          <ul className="mt-6 list-disc space-y-3 pl-6 text-muted-foreground marker:text-primary">
             {niche.knowledgeChecklist.map((item) => <li key={item}>{item}</li>)}
           </ul>
         </section>
@@ -171,7 +185,8 @@ export default async function NichePage({ params }) {
           ))}
         </div>
         {niche.safetyNote && (
-          <p className="mt-6 rounded-xl border border-warning/20 bg-warning-bg p-4 text-sm leading-6 text-warning-foreground">
+          <p className="mt-6 rounded-xl border border-border bg-card p-4 text-sm leading-6 text-muted-foreground">
+            <Info aria-hidden="true" className="mr-2 inline-block size-4 align-text-bottom" />
             {niche.safetyNote}
           </p>
         )}

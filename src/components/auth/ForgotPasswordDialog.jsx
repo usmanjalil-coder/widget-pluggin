@@ -1,5 +1,7 @@
 "use client";
 
+import AuthLogo from "@/components/auth/AuthLogo";
+
 import { useState } from "react";
 import { forgotPassword } from "@/lib/api/auth.api";
 import { Button, Input, Label } from "@/components/ui";
@@ -58,6 +60,7 @@ export default function ForgotPasswordDialog({ open, onOpenChange, next = "/dash
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-md">
+        <AuthLogo className="mb-2" />
         {success ? (
           <>
             <DialogHeader>

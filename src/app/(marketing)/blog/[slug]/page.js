@@ -43,6 +43,7 @@ export default async function PostPage({ params }) {
   const relatedPosts = post.relatedPostSlugs
     .map((id) => publishedPosts.find((item) => item.slug === id))
     .filter(Boolean);
+  const highlightIndex = post.highlight ? post.title.indexOf(post.highlight) : -1;
   const headingIds = buildHeadingIds(post.body);
   const toc = post.body
     .map((block, index) => ({ ...block, id: headingIds[index] }))
@@ -81,7 +82,13 @@ export default async function PostPage({ params }) {
         <header>
           <p className="text-sm font-medium text-primary">{post.category}</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
-            {post.title}
+            {highlightIndex === -1 ? (
+              post.title
+            ) : (
+              <>
+                {post.title.slice(0, highlightIndex)}<span className="text-highlight">{post.highlight}</span>{post.title.slice(highlightIndex + post.highlight.length)}
+              </>
+            )}
           </h1>
           <p className="mt-5 text-sm text-muted-foreground">
             By the Tellvira team · Published{" "}

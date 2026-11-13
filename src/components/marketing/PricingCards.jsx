@@ -7,7 +7,7 @@ import { MarketingPricingCards } from "./MarketingPricingCards";
 export { PricingComparison } from "./MarketingPricingCards";
 import { Check, Minus } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
-import { billingDate } from "@/components/dashboard/billing/BillingDetails";
+import { billingDate } from "@/lib/billing-date";
 function DashboardFeatureRow({ feature }) {
   const { text, enabled } = featureDisplay(feature);
   return (

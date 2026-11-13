@@ -1,20 +1,9 @@
-import Image from "next/image";
-import { brand } from "@/lib/brand";
+import Logo from "@/components/brand/Logo";
 
 export function BrandWordmark({ className = "", size = "header" }) {
-  const footer = size === "footer";
-
   return (
     <span className={`inline-flex h-[60px] w-[253px] shrink-0 items-center ${className}`}>
-      <Image
-        src={brand.wordmarkPath}
-        alt="Tellvira"
-        width={168}
-        height={40}
-        sizes="168px"
-        loading={footer ? "lazy" : "eager"}
-        className="block h-[40px] w-auto"
-      />
+      <Logo size={40} />
     </span>
   );
 }

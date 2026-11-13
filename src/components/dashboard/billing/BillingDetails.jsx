@@ -1,5 +1,7 @@
 "use client";
 
+import { billingDate } from "@/lib/billing-date";
+
 import { useEffect, useRef } from "react";
 import {
   AlertTriangle,
@@ -19,13 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function billingDate(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? null
-    : new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(date);
-}
+export { billingDate } from "@/lib/billing-date";
 
 export function SubscriptionBanner({
   plan,

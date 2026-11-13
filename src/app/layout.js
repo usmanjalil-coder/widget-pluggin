@@ -1,5 +1,4 @@
-import { brandColors } from "@/config/brand";
-import { siteTheme } from "@/config/theme";
+import { siteTheme, siteBrowserColors } from "@/config/theme";
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import localFont from "next/font/local";
@@ -31,8 +30,8 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: brandColors.lightPrimary },
-    { media: "(prefers-color-scheme: dark)", color: brandColors.darkBackground },
+    { media: "(prefers-color-scheme: light)", color: siteBrowserColors.light },
+    { media: "(prefers-color-scheme: dark)", color: siteBrowserColors.dark },
   ],
 };
 

@@ -1,11 +1,11 @@
 "use client";
 
 import useMobileMenuClose from "@/components/shared/useMobileMenuClose";
-import Link from "next/link";
+import { NavLink } from "./NavLink";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AuthActions } from "./MarketingAuth";
 
-export default function MarketingMobileMenu({ open, onOpenChange, navigation }) {
+export default function MarketingMobileMenu({ open, onOpenChange, navigation, pathname, activeSection }) {
   const closeHandlers = useMobileMenuClose(open, onOpenChange, 768);
   return (
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -15,13 +15,16 @@ export default function MarketingMobileMenu({ open, onOpenChange, navigation }) 
           </SheetHeader>
           <div className="flex flex-col gap-2 text-sm text-foreground">
             {navigation.map((item) => (
-              <Link
+              <NavLink
                 key={item.label}
                 href={item.href}
-                className="rounded-lg px-2 py-2 hover:bg-background"
+                pathname={pathname}
+                activeSection={activeSection}
+                mobile
+                onClick={() => onOpenChange(false)}
               >
                 {item.label}
-              </Link>
+              </NavLink>
             ))}
             <AuthActions mobile />
           </div>

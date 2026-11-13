@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Logo from "@/components/brand/Logo";
 import { Check, CircleCheck, RotateCcw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/lib/brand";
@@ -147,7 +147,7 @@ export default function HeroDemo() {
           <div className={`${styles.scene} ${at >= 12000 ? styles.fading : ""} grid h-[400px] min-w-0 gap-3 md:grid-cols-[1.15fr_1fr]`}>
             <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
               <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-3">
-                <Image src={brand.iconPath} alt="" width={28} height={28} unoptimized />
+                <Logo size={28} showWordmark={false} />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Tellvira assistant</p>
                   <p className="text-[10px] text-muted-foreground">Sample conversation</p>

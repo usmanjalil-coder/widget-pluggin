@@ -1,5 +1,7 @@
 "use client";
 
+import AuthLogo from "@/components/auth/AuthLogo";
+
 import ThemeToggle from "@/components/shared/ThemeToggle";
 
 import { useEffect, useState } from "react";
@@ -81,6 +83,7 @@ export default function ResetPasswordPage() {
         className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8"
         aria-labelledby="reset-title"
       >
+        <AuthLogo />
         <header className="mb-6 flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Account security</p>

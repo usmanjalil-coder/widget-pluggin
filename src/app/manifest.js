@@ -1,4 +1,4 @@
-import { brandColors } from "@/config/brand";
+import { siteBrowserColors } from "@/config/theme";
 
 export default function manifest() {
   return {
@@ -19,7 +19,7 @@ export default function manifest() {
       },
     ],
     display: "standalone",
-    theme_color: brandColors.lightPrimary,
-    background_color: brandColors.lightBackground,
+    theme_color: siteBrowserColors.light,
+    background_color: siteBrowserColors.background,
   };
 }

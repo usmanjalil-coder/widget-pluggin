@@ -141,6 +141,7 @@ export const posts = [
     ...dated,
     slug: "chatbot-faq-template-for-small-business",
     title: "A chatbot FAQ template for small businesses",
+    highlight: "FAQ template",
     metaTitle: "Small Business Chatbot FAQ Template and Guide | Tellvira",
     metaDescription:
       "Use this practical FAQ template to organize 25 common small business questions, write usable answers, and decide which requests should go to your team.",

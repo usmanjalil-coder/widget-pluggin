@@ -27,6 +27,9 @@
   --input: var(--border);
   --primary: var(--brand-600);
   --primary-text: #0f766e;
+  --logo-from: #0f766e;
+  --logo-to: #0f766e;
+  --logo-accent: #5eead4;
   --primary-hover: var(--brand-700);
   --primary-foreground: var(--brand-white);
   --contrast-dark: #18181b;
@@ -58,10 +61,11 @@
 }
 .dark,
 [data-surface="dark"] {
-  --primary-gradient: linear-gradient(90deg, #0f8a80 0%, #0d6b64 100%);
-  --primary-gradient-hover: linear-gradient(90deg, #0d7d74 0%, #0b5e58 100%);
   --primary: var(--brand-400);
   --primary-text: #2dd4bf;
+  --logo-from: #0f766e;
+  --logo-to: #0f766e;
+  --logo-accent: #5eead4;
   --primary-hover: var(--brand-300);
   --primary-foreground: var(--brand-950);
   --ring: var(--brand-300);
@@ -98,6 +102,9 @@
   --border: #e7e5e4;
   --primary: #d97706;
   --primary-text: #c2410c;
+  --logo-from: #f59e0b;
+  --logo-to: #ff5722;
+  --logo-accent: #fde68a;
   --primary-hover: #b45309;
   --primary-foreground: #1a1206;
   --accent-soft: #fef3c7;
@@ -109,8 +116,6 @@
 }
 :root[data-theme="ember"].dark,
 [data-theme="ember"] [data-surface="dark"] {
-  --primary-gradient: linear-gradient(90deg, #f59e0b 0%, #ff5722 100%);
-  --primary-gradient-hover: linear-gradient(90deg, #e08f09 0%, #e64a19 100%);
   --background: #0e0e0f;
   --foreground: #ffffff;
   --card: #161617;
@@ -119,6 +124,9 @@
   --border: #2a2a2c;
   --primary: #f59e0b;
   --primary-text: #f59e0b;
+  --logo-from: #f59e0b;
+  --logo-to: #ff5722;
+  --logo-accent: #fde68a;
   --primary-hover: #d97706;
   --primary-foreground: #1a1206;
   --accent-soft: #33240e;
@@ -155,10 +163,6 @@
 }
 .btn-primary-gradient:hover {
   background-image: var(--primary-gradient-hover);
-}
-.btn-primary-gradient:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 3px;
 }
 .btn-primary-gradient:disabled,
 .btn-primary-gradient[aria-disabled="true"],
@@ -262,6 +266,33 @@
   tbody tr:hover {
     background: var(--muted);
   }
+}
+
+/* Shared field focus also covers native controls outside the UI primitives. */
+:is(.field-focus, input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="button"], [type="submit"], [type="reset"], [type="image"]), textarea, select, [data-slot="select-trigger"]) {
+  --field-focus-color: var(--primary);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+:is(.field-focus, input, textarea, select, [data-slot="select-trigger"])[aria-invalid="true"] {
+  --field-focus-color: var(--destructive);
+  border-color: var(--destructive);
+}
+:is(.field-focus, input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="button"], [type="submit"], [type="reset"], [type="image"]), textarea, select, [data-slot="select-trigger"]):focus {
+  outline: none;
+  border-color: var(--field-focus-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--field-focus-color) 18%, transparent);
+}
+:is(button:not([data-slot="select-trigger"]), a, input[type="checkbox"], input[type="radio"], [role="checkbox"]):focus {
+  --tw-ring-shadow: 0 0 0 0 transparent;
+  --tw-ring-offset-shadow: 0 0 0 0 transparent;
+}
+:is(button:not([data-slot="select-trigger"]), a, input[type="checkbox"], input[type="radio"], [role="checkbox"]):focus:not(:focus-visible) {
+  outline: none;
+}
+:is(button:not([data-slot="select-trigger"]), a, input[type="checkbox"], input[type="radio"], [role="checkbox"]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
   *,
