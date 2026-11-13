@@ -155,7 +155,7 @@ export default async function PostPage({ params }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <MarketingAuthCta
             loggedOutLabel="Start free"
-            className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+            className="rounded-lg btn-primary-gradient px-5 py-3 text-sm font-semibold text-primary-foreground"
           />
           <Link
             href="/pricing"

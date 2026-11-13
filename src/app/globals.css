@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 :root {
+  --primary-gradient: linear-gradient(90deg, #0f8a80 0%, #0d6b64 100%);
+  --primary-gradient-hover: linear-gradient(90deg, #0d7d74 0%, #0b5e58 100%);
   --brand-50: #f0fdfa;
   --brand-100: #ccfbf1;
   --brand-200: #99f6e4;
@@ -24,13 +26,15 @@
   --border: #e4e4e7;
   --input: var(--border);
   --primary: var(--brand-600);
+  --primary-text: #0f766e;
   --primary-hover: var(--brand-700);
   --primary-foreground: var(--brand-white);
   --contrast-dark: #18181b;
   --contrast-light: #ffffff;
   --secondary: var(--muted);
   --secondary-foreground: var(--foreground);
-  --accent: var(--brand-50);
+  --accent-soft: var(--brand-50);
+  --accent: var(--accent-soft);
   --accent-foreground: var(--brand-700);
   --ring: var(--brand-600);
   --sidebar-primary: var(--primary);
@@ -52,8 +56,12 @@
   --destructive-bg: #fef2f2;
   --radius: 10px;
 }
-.dark {
+.dark,
+[data-surface="dark"] {
+  --primary-gradient: linear-gradient(90deg, #0f8a80 0%, #0d6b64 100%);
+  --primary-gradient-hover: linear-gradient(90deg, #0d7d74 0%, #0b5e58 100%);
   --primary: var(--brand-400);
+  --primary-text: #2dd4bf;
   --primary-hover: var(--brand-300);
   --primary-foreground: var(--brand-950);
   --ring: var(--brand-300);
@@ -67,13 +75,97 @@
   --muted-foreground: #a1a1aa;
   --skeleton: #52525b;
   --border: #3f3f46;
-  --accent: var(--brand-950);
+  --accent-soft: var(--brand-950);
   --accent-foreground: var(--brand-200);
   --success-bg: #073d30;
   --success-foreground: #6ee7b7;
   --warning-bg: #422d0e;
   --warning-foreground: #fcd34d;
   --destructive-bg: #451e21;
+}
+/* Keep existing decorative brand tokens theme-aware without changing teal. */
+:root[data-theme="ember"] {
+  --brand-300: var(--accent-soft);
+  --brand-600: var(--primary);
+  --brand-white: var(--primary-foreground);
+  --primary-gradient: linear-gradient(90deg, #f59e0b 0%, #ff5722 100%);
+  --primary-gradient-hover: linear-gradient(90deg, #e08f09 0%, #e64a19 100%);
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  --border: #e7e5e4;
+  --primary: #d97706;
+  --primary-text: #c2410c;
+  --primary-hover: #b45309;
+  --primary-foreground: #1a1206;
+  --accent-soft: #fef3c7;
+  --accent-foreground: #92400e;
+  --ring: #d97706;
+  --chart-1: #d97706;
+  --chart-2: #b45309;
+  --chart-3: #92400e;
+}
+:root[data-theme="ember"].dark,
+[data-theme="ember"] [data-surface="dark"] {
+  --primary-gradient: linear-gradient(90deg, #f59e0b 0%, #ff5722 100%);
+  --primary-gradient-hover: linear-gradient(90deg, #e08f09 0%, #e64a19 100%);
+  --background: #0e0e0f;
+  --foreground: #ffffff;
+  --card: #161617;
+  --muted: #222223;
+  --muted-foreground: #a1a1aa;
+  --border: #2a2a2c;
+  --primary: #f59e0b;
+  --primary-text: #f59e0b;
+  --primary-hover: #d97706;
+  --primary-foreground: #1a1206;
+  --accent-soft: #33240e;
+  --accent-foreground: #fbbf24;
+  --ring: #f59e0b;
+  --chart-1: #f59e0b;
+  --chart-2: #fbbf24;
+  --chart-3: #fde68a;
+}
+/* Resolve aliases locally so dark hero children use the surface's tokens. */
+[data-surface="dark"] {
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --input: var(--border);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--accent-soft);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-ring: var(--ring);
+}
+.text-highlight {
+  color: var(--primary-text);
+}
+.btn-primary-gradient {
+  background-color: var(--primary);
+  background-image: var(--primary-gradient);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.btn-primary-gradient:hover {
+  background-image: var(--primary-gradient-hover);
+}
+.btn-primary-gradient:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.btn-primary-gradient:disabled,
+.btn-primary-gradient[aria-disabled="true"],
+.btn-primary-gradient[data-disabled] {
+  background-image: none;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
 }
 @theme inline {
   --color-background: var(--background);
@@ -99,6 +191,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-skeleton: var(--skeleton);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);

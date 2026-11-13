@@ -200,7 +200,7 @@ export default function AppearancePreview({
       {!mobileInline && (
         <Button
           type="button"
-          className="fixed right-4 bottom-20 z-30 shadow-lg lg:hidden"
+          className="fixed right-4 bottom-20 z-30 shadow-xs lg:hidden"
           onClick={() => setSheetOpen(true)}
         >
           Preview

@@ -162,17 +162,17 @@ export default function MarketingHome() {
           faqSchema(homeFaq),
         ]}
       />
-      <section className="mx-auto flex h-auto min-h-0 max-w-7xl items-center px-4 pb-2 pt-12 sm:px-6">
+      <section className="mx-auto flex h-auto min-h-0 max-w-7xl items-center px-4 pb-2 pt-12 text-foreground sm:px-6">
         <div className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="min-w-0">
             <h1 className="max-w-xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              AI chatbot for small business websites
+              AI chatbot for <span className="text-highlight">small business</span> websites
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
               Answers visitor questions 24/7 from your own content, and turns them into leads. Set up in minutes with one script tag.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <MarketingAuthCta className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground hover:bg-primary-hover sm:w-auto" />
+              <MarketingAuthCta className="inline-flex h-12 w-full items-center justify-center rounded-full btn-primary-gradient px-7 text-sm font-semibold text-primary-foreground sm:w-auto" />
               <Link href="#how-it-works"
                 className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border bg-card px-7 text-sm font-semibold text-foreground hover:bg-background sm:w-auto"
               >See how it works</Link>
@@ -205,7 +205,7 @@ export default function MarketingHome() {
             >
               <span
                 aria-hidden="true"
-                className="absolute right-6 top-0 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-[var(--brand-600)] font-bold text-white ring-[3px] ring-background motion-safe:transition-transform motion-safe:group-hover:scale-105 md:size-9"
+                className="absolute right-6 top-0 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-[var(--brand-600)] font-bold text-[var(--brand-white)] ring-[3px] ring-background motion-safe:transition-transform motion-safe:group-hover:scale-105 md:size-9"
               >
                 {index + 1}
               </span>
@@ -285,7 +285,7 @@ export default function MarketingHome() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <h2 className="text-3xl font-semibold">Start your website assistant today.</h2>
             <div className="flex flex-wrap gap-3">
-              <MarketingAuthCta className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover" />
+              <MarketingAuthCta className="rounded-full btn-primary-gradient px-5 py-3 text-sm font-semibold text-primary-foreground" />
               <Link
                 href="/contact"
                 className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-card hover:bg-muted hover:text-foreground"

@@ -39,7 +39,7 @@ function PlanCard({ plan, showAdditionalFeatures }) {
         loggedInHref="/dashboard/billing"
         loggedOutLabel={plan.key === "free" ? "Start free" : `Choose ${plan.name}`}
         loggedInLabel="Manage plan"
-        className="mt-7 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground motion-safe:transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="mt-7 inline-flex w-full items-center justify-center rounded-lg btn-primary-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </article>
   );

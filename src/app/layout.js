@@ -1,4 +1,5 @@
 import { brandColors } from "@/config/brand";
+import { siteTheme } from "@/config/theme";
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import localFont from "next/font/local";
@@ -37,7 +38,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" data-theme={siteTheme} className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full bg-background text-foreground">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

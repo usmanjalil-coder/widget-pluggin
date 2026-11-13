@@ -116,7 +116,7 @@ export function PostToc({ items }) {
               aria-current={active === id ? "location" : undefined}
               onClick={(event) => navigate(event, id)}
               className={`block border-l-2 px-3 py-2 text-sm leading-6 [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${active === id
-                ? "border-[#0F766E] font-semibold text-[#0F766E] dark:border-[#5EEAD4] dark:text-[#5EEAD4]"
+                ? "border-primary font-semibold text-primary dark:border-ring dark:text-ring"
                 : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"}`}
             >
               {text}

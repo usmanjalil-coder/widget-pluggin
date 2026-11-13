@@ -75,7 +75,7 @@ export function AuthActions({ mobile = false }) {
         className={`${mobile ? "mt-4 text-center" : ""} rounded-lg px-3 py-2 text-sm font-medium text-foreground motion-safe:transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
       />
       <MarketingAuthCta
-        className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground motion-safe:transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-lg btn-primary-gradient px-4 py-2 text-center text-sm font-medium text-primary-foreground motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </>
   );
