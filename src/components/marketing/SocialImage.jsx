@@ -1,6 +1,14 @@
-import { brandColors } from "@/config/brand";
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/seo";
+
+// ImageResponse renders independently of the site's CSS theme tokens.
+const ember = {
+  background: "#0e0e0f",
+  foreground: "#ffffff",
+  primary: "#f59e0b",
+  accent: "#fde68a",
+  gradient: "linear-gradient(90deg, #f59e0b 0%, #ff5722 100%)",
+};
 
 export function createSocialImage() {
   return new ImageResponse(
@@ -12,16 +20,28 @@ export function createSocialImage() {
         width: "100%",
         height: "100%",
         padding: "80px",
-        background: brandColors.lightPrimary,
-        color: "white",
+        background: ember.background,
+        color: ember.foreground,
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ display: "flex", fontSize: 112, fontWeight: 700 }}>{siteConfig.name}</div>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: 12,
+          backgroundImage: ember.gradient,
+        }}
+      />
+      <div style={{ display: "flex", fontSize: 112, fontWeight: 700 }}>
+        {siteConfig.name.slice(0, 4)}<span style={{ color: ember.primary }}>{siteConfig.name.slice(4)}</span>
+      </div>
       <div style={{ display: "flex", fontSize: 48, marginTop: 32, maxWidth: 1000 }}>
         {siteConfig.tagline}
       </div>
-      <div style={{ display: "flex", fontSize: 28, marginTop: 48 }}>
+      <div style={{ display: "flex", fontSize: 28, marginTop: 48, color: ember.accent }}>
         Answer questions. Capture leads. Start free.
       </div>
     </div>,
