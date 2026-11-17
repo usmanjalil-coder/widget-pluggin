@@ -4,13 +4,14 @@ import { absoluteUrl, isProductionSite } from "@/lib/seo";
 
 // Content review dates, updated only when the corresponding page changes.
 const pageDates = {
-  "/": "2026-10-30",
-  "/pricing": "2026-10-30",
-  "/solutions": "2026-10-30",
-  "/blog": "2026-10-31",
+  "/": "2026-11-17",
+  "/pricing": "2026-11-17",
+  "/solutions": "2026-11-17",
+  "/blog": "2026-11-17",
+  "/wordpress-chatbot": "2026-11-17",
   "/terms": "2026-10-30",
   "/privacy": "2026-10-30",
-  "/refunds": "2026-10-30",
+  "/refunds": "2026-11-17",
   "/contact": "2026-10-30",
 };
 

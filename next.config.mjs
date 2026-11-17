@@ -33,9 +33,22 @@ const nextConfig = {
     ];
   },
   async redirects() {
-    if (!isProductionSite) return [];
+    const solutionRedirects = [
+      {
+        source: "/solutions/salons",
+        destination: "/solutions",
+        permanent: true,
+      },
+      {
+        source: "/solutions/online-stores",
+        destination: "/solutions",
+        permanent: true,
+      },
+    ];
+    if (!isProductionSite) return solutionRedirects;
     const host = new URL(SITE_URL).host.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return [
+      ...solutionRedirects,
       {
         source: "/:path*",
         has: [{ type: "host", value: `www\\.${host}` }],

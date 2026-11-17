@@ -7,9 +7,9 @@ import { JsonLd } from "@/components/marketing/JsonLd";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 
 export const metadata = buildMetadata({
-  title: "AI Chatbot Pricing: Free, Starter & Pro Plans",
+  title: { absolute: "Pricing – Free AI Chatbot Plan for Your Website | Tellvira" },
   description:
-    "Compare Tellvira AI chatbot pricing for Free, Starter and Pro plans. Explore monthly conversation limits, lead capture and features to find your website's fit.",
+    "Start with a free AI chatbot for your website, upgrade when you grow. Simple plans, 30-day money-back guarantee.",
   path: "/pricing",
 });
 

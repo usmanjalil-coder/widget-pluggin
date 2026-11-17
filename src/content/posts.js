@@ -16,13 +16,139 @@ const dated = { publishedAt: "2026-10-31", updatedAt: "2026-10-31", published: t
 
 export const posts = [
   {
+    published: true,
+    publishedAt: "2026-11-17",
+    updatedAt: "2026-11-17",
+    slug: "how-much-does-an-ai-chatbot-cost-for-a-small-business",
+    title: "How much does an AI chatbot cost for a small business",
+    highlight: "AI chatbot cost",
+    metaTitle: "How Much Does an AI Chatbot Cost? | Tellvira",
+    metaDescription:
+      "How much does chatbot cost for a small business? Compare monthly budgets, usage limits, and Tellvira plans: Free $0, Starter $29, and Pro $79.",
+    excerpt:
+      "Understand monthly subscriptions, usage limits, setup time, and the practical costs of a website assistant before choosing a plan.",
+    category: "Pricing",
+    relatedNicheSlugs: ["dental-practices", "real-estate", "restaurants"],
+    relatedPostSlugs: [
+      "chatbot-vs-live-chat-for-small-business",
+      "how-to-add-an-ai-chatbot-to-wordpress-or-shopify",
+    ],
+    faq: [],
+    body: [
+      {
+        type: "p",
+        content:
+          "How much does an AI chatbot cost for a small business? The useful answer includes the subscription, the amount of traffic it covers, and the time your team spends preparing content. A low monthly fee is only helpful if the assistant can answer your actual questions and pass inquiries to someone who will respond. Start with a small, clearly defined job rather than buying every available feature.",
+      },
+      {
+        type: "h2",
+        text: "Typical monthly budgets",
+      },
+      {
+        type: "p",
+        content:
+          "Pricing varies widely. Many website chatbot tools range from a free plan for limited testing to a few hundred dollars per month for higher volume or broader features. These are general planning ranges, not a market average or a quote. Features and usage allowances differ, and a free offering may be a trial rather than a recurring free plan.",
+      },
+      {
+        type: "p",
+        content:
+          "Custom development is a different purchase. Integration work, private systems, ongoing maintenance, and human support can add separate costs. Ask for a written scope instead of comparing that project with a simple website subscription. You may not need custom work if your first goal is answering published FAQs and collecting contact details.",
+      },
+      {
+        type: "h2",
+        text: "Tellvira plans at a glance",
+      },
+      {
+        type: "p",
+        content:
+          "Tellvira’s current plans snapshot lists Free at $0, Starter at $29 per month, and Pro at $79 per month, in US dollars. Free includes one bot and 50 monthly conversations. Starter includes one bot and 500 monthly conversations. Pro includes three bots and 2,000 monthly conversations. Paid plans remove the Tellvira branding badge. Applicable taxes may be added at checkout.",
+      },
+      {
+        type: "p",
+        content:
+          "The Free plan lets you check whether your content produces useful answers before committing to a subscription. Tellvira offers a 30-day money-back guarantee for paid subscriptions. Read the refund policy for the request process. Choose a plan based on your expected conversation volume and number of bots, then review actual usage after launch.",
+      },
+      {
+        type: "p",
+        content: [
+          {
+            href: "/pricing",
+            text: "Compare Tellvira pricing",
+          },
+          " for the current plan details, and read the ",
+          {
+            href: "/refunds",
+            text: "Refund Policy",
+          },
+          " before subscribing.",
+        ],
+      },
+      {
+        type: "h2",
+        text: "Check what the usage limit counts",
+      },
+      {
+        type: "p",
+        content:
+          "One provider may count messages, another conversations, and another AI credits. Those units are not interchangeable. A long conversation can contain many visitor messages, so a price per message cannot be compared directly with a price per session. Ask what happens at the limit, whether extra usage is automatic, and whether unused allowance carries over.",
+      },
+      {
+        type: "p",
+        content:
+          "Tellvira counts conversations rather than individual messages. Limits apply across the owner’s bots, so adding a bot does not create a separate monthly allowance. Dashboard test chats are not counted toward that allowance. Track visitor sessions after launch and leave room for seasonal traffic instead of assuming every page view becomes a conversation.",
+      },
+      {
+        type: "h2",
+        text: "Budget for content and follow-up",
+      },
+      {
+        type: "p",
+        content:
+          "Your subscription does not remove the need for good source material. Someone should review opening hours, services, prices, policies, and contact instructions before launch. Set aside time to correct unclear answers and update content when the business changes. A concise, current FAQ is more useful than a large collection of outdated documents.",
+      },
+      {
+        type: "p",
+        content:
+          "Lead capture also creates work for your team. Decide who checks inquiry emails and how they respond. An appointment request needs a person to confirm availability; collecting a preferred date does not book a calendar slot. Include this follow-up time when estimating AI chatbot cost, especially if several people share responsibility for new inquiries.",
+      },
+      {
+        type: "h2",
+        text: "Compare the total, not just the headline price",
+      },
+      {
+        type: "p",
+        content:
+          "Check whether branding removal, additional bots, content limits, and support are included. Review the billing interval carefully: an advertised monthly equivalent may require an annual commitment. Ask about cancellation, taxes, and what happens when you change plans. Keep your requirements short so optional extras do not distract from the work you actually need.",
+      },
+      {
+        type: "p",
+        content:
+          "For a useful comparison, run the same questions through each option using your own content. Include an answer your pages explain clearly, a missing detail, and a request requiring staff follow-up. Check the result on mobile. A low price does not compensate for misleading answers, and a higher price does not guarantee a better fit.",
+      },
+      {
+        type: "h2",
+        text: "Start with a measured trial",
+      },
+      {
+        type: "p",
+        content:
+          "Write down what success means before installing the widget: visitors find routine answers, contact details arrive correctly, and staff understand the handoff. Review a small sample of conversations and note unanswered questions. Improve the source content first, then decide whether a larger allowance is justified. Avoid projecting revenue gains from a handful of chats.",
+      },
+      {
+        type: "p",
+        content:
+          "For a small business, the best starting budget is one you can evaluate against actual use. Start free, confirm that the assistant fits your website and workflow, and upgrade when the limits become relevant. Keep a regular review on the calendar so the subscription and the content continue to match your business.",
+      },
+    ],
+  },
+  {
     ...dated,
     slug: "how-to-answer-patient-questions-after-hours",
     title: "How to answer patient questions after hours",
     highlight: "patient questions",
     metaTitle: "Answer Dental Patient Questions After Hours | Tellvira",
     metaDescription:
-      "A practical guide to answering dental office questions after hours, collecting appointment requests, and keeping clinical decisions with your front desk team.",
+      "Answer dental office questions after hours, collect appointment requests, and keep clinical decisions with your practice team. A practical website guide.",
     excerpt:
       "Build a useful after-hours front desk for office questions while keeping health details and appointment confirmation with your team.",
     category: "Dental practices",
@@ -197,7 +323,7 @@ export const posts = [
         "A service or product list is rarely enough for a new visitor. Explain the difference between common options, who should discuss a special request with staff, and where prices are fixed or only starting points. Keep the answer tied to the current public page rather than an internal price sheet that may change without notice.",
         [
           "A salon might explain service duration and staff specialties; see the ",
-          link("/solutions/salons", "salon example"),
+          link("/solutions", "industry examples"),
           ". A restaurant can explain menu categories without claiming that a dish is safe for someone with an allergy; see the ",
           link("/solutions/restaurants", "restaurant example"),
           ". Different industries need different limits, even when they use the same FAQ format.",
@@ -232,7 +358,7 @@ export const posts = [
         "Policy questions often reveal the most expensive gaps. A customer may want the cancellation deadline, exchange conditions, delivery range, or gift card terms before deciding to proceed. Publish the exact rule and the channel for a specific exception. Keep business policies separate from a third-party provider's rules.",
         [
           "An ",
-          link("/solutions/online-stores", "online store"),
+          link("/solutions", "industry solutions"),
           " needs public shipping and return content, but order-specific problems must go to staff. Restaurants need dated holiday hours and allergy handoffs. Every business should make privacy information easy to find without putting private account records into the assistant's knowledge source.",
         ],
         [
@@ -485,7 +611,7 @@ export const posts = [
           "The ",
           link("/solutions/restaurants", "restaurant solution"),
           " and ",
-          link("/solutions/online-stores", "online store solution"),
+          link("/solutions", "industry solutions"),
           " show those boundaries in context. Neither option should create a false expectation of reservation confirmation or order access. Staff remain responsible for decisions that require current operational data.",
         ],
         [
@@ -585,7 +711,11 @@ export const posts = [
       ),
       ...section(
         "Add it to WordPress or WooCommerce",
-        "A footer-scripts plugin can place the snippet without changing the theme's files. In the plugin's settings, choose the site-wide footer or body-end area, paste the full dashboard snippet, save, and view a published page. Plugin labels vary, so follow the documentation for the one your site already uses. Check that the snippet is added once, rather than once by the plugin and again by the theme.",
+        [
+          "A footer-scripts plugin can place the snippet without changing the theme's files. For a dedicated walkthrough, see the ",
+          link("/wordpress-chatbot", "WordPress chatbot guide"),
+          ". In the plugin's settings, choose the site-wide footer or body-end area, paste the full dashboard snippet, save, and view a published page. Plugin labels vary, so follow the documentation for the one your site already uses. Check that the snippet is added once, rather than once by the plugin and again by the theme.",
+        ],
         "If your team edits theme code instead, use a child theme or another maintainable method. Changes made directly to a theme may be lost during updates. WooCommerce uses the same WordPress website placement for the assistant; installing the script does not give it access to WooCommerce orders. Order-specific problems should be emailed to your support team.",
         [
           list(
@@ -604,7 +734,7 @@ export const posts = [
         "Shopify provides a theme code editor for stores that need code changes. In the active theme, use the supported code location near the closing body tag and paste the complete snippet once. Work in a duplicate theme first if your store uses a customized theme, then preview and publish according to your normal process. A theme change may need the snippet added again.",
         [
           "Test on a product page, a collection page, and a policy page. The assistant on your storefront does not automatically run inside hosted checkout. The ",
-          link("/solutions/online-stores", "online store solution"),
+          link("/solutions", "industry solutions"),
           " explains the useful boundary: it can answer published shipping, returns, sizing, and care questions, then collect order-specific requests for staff. It cannot see an order's status or live inventory.",
         ],
         [

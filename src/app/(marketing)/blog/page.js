@@ -14,7 +14,7 @@ function formatDate(iso) {
 
 export const metadata = {
   ...buildMetadata({
-    title: "Small Business Website Chatbot Guides | Tellvira",
+    title: { absolute: "Small Business Website Chatbot Guides | Tellvira" },
     description:
       "Practical guides on website FAQs, lead capture, live chat, and installing a content-based assistant for small businesses, written by the Tellvira team.",
     path: "/blog",

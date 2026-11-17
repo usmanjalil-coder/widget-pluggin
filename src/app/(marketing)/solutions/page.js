@@ -47,6 +47,7 @@ export default function SolutionsPage() {
           </article>
         ))}
       </div>
+      <p className="mt-8 text-sm text-muted-foreground">Also works for salons and online stores: answer service or policy questions from your content and pass inquiries to your team.</p>
     </main>
   );
 }

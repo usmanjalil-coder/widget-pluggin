@@ -9,10 +9,8 @@ import {
   SearchX,
   Check,
   Smile,
-  Scissors,
   Home,
   UtensilsCrossed,
-  ShoppingBag,
 } from "lucide-react";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import MarketingPlans from "@/components/marketing/MarketingPlans";
@@ -24,9 +22,9 @@ import { homeFaq } from "@/content/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 
 export const metadata = buildMetadata({
-  title: { absolute: "AI Chatbot for Small Business Websites & Leads | Tellvira" },
+  title: { absolute: "AI Chatbot for Your Website – Capture Leads | Tellvira" },
   description:
-    "Add an AI chatbot to your small business website. Answer visitor questions, capture leads and appointment requests around the clock. Start free with Tellvira.",
+    "Add an AI chatbot to your website in minutes. Built for small businesses: answers questions, captures leads and collects appointment requests. Start free.",
   path: "/",
 });
 
@@ -52,7 +50,7 @@ const features = [
   {
     title: "Trained on your content",
     icon: BookOpen,
-    description: "Answer questions using your website and documents.",
+    description: "A chatbot for small business that answers from your website and documents.",
   },
   {
     title: "Your brand, your look",
@@ -88,11 +86,6 @@ const useCases = [
     icon: <Smile className="size-5" aria-hidden="true" />,
   },
   {
-    label: "Salons",
-    href: "/solutions/salons",
-    icon: <Scissors className="size-5" aria-hidden="true" />,
-  },
-  {
     label: "Real estate",
     href: "/solutions/real-estate",
     icon: <Home className="size-5" aria-hidden="true" />,
@@ -101,11 +94,6 @@ const useCases = [
     label: "Restaurants",
     href: "/solutions/restaurants",
     icon: <UtensilsCrossed className="size-5" aria-hidden="true" />,
-  },
-  {
-    label: "Online stores",
-    href: "/solutions/online-stores",
-    icon: <ShoppingBag className="size-5" aria-hidden="true" />,
   },
 ];
 
@@ -166,10 +154,10 @@ export default function MarketingHome() {
         <div className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="min-w-0">
             <h1 className="max-w-xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              AI chatbot for <span className="text-highlight">small business</span> websites
+              AI chatbot for <span className="text-highlight">your website</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Answers visitor questions 24/7 from your own content, and turns them into leads. Set up in minutes with one script tag.
+              An AI chatbot for small businesses that answers visitor questions 24/7 from your content and captures leads. Add it to your website with one script tag.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <MarketingAuthCta className="inline-flex h-12 w-full items-center justify-center rounded-full btn-primary-gradient px-7 text-sm font-semibold text-primary-foreground sm:w-auto" />
@@ -249,8 +237,9 @@ export default function MarketingHome() {
           ))}
         </div>
         <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm font-semibold text-primary">
+          <Link href="/wordpress-chatbot">WordPress chatbot</Link>
           <Link href="/solutions">Explore AI chatbot solutions by industry</Link>
-          <Link href="/solutions/dental-practices">AI chatbot for dental practices</Link>
+          <Link href="/solutions/dental-practices">AI receptionist for dental practices</Link>
         </div>
       </section>
 

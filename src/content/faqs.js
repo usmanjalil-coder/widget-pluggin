@@ -1,5 +1,9 @@
 export const homeFaq = [
   [
+    "How do I add an AI chatbot for my website?",
+    "Create your bot, add your website content, and paste the install snippet into your site. This AI chatbot for website visitors answers from your content and sends leads or appointment requests to your team for follow-up.",
+  ],
+  [
     "How long does setup take?",
     "Setup takes a few steps: import your docs, match the colors, and add your script snippet.",
   ],
@@ -26,6 +30,10 @@ export const homeFaq = [
 ].map(([question, answer]) => ({ question, answer }));
 
 export const billingFaq = [
+  [
+    "Can I use an AI chatbot for my website free?",
+    "Yes. Tellvira has a Free plan at $0 with 50 conversations per month and one bot. Start without a credit card, test your content, and upgrade when you need a higher monthly limit.",
+  ],
   [
     "How does billing work?",
     "Paid plans are billed monthly. Paddle handles payments and taxes as Merchant of Record; applicable taxes may be added at checkout depending on your location.",
