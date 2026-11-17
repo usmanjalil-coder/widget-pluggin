@@ -65,12 +65,12 @@ const features = [
   {
     title: "Works on any website",
     icon: Globe,
-    description: "Add one script to your existing site.",
+    description: "Add a website chat bot to your existing site with one script.",
   },
   {
     title: "Conversation history",
     icon: MessagesSquare,
-    description: "Read past chats and follow up with visitors.",
+    description: "Review web chat bot conversations and follow up with visitors.",
   },
   {
     title: "Unanswered question insights",
