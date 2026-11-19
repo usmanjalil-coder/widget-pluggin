@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ChevronLeft } from "lucide-react";
 import { Button, Card } from "@/components/ui";
 import { getOnboarding } from "@/lib/api/onboarding.api";
+import { getOnboardingNext } from "@/lib/auth-redirect";
 import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import AppearanceStep from "./AppearanceStep";
 import BusinessStep from "./BusinessStep";
@@ -120,10 +121,15 @@ export default function OnboardingFlow() {
     update({ step: Math.max(0, step - 1) });
   }, [step, update]);
 
+  const continueAfterOnboarding = useCallback(() => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(getOnboardingNext(next));
+  }, [router]);
+
   const skip = useCallback(() => {
     if (storageKey) window.localStorage.setItem(`${storageKey}:skipped`, "true");
-    router.push("/dashboard");
-  }, [router, storageKey]);
+    continueAfterOnboarding();
+  }, [continueAfterOnboarding, storageKey]);
 
   const setIndustry = useCallback((industry) => {
     if (!CONTENT[industry]) return;
@@ -220,6 +226,7 @@ export default function OnboardingFlow() {
       assistant={assistant}
       greeting={greeting}
       headingRef={headingRef}
+      onComplete={continueAfterOnboarding}
     />,
   ][step];
 

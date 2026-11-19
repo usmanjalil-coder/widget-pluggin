@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { AlertCircle, Check, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Card } from "@/components/ui";
 import { completeOnboarding } from "@/lib/api/onboarding.api";
 
-export default function DoneStep({ state, assistant, greeting, headingRef }) {
-  const router = useRouter();
+export default function DoneStep({ state, assistant, greeting, headingRef, onComplete }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const checklist = [
@@ -26,7 +24,7 @@ export default function DoneStep({ state, assistant, greeting, headingRef }) {
     try {
       await completeOnboarding({ ...state, botName: assistant, greeting });
       toast.success("Onboarding completed.");
-      router.push("/dashboard");
+      onComplete();
     } catch (saveError) {
       const fieldError = Object.entries(saveError?.errors || {})[0];
       const message = fieldError
@@ -37,7 +35,7 @@ export default function DoneStep({ state, assistant, greeting, headingRef }) {
     } finally {
       setSaving(false);
     }
-  }, [router, saving, state, assistant, greeting]);
+  }, [onComplete, saving, state, assistant, greeting]);
 
   return (
     <div className="mx-auto max-w-xl py-8 text-center">

@@ -22,3 +22,17 @@ export function getSafeNext(next) {
 export function loginUrl(next) {
   return "/login?next=" + encodeURIComponent(getSafeNext(next));
 }
+
+export function getOnboardingNext(next) {
+  const destination = getSafeNext(next);
+  const { pathname } = new URL(destination, "https://internal.invalid");
+  return /^\/onboarding\/?$/.test(decodeURIComponent(pathname)) ? "/dashboard" : destination;
+}
+
+export function onboardingUrl({ next, selectedPlanKey }) {
+  const billing = selectedPlanKey
+    ? "/dashboard/billing?plan=" + encodeURIComponent(selectedPlanKey)
+    : null;
+  const destination = getOnboardingNext(next || billing);
+  return destination === "/dashboard" ? "/onboarding" : "/onboarding?next=" + encodeURIComponent(destination);
+}

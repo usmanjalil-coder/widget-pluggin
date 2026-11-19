@@ -21,7 +21,7 @@ import { getSafeNext } from "@/lib/auth-redirect";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [next, setNext] = useState("/dashboard");
+  const [next, setNext] = useState(null);
   const [plan, setPlan] = useState("free");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,9 +31,11 @@ export default function LoginPage() {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    const nextPlan = new URLSearchParams(window.location.search).get("plan") || "free";
+    const params = new URLSearchParams(window.location.search);
+    const nextPlan = params.get("plan") || "free";
     setPlan(nextPlan);
-    const destination = getSafeNext(new URLSearchParams(window.location.search).get("next"));
+    const rawNext = params.get("next");
+    const destination = rawNext === null ? null : getSafeNext(rawNext);
     setNext(destination);
 
     if (!window.localStorage.getItem("token")) {
@@ -45,7 +47,7 @@ export default function LoginPage() {
 
     getCurrentUser()
       .then(() => {
-        if (active) router.replace(destination);
+        if (active) router.replace(getSafeNext(destination));
       })
       .catch(() => {
         window.localStorage.removeItem("token");
@@ -152,7 +154,7 @@ export default function LoginPage() {
           <p className="mt-5 text-center text-sm text-muted-foreground">
             No account yet?{" "}
             <Link
-              href={`/signup?plan=${encodeURIComponent(plan)}&next=${encodeURIComponent(next)}`}
+              href={`/signup?plan=${encodeURIComponent(plan)}${next ? "&next=" + encodeURIComponent(next) : ""}`}
               className="font-medium text-primary"
             >
               Create one

@@ -18,7 +18,7 @@ import {
   getCurrentUser,
 } from "@/lib/api/auth.api";
 
-import { getSafeNext } from "@/lib/auth-redirect";
+import { getSafeNext, onboardingUrl } from "@/lib/auth-redirect";
 
 const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordRules = [
@@ -164,13 +164,8 @@ export default function SignupPage() {
 
     try {
       establishAuthSession(result);
-      const selectedPlanKey = result.data?.selectedPlanKey;
       window.location.replace(
-        next
-          ? getSafeNext(next)
-          : selectedPlanKey
-            ? "/dashboard/billing?plan=" + encodeURIComponent(selectedPlanKey)
-            : "/onboarding",
+        onboardingUrl({ next, selectedPlanKey: result.data?.selectedPlanKey }),
       );
     } catch (err) {
       setError(
