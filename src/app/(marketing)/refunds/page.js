@@ -15,9 +15,6 @@ export default function RefundsPage() {
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Legal</p>
       <h1 className="mt-3 text-4xl font-semibold text-foreground">Refund Policy</h1>
       <p className="mt-4 text-sm text-muted-foreground">Last updated: November 17, 2026</p>
-      <div className="mt-8 rounded-2xl border border-warning/20 bg-warning-bg p-5 text-sm leading-6 text-warning-foreground">
-        For privacy questions or data requests, contact legal@tellvira.com.
-      </div>
 
       <div className="mt-10 space-y-10 text-sm leading-7 text-foreground">
         <section>
