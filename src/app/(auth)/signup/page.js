@@ -1,5 +1,7 @@
 "use client";
 
+import { AUTH_TOKEN_KEY, removeAuthToken } from "@/lib/auth-storage";
+
 import GoogleSignIn from "@/components/auth/GoogleSignIn";
 import AuthLogo from "@/components/auth/AuthLogo";
 
@@ -62,7 +64,7 @@ export default function SignupPage() {
     const destination = rawNext === null ? null : getSafeNext(rawNext);
     setNext(destination);
 
-    if (!window.localStorage.getItem("token")) return undefined;
+    if (!window.localStorage.getItem(AUTH_TOKEN_KEY)) return undefined;
 
     let active = true;
     getCurrentUser()
@@ -74,7 +76,7 @@ export default function SignupPage() {
             : "/dashboard/billing?plan=" + encodeURIComponent(selectedPlan)),
         );
       })
-      .catch(() => window.localStorage.removeItem("token"));
+      .catch(() => removeAuthToken());
 
     return () => {
       active = false;

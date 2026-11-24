@@ -1,5 +1,7 @@
 "use client";
 
+import { AUTH_TOKEN_KEY, removeAuthToken } from "@/lib/auth-storage";
+
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/api/auth.api";
 import { clearQueryCache } from "@/lib/query-client";
@@ -11,7 +13,7 @@ export default function AuthenticatedRoute({ children }) {
 
   useEffect(() => {
     let active = true;
-    if (!window.localStorage.getItem("token")) {
+    if (!window.localStorage.getItem(AUTH_TOKEN_KEY)) {
       clearQueryCache();
       window.location.replace(loginUrl(window.location.pathname + window.location.search));
       return;
@@ -23,7 +25,7 @@ export default function AuthenticatedRoute({ children }) {
       })
       .catch(() => {
         clearQueryCache();
-        window.localStorage.removeItem("token");
+        removeAuthToken();
         if (active) window.location.replace(loginUrl(window.location.pathname + window.location.search));
       });
 

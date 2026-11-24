@@ -4,6 +4,9 @@ import { brand } from "@/lib/brand";
 import localFont from "next/font/local";
 import ThemeProvider from "@/components/ThemeProvider";
 import { buildMetadata, siteConfig, SITE_URL } from "@/lib/seo";
+import { AUTH_TOKEN_KEY } from "@/lib/auth-storage";
+
+const authAppearanceScript = `try{if(localStorage.getItem(${JSON.stringify(AUTH_TOKEN_KEY)})!==null)document.documentElement.dataset.auth="in"}catch{}`;
 
 const inter = localFont({
   src: "../assets/inter-latin.woff2",
@@ -38,6 +41,9 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme={siteTheme} className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: authAppearanceScript }} />
+      </head>
       <body className="min-h-full bg-background text-foreground">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

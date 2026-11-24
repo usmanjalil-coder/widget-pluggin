@@ -3,6 +3,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { WIDGET_SCRIPT_URL } from "@/lib/widget-script-url";
 import Script from "next/script";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import MarketingSession from "@/components/marketing/MarketingSession";
 import { BrandWordmark } from "@/components/marketing/BrandWordmark";
 import { brand } from "@/lib/brand";
 import { publishedNiches } from "@/content/niches";
@@ -13,6 +14,7 @@ export const revalidate = 300;
 export default function MarketingLayout({ children }) {
   return (
     <div className="min-h-screen bg-card text-foreground">
+      <MarketingSession />
       <MarketingNav />
       {children}
       {process.env.NEXT_PUBLIC_GA_ID && (

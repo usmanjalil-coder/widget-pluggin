@@ -1,3 +1,4 @@
+import { AUTH_TOKEN_KEY, removeAuthToken } from "@/lib/auth-storage";
 import { loginUrl } from "@/lib/auth-redirect";
 import { toast } from "sonner";
 
@@ -6,7 +7,7 @@ const apiPrefix = "/api/v1";
 
 export function getToken() {
   if (typeof window === "undefined") return null;
-  const value = window.localStorage.getItem("token");
+  const value = window.localStorage.getItem(AUTH_TOKEN_KEY);
   if (!value) return null;
   try {
     return JSON.parse(value);
@@ -103,9 +104,9 @@ export default async function callApi({
     }
     return payload;
   } catch (error) {
-    if (error.status === 401 && isBrowser &&
+    if (error.status === 401 && isBrowser && getToken() === token &&
         /^\/(?:dashboard|onboarding)(?:\/|$)/.test(window.location.pathname)) {
-      window.localStorage.removeItem("token");
+      removeAuthToken();
       window.location.replace(loginUrl(window.location.pathname + window.location.search));
     }
     if (loadingToast) toast.dismiss(loadingToast);

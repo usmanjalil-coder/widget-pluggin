@@ -1,5 +1,7 @@
 "use client";
 
+import { AUTH_TOKEN_KEY, removeAuthToken } from "@/lib/auth-storage";
+
 import GoogleSignIn from "@/components/auth/GoogleSignIn";
 import AuthLogo from "@/components/auth/AuthLogo";
 
@@ -39,7 +41,7 @@ export default function LoginPage() {
     const destination = rawNext === null ? null : getSafeNext(rawNext);
     setNext(destination);
 
-    if (!window.localStorage.getItem("token")) {
+    if (!window.localStorage.getItem(AUTH_TOKEN_KEY)) {
       setCheckingSession(false);
       return;
     }
@@ -51,7 +53,7 @@ export default function LoginPage() {
         if (active) router.replace(getSafeNext(destination));
       })
       .catch(() => {
-        window.localStorage.removeItem("token");
+        removeAuthToken();
         if (active) setCheckingSession(false);
       });
 

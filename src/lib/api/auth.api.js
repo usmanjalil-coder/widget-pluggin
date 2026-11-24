@@ -1,3 +1,4 @@
+import { removeAuthToken, storeAuthToken } from "@/lib/auth-storage";
 import callApi from "@/lib/api";
 import { clearQueryCache } from "@/lib/query-client";
 
@@ -13,7 +14,7 @@ export function establishAuthSession(result) {
     throw new Error("The authentication response did not include an access token.");
   }
   clearQueryCache();
-  window.localStorage.setItem("token", JSON.stringify(token));
+  storeAuthToken(token);
 }
 
 export async function endAuthSession() {
@@ -23,7 +24,7 @@ export async function endAuthSession() {
 
   } finally {
     clearQueryCache();
-    window.localStorage.removeItem("token");
+    removeAuthToken();
   }
 }
 
@@ -37,7 +38,7 @@ export async function completeLogin(result, router, destination) {
     try {
       await getCurrentUser();
     } catch (error) {
-      window.localStorage.removeItem("token");
+      removeAuthToken();
       throw error;
     }
   }
