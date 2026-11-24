@@ -6,6 +6,7 @@ import { Bell, Shield, Trash2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, Card, EmptyState, Input, Label, Skeleton, Switch } from "@/components/ui";
+import { forgotPassword } from "@/lib/api/auth.api";
 import PasswordInput from "@/components/shared/PasswordInput";
 import PageHeader from "@/components/shared/PageHeader";
 import BotSaveBar from "./BotSaveBar";
@@ -68,6 +69,7 @@ export default function AccountSettingsPanel({
   const [passwords, setPasswords] = useState(emptyPasswords);
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [needsSetup, setNeedsSetup] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -144,6 +146,7 @@ export default function AccountSettingsPanel({
       setPasswordSuccess("Password updated successfully.");
     } catch (requestError) {
       const errors = requestError.errors || {};
+      if (requestError.code === "password_not_set") { setNeedsSetup(true); setPasswords(emptyPasswords); return; }
       setPasswordErrors({
         currentPassword: errors.current_password?.[0],
         newPassword: errors.password?.[0],
@@ -283,7 +286,23 @@ export default function AccountSettingsPanel({
             {active === "security" && (
               <section aria-label="Security">
                 <Card title="Password" subtitle="Keep your account secure with a unique password.">
-                  <form className="max-w-lg space-y-5" onSubmit={submitPassword}>
+                  {account.has_password === false || needsSetup ? (
+                    <div className="space-y-3">
+                      <p>You signed in with Google, so you don't have a password yet. Use Forgot password to set one.</p>
+                      <Button disabled={passwordSaving} onClick={async () => {
+                        setPasswordSaving(true);
+                        setPasswordSuccess("");
+                        setPasswordErrors({});
+                        try {
+                          await forgotPassword(account.email);
+                          setPasswordSuccess("Check your email for a password reset link.");
+                        } catch {
+                          setPasswordErrors({ form: "Could not send the email. Please try again." });
+                        } finally { setPasswordSaving(false); }
+                      }}>Send password setup email</Button>
+                      <p role="status">{passwordSuccess || passwordErrors.form}</p>
+                    </div>
+                  ) : <form className="max-w-lg space-y-5" onSubmit={submitPassword}>
                     {["currentPassword", "newPassword", "confirmPassword"].map((key) => (
                       <div key={key} className="space-y-2">
                         <Label htmlFor={key}>
@@ -365,7 +384,7 @@ export default function AccountSettingsPanel({
                     <Button type="submit" disabled={!passwordValid || passwordSaving}>
                       {passwordSaving ? "Updating…" : "Update password"}
                     </Button>
-                  </form>
+                  </form>}
                 </Card>
               </section>
             )}

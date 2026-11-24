@@ -1,5 +1,6 @@
 "use client";
 
+import GoogleSignIn from "@/components/auth/GoogleSignIn";
 import AuthLogo from "@/components/auth/AuthLogo";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
@@ -261,6 +262,7 @@ export default function SignupPage() {
           <div className="mb-5 rounded-2xl border border-primary/20 bg-accent px-3 py-2 text-sm text-accent-foreground">
             Selected plan: <span className="font-semibold capitalize">{plan}</span>
           </div>
+          {step === 1 && <GoogleSignIn destination={getSafeNext(next)} />}
           {step === 1 ? (
             <form onSubmit={createAccount} className="space-y-4">
               <div className="space-y-2">

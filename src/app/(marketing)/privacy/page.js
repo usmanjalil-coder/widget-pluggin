@@ -31,6 +31,9 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-semibold">Information we handle</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>
+              If you sign in with Google, we receive your name, email address and Google account ID from Google.
+            </li>
+            <li>
               Account details such as name, email, password credentials, and notification
               preferences.
             </li>

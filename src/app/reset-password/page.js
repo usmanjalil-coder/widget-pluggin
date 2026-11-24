@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [invalid, setInvalid] = useState(false);
+  const [invalidLinkError, setInvalidLinkError] = useState("");
   const [error, setError] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
 
@@ -69,9 +69,16 @@ export default function ResetPasswordPage() {
       toast.success("Password updated successfully.");
       router.replace(loginUrl(next));
     } catch (err) {
-      const code = err.code.toLowerCase();
-      if (code.includes("invalid_reset_token") || code.includes("expired")) setInvalid(true);
-      else setError(err.message || "Unable to reset your password. Please try again.");
+      const code = err.code?.toLowerCase() ?? "";
+      const tokenError = err.errors?.token?.[0];
+      if (tokenError || code.includes("invalid_reset_token") || code.includes("expired")) {
+        setInvalidLinkError(tokenError || "This password reset link is invalid or has expired.");
+      } else {
+        const fieldError = Object.values(err.errors ?? {}).flat().find(
+          (message) => typeof message === "string" && message.trim(),
+        );
+        setError(fieldError || err.message || "Unable to reset your password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -109,13 +116,13 @@ export default function ResetPasswordPage() {
               Request a new link
             </button>
           </div>
-        ) : invalid ? (
+        ) : invalidLinkError ? (
           <div className="space-y-4">
             <p
               role="alert"
               className="rounded-xl border border-destructive/20 bg-destructive-bg p-3 text-sm text-destructive"
             >
-              This reset link is invalid or has expired. Request a new link to continue.
+              {invalidLinkError}
             </p>
             <Button onClick={() => setForgotOpen(true)} className="w-full">
               Request a new link

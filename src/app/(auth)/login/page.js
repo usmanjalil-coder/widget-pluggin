@@ -1,5 +1,6 @@
 "use client";
 
+import GoogleSignIn from "@/components/auth/GoogleSignIn";
 import AuthLogo from "@/components/auth/AuthLogo";
 
 import ThemeToggle from "@/components/shared/ThemeToggle";
@@ -15,7 +16,7 @@ import { useRouter } from "next/navigation";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
 import FullPageLoader from "@/components/shared/FullPageLoader";
-import { establishAuthSession, getCurrentUser, login } from "@/lib/api/auth.api";
+import { completeLogin, getCurrentUser, login } from "@/lib/api/auth.api";
 
 import { getSafeNext } from "@/lib/auth-redirect";
 
@@ -66,8 +67,7 @@ export default function LoginPage() {
 
     try {
       const authResult = await login({ email, password });
-      establishAuthSession(authResult);
-      router.replace(getSafeNext(next));
+      await completeLogin(authResult, router, getSafeNext(next));
     } catch (loginError) {
       setError(loginError.message || "Unable to sign in right now.");
     } finally {
@@ -101,6 +101,7 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <GoogleSignIn destination={getSafeNext(next)} />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label className="mb-1 block text-sm font-medium text-foreground">Email</Label>

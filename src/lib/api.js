@@ -15,9 +15,9 @@ export function getToken() {
   }
 }
 
-function createUrl(url, data, method) {
+function createUrl(url, data, method, prefix) {
   if (!base) throw new Error("NEXT_PUBLIC_API_BASE_URL is required for Laravel API requests.");
-  const endpoint = `${base}${apiPrefix}/${String(url || "").replace(/^\/+/, "")}`;
+  const endpoint = `${base}${prefix}/${String(url || "").replace(/^\/+/, "")}`;
   if (!["GET", "HEAD"].includes(method) || !data) return endpoint;
   const query = new URLSearchParams();
   Object.entries(data).forEach(([key, value]) => {
@@ -58,6 +58,7 @@ export default async function callApi({
   url,
   data,
   method = "GET",
+  prefix = apiPrefix,
   responseType = "json",
   headers = {},
   toastr = true,
@@ -71,7 +72,7 @@ export default async function callApi({
   const loadingToast = toastr && isBrowser ? toast.loading("Loading...") : null;
 
   try {
-    const response = await fetch(createUrl(url, data, requestMethod), {
+    const response = await fetch(createUrl(url, data, requestMethod, prefix), {
       method: requestMethod,
       headers: {
         Accept: "application/json",

@@ -30,6 +30,10 @@ const nextConfig = {
         source: "/dashboard/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
+      {
+        source: "/:authPage(login|signup)",
+        headers: [{ key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" }],
+      },
     ];
   },
   async redirects() {
