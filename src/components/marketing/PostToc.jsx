@@ -8,7 +8,8 @@ export function PostToc({ items }) {
   const root = useRef(null);
   const sidebar = useRef(null);
   const details = useRef(null);
-  const selected = useRef(null);
+  const selected = useRef(false);
+  const selectedTimer = useRef(null);
 
   useEffect(() => {
     const headings = items.map(({ id }) => document.getElementById(id)).filter(Boolean);
@@ -16,8 +17,19 @@ export function PostToc({ items }) {
     const header = document.querySelector("header");
     let observer;
     let offset = 96;
+    const clearSelection = () => {
+      clearTimeout(selectedTimer.current);
+      selected.current = false;
+    };
+    const lockSelection = () => {
+      clearTimeout(selectedTimer.current);
+      selected.current = true;
+      selectedTimer.current = setTimeout(() => {
+        selected.current = false;
+      }, 1500);
+    };
     const update = () => {
-      if (selected.current > Date.now()) return;
+      if (selected.current) return;
       if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
         setActive(items.at(-1)?.id || "");
         return;
@@ -36,7 +48,7 @@ export function PostToc({ items }) {
       try {
         const id = decodeURIComponent(window.location.hash.slice(1));
         if (items.some((item) => item.id === id)) {
-          selected.current = Date.now() + 1500;
+          lockSelection();
           setActive(id);
           return;
         }
@@ -55,8 +67,8 @@ export function PostToc({ items }) {
     desktop.addEventListener("change", resizeDetails);
     window.addEventListener("hashchange", closeDetails);
     window.addEventListener("keydown", escapeDetails);
-    const finishScroll = () => { selected.current = null; update(); };
-    const interruptScroll = () => { selected.current = null; };
+    const finishScroll = () => { clearSelection(); update(); };
+    const interruptScroll = () => { clearSelection(); };
     observe();
     readHash();
     const resize = new ResizeObserver(observe);
@@ -68,6 +80,7 @@ export function PostToc({ items }) {
     window.addEventListener("keydown", interruptScroll);
     window.addEventListener("hashchange", readHash);
     return () => {
+      clearSelection();
       observer?.disconnect();
       resize.disconnect();
       desktop.removeEventListener("change", resizeDetails);
@@ -98,12 +111,19 @@ export function PostToc({ items }) {
     if (!heading) return;
     event.preventDefault();
     details.current.open = false;
-    selected.current = Date.now() + 1500;
+    clearTimeout(selectedTimer.current);
+    selected.current = true;
+    selectedTimer.current = setTimeout(() => {
+      selected.current = false;
+    }, 1500);
     setActive(id);
     window.history.replaceState(window.history.state, "", `#${encodeURIComponent(id)}`);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     heading.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-    if (reduced) selected.current = null;
+    if (reduced) {
+      clearTimeout(selectedTimer.current);
+      selected.current = false;
+    }
   };
 
   const links = () => (

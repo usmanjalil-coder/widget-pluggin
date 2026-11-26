@@ -288,7 +288,7 @@ export default function AccountSettingsPanel({
                 <Card title="Password" subtitle="Keep your account secure with a unique password.">
                   {account.has_password === false || needsSetup ? (
                     <div className="space-y-3">
-                      <p>You signed in with Google, so you don't have a password yet. Use Forgot password to set one.</p>
+                      <p>You signed in with Google, so you don&apos;t have a password yet. Use Forgot password to set one.</p>
                       <Button disabled={passwordSaving} onClick={async () => {
                         setPasswordSaving(true);
                         setPasswordSuccess("");

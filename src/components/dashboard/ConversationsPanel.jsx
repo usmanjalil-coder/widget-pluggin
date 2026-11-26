@@ -185,10 +185,11 @@ export default function ConversationsPanel({
   onPageChange,
 }) {
   const [now] = useState(() => Date.now());
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(
+    () => Boolean(selectedId && typeof window !== "undefined" && window.innerWidth < 768),
+  );
   const filtersActive = Boolean(query || status !== "all" || range !== "all");
   useEffect(() => {
-    if (selectedId && window.innerWidth < 768) setMobileOpen(true);
     const closeOnDesktop = () => {
       if (window.innerWidth >= 768) setMobileOpen(false);
     };

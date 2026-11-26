@@ -41,6 +41,7 @@ export async function createSocialImage() {
         }}
       />
       <div style={{ display: "flex", alignItems: "center", gap: 24, fontSize: 112, fontWeight: 700 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires a plain img element with a data URL */}
         <img src={logoSrc} alt="" width={128} height={128} />
         <div style={{ display: "flex" }}>
         {siteConfig.name.slice(0, 4)}<span style={{ color: ember.primary }}>{siteConfig.name.slice(4)}</span>
