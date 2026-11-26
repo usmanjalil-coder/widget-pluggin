@@ -27,6 +27,7 @@ export default function AccountPage() {
     <AccountSettingsPanel
       account={account}
       planName={billing.data?.currentPlan?.name}
+      planKey={billing.data?.currentPlan?.key}
       planLoading={billing.isPending}
       loading={loading}
       error={error}

@@ -50,6 +50,9 @@ export default function MarketingLayout({ children }) {
               <li>
                 <Link href="/wordpress-chatbot">WordPress chatbot</Link>
               </li>
+              <li>
+                <Link href="/docs">Docs</Link>
+              </li>
             </ul>
           </div>
           <div>

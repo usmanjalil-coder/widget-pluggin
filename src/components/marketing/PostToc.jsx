@@ -56,7 +56,7 @@ export function PostToc({ items }) {
       update();
     };
     const closeDetails = () => { if (details.current) details.current.open = false; };
-    const desktop = window.matchMedia("(min-width: 1024px)");
+    const desktop = window.matchMedia("(min-width: 1280px)");
     const resizeDetails = () => { if (desktop.matches) closeDetails(); };
     const escapeDetails = (event) => {
       if (event.key === "Escape" && details.current?.open) {
@@ -148,14 +148,14 @@ export function PostToc({ items }) {
   );
 
   return (
-    <aside ref={root} className="min-w-0 self-start lg:sticky lg:top-[var(--toc-offset,96px)]">
-      <details ref={details} className="rounded-lg border border-border p-3 lg:hidden">
+    <aside ref={root} className="min-w-0 self-start xl:sticky xl:top-[var(--toc-offset,96px)]">
+      <details ref={details} className="rounded-lg border border-border p-3 xl:hidden">
         <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring">
           On this page
         </summary>
         <div className="mt-3">{links()}</div>
       </details>
-      <div ref={sidebar} className="hidden max-h-[calc(100dvh-var(--toc-offset,96px)-24px)] overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] lg:block">
+      <div ref={sidebar} className="hidden max-h-[calc(100dvh-var(--toc-offset,96px)-24px)] overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] xl:block">
         <p className="mb-3 px-3 text-sm font-semibold text-foreground">On this page</p>
         {links()}
       </div>

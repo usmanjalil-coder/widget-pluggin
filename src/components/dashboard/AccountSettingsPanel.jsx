@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Shield, Trash2, UserRound } from "lucide-react";
+import { Bell, KeyRound, Shield, Trash2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, Card, EmptyState, Input, Label, Skeleton, Switch } from "@/components/ui";
 import { forgotPassword } from "@/lib/api/auth.api";
 import PasswordInput from "@/components/shared/PasswordInput";
 import PageHeader from "@/components/shared/PageHeader";
+import ApiKeysSection from "./ApiKeysSection";
 import BotSaveBar from "./BotSaveBar";
 
 const sections = [
   { key: "profile", label: "Profile", icon: UserRound },
   { key: "security", label: "Security", icon: Shield },
   { key: "notifications", label: "Notifications", icon: Bell },
+  { key: "api-keys", label: "API keys", icon: KeyRound },
   { key: "danger", label: "Danger zone", icon: Trash2 },
 ];
 const preferences = [
@@ -57,6 +59,7 @@ function passwordStrength(value) {
 export default function AccountSettingsPanel({
   account,
   planName,
+  planKey,
   planLoading,
   loading,
   error,
@@ -430,6 +433,9 @@ export default function AccountSettingsPanel({
                   </Link>
                 </p>
               </section>
+            )}
+            {active === "api-keys" && (
+              <ApiKeysSection planKey={planKey} planLoading={planLoading} />
             )}
             {active === "danger" && (
               <section aria-label="Danger zone">
