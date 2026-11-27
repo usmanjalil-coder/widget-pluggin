@@ -1,23 +1,7 @@
 export const dashboardNumber = new Intl.NumberFormat("en-US");
 
-const featuredKeys = [
-  "conversations",
-  "bots",
-  "messages_per_conversation",
-  "domains",
-  "remove_branding",
-  "lead_capture",
-  "website_crawling",
-];
-
 export function dashboardFeatures(plan) {
-  const features = Array.isArray(plan.features) ? plan.features : [];
-  const priority = featuredKeys
-    .map((key) => features.find((feature) => feature.key === key))
-    .filter(Boolean);
-  const remaining = features.filter((feature) => !priority.includes(feature));
-
-  return [...priority, ...remaining];
+  return Array.isArray(plan.features) ? plan.features : [];
 }
 
 export function featureDisplay(feature) {

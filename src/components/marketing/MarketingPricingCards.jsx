@@ -5,8 +5,8 @@ import { PlanFeatureDisclosure } from "./PlanFeatureDisclosure";
 
 function PlanCard({ plan, showAdditionalFeatures }) {
   const features = dashboardFeatures(plan);
-  const featured = features.slice(0, 6);
-  const extra = features.slice(6);
+  const featured = features.slice(0, 7);
+  const extra = features.slice(7);
   const price = dashboardPrice(plan);
 
   return (
